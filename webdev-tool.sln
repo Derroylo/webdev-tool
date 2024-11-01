@@ -1,0 +1,25 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "webdev-tool", "webdev-tool.csproj", "{F0B1C191-F6B5-42CE-88A0-B98ECD1ECE61}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F0B1C191-F6B5-42CE-88A0-B98ECD1ECE61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0B1C191-F6B5-42CE-88A0-B98ECD1ECE61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0B1C191-F6B5-42CE-88A0-B98ECD1ECE61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0B1C191-F6B5-42CE-88A0-B98ECD1ECE61}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DC7FA3D0-3254-418F-8AC3-3D4FC7777F16}
+	EndGlobalSection
+EndGlobal
