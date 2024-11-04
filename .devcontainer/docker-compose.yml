@@ -1,0 +1,87 @@
+# Docker compose for the development environment
+services:
+    # Base image for our devcontainer
+    devcontainer:
+      build: 
+        context: .
+        dockerfile: Dockerfile
+      volumes:
+        - ..:/var/www/html:cached
+      command: sleep infinity
+
+    # MySql Server
+    # For more infos check: https://hub.docker.com/_/mysql/
+    mysql:
+      labels:
+        com.webdev.category: "database"
+      image: mysql:5.7
+      container_name: "mysql"
+      ports:
+        # make this port public so it can also accessed via HeidiSQL or similar tools
+        - 3306:3306
+      environment:
+        # mysql root password
+        - MYSQL_ROOT_PASSWORD=gitpod
+      command: [mysqld, --query-cache-type=1, --query_cache_size=128M, --query_cache_limit=16M, --key_buffer_size=16M, --table_open_cache=64, --sort_buffer_size=512K, --net_buffer_length=8K, --read_buffer_size=256K, --read_rnd_buffer_size=512K, --myisam_sort_buffer_size=8M]
+
+    # Mailpit (can fetch all outgoing mails and show them via webinterface)
+    # For more infos check: https://hub.docker.com/r/axllent/mailpit
+    mailpit:
+      labels:
+        com.webdev.category: "mail"
+      image: axllent/mailpit:latest
+      container_name: "mailpit"
+      ports:
+        # make this port public for the webinterface
+        - 8025:8025
+        # port for incoming mails
+        - 1025:1025
+
+    # Redis Server
+    # For more infos check: https://hub.docker.com/_/redis
+    redis:
+      labels:
+        com.webdev.category: "cache"
+      image: redis:latest
+      container_name: "redis"
+      ports:
+        - 6379:6379
+
+    # PhpMyAdmin
+    # For more infos check: https://hub.docker.com/_/phpmyadmin
+    phpmyadmin:
+      labels:
+        com.webdev.category: "tools"
+      image: phpmyadmin/phpmyadmin:latest
+      container_name: "pma"
+      restart: always
+      links:
+        - mysql
+      environment:
+        PMA_HOST: "mysql"
+        PMA_PORT: 3306
+        PMA_USER: "root"
+        PMA_PASSWORD: "gitpod"
+        UPLOAD_LIMIT: 2048M
+        PMA_PMADB: "pma"
+      ports:
+        - "8081:80"
+      volumes:
+        - /tmp/apache2/logs:/var/log/apache2
+
+    # PhpCacheAdmin
+    # For more infos check: https://hub.docker.com/r/robinn/phpcacheadmin
+    phpcacheadmin:
+      labels:
+        com.webdev.category: "tools"
+      image: robinn/phpcacheadmin
+      container_name: "phpcacheadmin"
+      ports:
+        - "8082:80"
+      environment:
+        - PCA_REDIS_0_HOST=redis
+        - PCA_REDIS_0_PORT=6379
+      links:
+        - redis
+      volumes:
+        - /tmp/apache2/logs:/var/log/apache2
