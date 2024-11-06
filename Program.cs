@@ -10,6 +10,8 @@ using WebDev.Tool.Commands.Shell;
 using WebDev.Tool.Commands.Apache;
 using WebDev.Tool.Commands.Services;
 using WebDev.Tool.Commands;
+using WebDev.Tool.Commands.Config;
+using WebDev.Tool.Commands.ModeJS;
 
 namespace WebDev.Tool
 {
@@ -96,7 +98,7 @@ namespace WebDev.Tool
         {
             branch.SetDescription("Creates or verify the configuration file");
                     
-            branch.AddCommand<NotYetImplementedCommand>("verify")
+            branch.AddCommand<VerifyConfigCommand>("verify")
                 .WithAlias("v")
                 .WithDescription(@"Tries to read the config file and shows it`s content");                    
 
@@ -142,7 +144,7 @@ namespace WebDev.Tool
         {
             branch.SetDescription("Different commands to change active nodejs version, etc.");
                     
-            branch.AddCommand<NotYetImplementedCommand>("version")
+            branch.AddCommand<NodeJSVersionCommand>("version")
                 .WithAlias("v")
                 .WithDescription("Shows or sets the currently used NodeJS Version");
             branch.AddCommand<NotYetImplementedCommand>("restore")
