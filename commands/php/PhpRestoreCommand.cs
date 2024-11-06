@@ -1,11 +1,11 @@
 using System.ComponentModel;
-using WebDev.Tool.Helper;
 using Spectre.Console;
+using WebDev.Tool.Helper;
 using Spectre.Console.Cli;
 
-namespace WebDev.Tool.Commands.NodeJS
+namespace WebDev.Tool.Commands.Php
 {
-    internal class NodeJSRestoreCommand : Command<NodeJSRestoreCommand.Settings>
+    internal class PhpRestoreCommand : Command<PhpRestoreCommand.Settings>
     {
         public class Settings : CommandSettings
         {
@@ -17,8 +17,9 @@ namespace WebDev.Tool.Commands.NodeJS
 
         public override int Execute(CommandContext context, Settings settings)
         {
-            RestoreHelper.RestoreNodeJsVersion(settings.Debug);
-            
+            RestoreHelper.RestorePhpVersion(settings.Debug);
+            RestoreHelper.RestorePhpIni(settings.Debug);
+
             return 0;
         }
     }

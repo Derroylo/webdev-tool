@@ -12,6 +12,8 @@ using WebDev.Tool.Commands.Services;
 using WebDev.Tool.Commands;
 using WebDev.Tool.Commands.Config;
 using WebDev.Tool.Commands.ModeJS;
+using WebDev.Tool.Commands.NodeJS;
+using WebDev.Tool.Commands.Php;
 
 namespace WebDev.Tool
 {
@@ -115,19 +117,19 @@ namespace WebDev.Tool
         {
             branch.SetDescription("Different commands to change active php version, ini settings etc.");
                     
-            branch.AddCommand<NotYetImplementedCommand>("version")
+            branch.AddCommand<PhpVersionCommand>("version")
                 .WithAlias("v")
                 .WithDescription("Shows or sets the currently used PHP Version");
-            branch.AddCommand<NotYetImplementedCommand>("ini")
+            branch.AddCommand<PhpIniCommand>("ini")
                 .WithAlias("i")
                 .WithDescription("Change the value of a PHP setting.");
-            branch.AddCommand<NotYetImplementedCommand>("restore")
+            branch.AddCommand<PhpRestoreCommand>("restore")
                 .WithAlias("r")
                 .WithDescription("Restores a previously set PHP version and their settings");
-            branch.AddCommand<NotYetImplementedCommand>("xdebug")
+            branch.AddCommand<PhpDebugCommand>("xdebug")
                 .WithAlias("d")
                 .WithDescription("Shows or sets the current xdebug mode");
-            branch.AddCommand<NotYetImplementedCommand>("packages")
+            branch.AddCommand<PhpPackageCommand>("packages")
                 .WithAlias("p")
                 .WithDescription("Shows installed php packages or install new ones");
 
@@ -147,7 +149,7 @@ namespace WebDev.Tool
             branch.AddCommand<NodeJSVersionCommand>("version")
                 .WithAlias("v")
                 .WithDescription("Shows or sets the currently used NodeJS Version");
-            branch.AddCommand<NotYetImplementedCommand>("restore")
+            branch.AddCommand<NodeJSRestoreCommand>("restore")
                 .WithAlias("r")
                 .WithDescription("Restores a previously set NodeJS version");
 
