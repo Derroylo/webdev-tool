@@ -4,7 +4,7 @@ using Spectre.Console.Cli;
 
 namespace WebDev.Tool.Commands.Apache
 {
-    class ApacheRestartCommand : Command<ApacheRestartCommand.Settings>
+    internal class ApacheRestartCommand : Command<ApacheRestartCommand.Settings>
     {
         public class Settings : CommandSettings
         {

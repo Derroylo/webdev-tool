@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace WebDev.Tool.Helper.Internal
 {
-    class CustomCommandsLoader
+    internal class CustomCommandsLoader
     {
         public static Dictionary<string, CustomBranch> Load()
         {           
@@ -121,11 +121,7 @@ namespace WebDev.Tool.Helper.Internal
                 }
             }
 
-            if (command != string.Empty) {
-                return new ShellScriptSettings(command, description, branch, branchDescription, args);
-            }
-
-            return null;
+            return command != string.Empty ? new ShellScriptSettings(command, description, branch, branchDescription, args) : null;
         }
     }
 }

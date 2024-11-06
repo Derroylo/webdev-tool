@@ -7,7 +7,7 @@ using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Commands.Services
 {
-    class ListServicesCommand : Command<ListServicesCommand.Settings>
+    internal class ListServicesCommand : Command<ListServicesCommand.Settings>
     {
         public class Settings : CommandSettings
         {
@@ -17,7 +17,7 @@ namespace WebDev.Tool.Commands.Services
         public override int Execute(CommandContext context, Settings settings)
         {
             if (!File.Exists(DockerComposeHelper.GetFile())) {
-                AnsiConsole.MarkupLine(string.Format("[red]{0} not found[/]", DockerComposeHelper.GetFile()));
+                AnsiConsole.MarkupLine($"[red]{DockerComposeHelper.GetFile()} not found[/]");
 
                 return 0;
             }

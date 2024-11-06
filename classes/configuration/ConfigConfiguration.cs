@@ -1,9 +1,7 @@
 namespace WebDev.Tool.Classes.Configuration
 {
-    class ConfigConfiguration
+    internal class ConfigConfiguration
     {
-        private bool allowPreReleases = false;
-
-        public bool AllowPreReleases { get { return allowPreReleases; } set { allowPreReleases = value; }}
+        public bool AllowPreReleases { get; set; } = false;
     }
 }

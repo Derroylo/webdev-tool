@@ -6,7 +6,7 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace WebDev.Tool.Helper.Docker
 {
-    class DockerComposeHelper
+    internal class DockerComposeHelper
     {
         public static string GetFile()
         {
@@ -14,7 +14,7 @@ namespace WebDev.Tool.Helper.Docker
 
             var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
 
-            if (workspacePath == null || workspacePath == string.Empty) {
+            if (string.IsNullOrEmpty(workspacePath)) {
                 workspacePath = Directory.GetCurrentDirectory();
             }
 

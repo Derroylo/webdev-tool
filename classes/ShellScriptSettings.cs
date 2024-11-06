@@ -3,64 +3,39 @@ using System.Collections.Generic;
 
 namespace WebDev.Tool.Classes
 {
-    class ShellScriptSettings
+    internal class ShellScriptSettings
     {
-        private readonly string branch = string.Empty;
+        public string Branch { get; } = string.Empty;
 
-        private readonly string branchDescription = string.Empty;
+        public string BranchDescription { get; } = string.Empty;
 
-        private readonly string command = string.Empty;
+        public string Command { get; } = string.Empty;
 
-        private readonly string description = string.Empty;
+        public string Description { get; } = string.Empty;
 
-        private readonly List<string> arguments = new();
-
-        public string Branch
-        {
-            get { return branch; }
-        }
-
-        public string BranchDescription
-        {
-            get { return branchDescription; }
-        }
-
-        public string Command
-        {
-            get { return command; }
-        }
-
-        public string Description
-        {
-            get { return description; }
-        }
-
-        public List<string> Arguments
-        {
-            get { return arguments; }
-        }
+        public List<string> Arguments { get; } = new();
 
         public ShellScriptSettings(string command, string description = null, string branch = null, string branchDescription = null, List<string> arguments = null) {
-            if (command == null || command == string.Empty || command.Length < 1) {
+            if (string.IsNullOrEmpty(command) || command.Length < 1) {
                 throw new Exception("Missing command");
             }
 
-            this.command = command;
+            this.Command = command;
 
             if (description != null && description.Length > 0) {
-                this.description = description;
+                this.Description = description;
             }
 
             if (branch != null && branch.Length > 0) {
-                this.branch = branch;
+                this.Branch = branch;
             }
 
             if (branchDescription != null && branchDescription.Length > 0) {
-                this.branchDescription = branchDescription;
+                this.BranchDescription = branchDescription;
             }
 
             if (arguments != null && arguments.Count > 0) {
-                this.arguments = arguments;
+                this.Arguments = arguments;
             }
         }
     }

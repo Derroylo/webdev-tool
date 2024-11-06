@@ -3,38 +3,23 @@ using System.Collections.Generic;
 
 namespace WebDev.Tool.Classes
 {
-    class CustomBranch
+    internal class CustomBranch
     {
-        private readonly string name = string.Empty;
+        public string Name { get; } = string.Empty;
 
-        private readonly string description = string.Empty;
+        public string Description { get; } = string.Empty;
 
-        private readonly List<CustomCommand> commands = new();
-
-        public string Name
-        {
-            get { return name; }
-        }
-
-        public string Description
-        {
-            get { return description; }
-        }
-
-        public List<CustomCommand> Commands
-        {
-            get { return commands; }
-        }
+        public List<CustomCommand> Commands { get; } = new();
 
         public CustomBranch(string name, string description = null) {
-            if (name == null || name == string.Empty || name.Length < 1) {
+            if (string.IsNullOrEmpty(name) || name.Length < 1) {
                 throw new Exception("Missing name for custom branch");
             }
 
-            this.name = name;
+            this.Name = name;
 
             if (description != null && description.Length > 0) {
-                this.description = description;
+                this.Description = description;
             }
         }
     }

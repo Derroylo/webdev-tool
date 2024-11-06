@@ -4,7 +4,7 @@ using Spectre.Console.Cli;
 
 namespace WebDev.Tool.Commands.Apache
 {
-    class ApacheStopCommand : Command<ApacheStopCommand.Settings>
+    internal class ApacheStopCommand : Command<ApacheStopCommand.Settings>
     {
         public class Settings : CommandSettings
         {

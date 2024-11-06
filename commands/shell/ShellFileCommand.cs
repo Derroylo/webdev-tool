@@ -8,7 +8,7 @@ using Spectre.Console.Cli;
 
 namespace WebDev.Tool.Commands.Shell
 {
-    class ShellFileCommand : Command<ShellFileCommand.Settings>
+    internal class ShellFileCommand : Command<ShellFileCommand.Settings>
     {
         public class Settings : CommandSettings
         {

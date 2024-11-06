@@ -2,14 +2,10 @@ using System.Collections.Generic;
 
 namespace WebDev.Tool.Classes.Configuration
 {
-    class ServiceConfiguration
+    internal class ServiceConfiguration
     {
-        private List<string> active = new();
+        public List<string> Active { get; set; } = new();
 
-        public List<string> Active { get { return active; } set { active = value; }}
-        
-        private string file = "docker-compose.yml";
-
-        public string File { get { return file; } set { file = value; } }
+        public string File { get; set; } = "docker-compose.yml";
     }
 }

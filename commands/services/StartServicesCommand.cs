@@ -9,7 +9,7 @@ using Spectre.Console.Cli;
 
 namespace WebDev.Tool.Commands.Services
 {
-    class StartServicesCommand : Command<StartServicesCommand.Settings>
+    internal class StartServicesCommand : Command<StartServicesCommand.Settings>
     {
         public class Settings : CommandSettings
         {
@@ -22,7 +22,7 @@ namespace WebDev.Tool.Commands.Services
         public override int Execute(CommandContext context, Settings settings)
         {
             if (!File.Exists(DockerComposeHelper.GetFile())) {
-                AnsiConsole.MarkupLine(string.Format("[red]{0} not found[/]", DockerComposeHelper.GetFile()));
+                AnsiConsole.MarkupLine($"[red]{DockerComposeHelper.GetFile()} not found[/]");
 
                 return 0;
             }

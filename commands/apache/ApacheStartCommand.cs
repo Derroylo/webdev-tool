@@ -4,7 +4,7 @@ using Spectre.Console.Cli;
 
 namespace WebDev.Tool.Commands.Apache
 {
-    class ApacheStartCommand : Command<ApacheStartCommand.Settings>
+    internal class ApacheStartCommand : Command<ApacheStartCommand.Settings>
     {
         public class Settings : CommandSettings
         {

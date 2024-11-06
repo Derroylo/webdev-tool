@@ -13,7 +13,7 @@ using WebDev.Tool.Commands;
 
 namespace WebDev.Tool
 {
-    class Program
+    internal class Program
     {
         static void Main(string[] args)
         {

@@ -1,9 +1,7 @@
 namespace WebDev.Tool.Classes.Configuration
 {
-    class NodeJsConfiguration
+    internal class NodeJsConfiguration
     {
-        private string version = string.Empty;
-
-        public string Version { get { return version; } set { version = value; }}
+        public string Version { get; set; } = string.Empty;
     }
 }

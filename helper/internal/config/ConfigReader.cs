@@ -6,7 +6,7 @@ using System;
 
 namespace WebDev.Tool.Helper.Internal.Config
 {
-    class ConfigReader
+    internal class ConfigReader
     {
         public static Configuration ReadConfigFile(string configFile)
         {
@@ -26,12 +26,9 @@ namespace WebDev.Tool.Helper.Internal.Config
             JsonElement customizationsElement = doc.RootElement.GetProperty("customizations");
             bool elementFound = customizationsElement.TryGetProperty("webdev", out JsonElement webDevElement);
 
-            if (!elementFound) {
-                return new Configuration();
-            }
-
-            // Deserialize the JSON element into a C# object
-            return JsonSerializer.Deserialize<Configuration>(webDevElement.GetRawText(), new JsonSerializerOptions{PropertyNameCaseInsensitive = true});
+            return !elementFound ? new Configuration() :
+                // Deserialize the JSON element into a C# object
+                JsonSerializer.Deserialize<Configuration>(webDevElement.GetRawText(), new JsonSerializerOptions{PropertyNameCaseInsensitive = true});
         }
     }
 }

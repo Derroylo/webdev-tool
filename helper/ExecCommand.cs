@@ -4,7 +4,7 @@ using Spectre.Console;
 
 namespace WebDev.Tool.Helper
 {
-    class ExecCommand
+    internal class ExecCommand
     {
         public static string Exec(string command, int timeoutInSeconds = 300)
         {

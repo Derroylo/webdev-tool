@@ -1,25 +1,15 @@
 namespace WebDev.Tool.Classes.Configuration
 {
-    class Configuration
+    internal class Configuration
     {
-        private ConfigConfiguration config = new();
+        public ConfigConfiguration Config { get; set; } = new();
 
-        public ConfigConfiguration Config { get { return config; } set { config = value; } }
+        public PhpConfiguration Php { get; set; } = new();
 
-        private PhpConfiguration php = new();
+        public NodeJsConfiguration Nodejs { get; set; } = new();
 
-        public PhpConfiguration Php { get { return php; } set { php = value; } }
+        public ServiceConfiguration Services { get; set; } = new();
 
-        private NodeJsConfiguration nodejs = new();
-
-        public NodeJsConfiguration Nodejs { get { return nodejs; } set { nodejs = value; } }
-
-        private ServiceConfiguration services = new();
-
-        public ServiceConfiguration Services { get { return services; } set { services = value; } }
-
-        private ShellScriptsConfiguration shellScripts = new();
-
-        public ShellScriptsConfiguration ShellScripts { get { return shellScripts; } set { shellScripts = value; } }
+        public ShellScriptsConfiguration ShellScripts { get; set; } = new();
     }
 }

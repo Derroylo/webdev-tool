@@ -5,23 +5,21 @@ using WebDev.Tool.Classes.Configuration;
 
 namespace WebDev.Tool.Helper.Internal.Config
 {
-    class ConfigHelper
+    internal class ConfigHelper
     {
         protected static Configuration appConfig;
 
         private static bool configFileExists = false;
 
-        public static bool ConfigFileExists { get { return configFileExists; } }
+        public static bool ConfigFileExists => configFileExists;
 
-        private static bool configUpdated = false;
-
-        public static bool ConfigUpdated { get { return configUpdated; } set { configUpdated = value; }}
+        public static bool ConfigUpdated { get; set; } = false;
 
         private static bool configFileValid = false;
 
-        public static bool IsConfigFileValid { get { return configFileValid; } }
+        public static bool IsConfigFileValid => configFileValid;
 
-        public static bool IsConfigFileLoaded { get { return appConfig != null && configFileValid && configFileExists; } }
+        public static bool IsConfigFileLoaded => appConfig != null && configFileValid && configFileExists;
 
         public static void ReadConfigFile(bool rethrowParseException = false)
         {
@@ -71,7 +69,7 @@ namespace WebDev.Tool.Helper.Internal.Config
         {
             var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
 
-            if (workspacePath == null || workspacePath == string.Empty) {
+            if (string.IsNullOrEmpty(workspacePath)) {
                 workspacePath = Directory.GetCurrentDirectory();
             }
 

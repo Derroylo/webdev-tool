@@ -2,26 +2,16 @@ using System.Collections.Generic;
 
 namespace WebDev.Tool.Classes.Configuration
 {
-    class PhpConfiguration
+    internal class PhpConfiguration
     {
-        private string version = "8.2";
+        public string Version { get; set; } = "8.2";
 
-        private Dictionary<string, string> config = new();
+        public Dictionary<string, string> Config { get; set; } = new();
 
-        private Dictionary<string, string> configWeb = new();
+        public Dictionary<string, string> ConfigWeb { get; set; } = new();
 
-        private Dictionary<string, string> configCLI = new();
+        public Dictionary<string, string> ConfigCLI { get; set; } = new();
 
-        private List<string> packages = new();
-
-        public string Version { get { return version; } set { version = value; }}
-
-        public Dictionary<string, string> Config { get { return config; } set { config = value; }}
-
-        public Dictionary<string, string> ConfigWeb { get { return configWeb; } set { configWeb = value; }}
-
-        public Dictionary<string, string> ConfigCLI { get { return configCLI; } set { configCLI = value; }}
-
-        public List<string> Packages { get { return packages; } set { packages = value; }}
+        public List<string> Packages { get; set; } = new();
     }
 }

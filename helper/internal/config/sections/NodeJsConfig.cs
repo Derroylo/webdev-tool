@@ -1,12 +1,10 @@
 namespace WebDev.Tool.Helper.Internal.Config.Sections
 {
-    class NodeJsConfig: ConfigHelper
+    internal class NodeJsConfig: ConfigHelper
     {
         public static string NodeJsVersion
         {
-            get {
-                return appConfig.Nodejs.Version;
-            }
+            get => appConfig.Nodejs.Version;
 
             set {
                 if (appConfig.Nodejs.Version != value) {

@@ -12,7 +12,7 @@ using Semver;
 
 namespace WebDev.Tool.Helper.Internal
 {
-    class UpdateHelper
+    internal class UpdateHelper
     {  
         public static string CurrentVersion {
             get {

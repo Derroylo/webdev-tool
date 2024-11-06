@@ -3,7 +3,7 @@ using Spectre.Console.Cli;
 
 namespace WebDev.Tool.Commands
 {
-    class NotYetImplementedCommand : Command<NotYetImplementedCommand.Settings>
+    internal class NotYetImplementedCommand : Command<NotYetImplementedCommand.Settings>
     {
         public class Settings : CommandSettings
         {
