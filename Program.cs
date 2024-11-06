@@ -14,6 +14,7 @@ using WebDev.Tool.Commands.Config;
 using WebDev.Tool.Commands.ModeJS;
 using WebDev.Tool.Commands.NodeJS;
 using WebDev.Tool.Commands.Php;
+using WebDev.Tool.Commands.Restore;
 
 namespace WebDev.Tool
 {
@@ -230,16 +231,16 @@ namespace WebDev.Tool
         {
             branch.SetDescription("Restore settings separate for nodejs or php, or for all at once ");
                     
-            branch.AddCommand<NotYetImplementedCommand>("all")
+            branch.AddCommand<RestoreAllCommand>("all")
                 .WithAlias("a")
                 .WithDescription("Restore all settings");
-            branch.AddCommand<NotYetImplementedCommand>("php")
+            branch.AddCommand<RestorePhpCommand>("php")
                 .WithAlias("p")
                 .WithDescription("Restore settings for php");
-            branch.AddCommand<NotYetImplementedCommand>("nodejs")
+            branch.AddCommand<RestorePhpCommand>("nodejs")
                 .WithAlias("n")
                 .WithDescription("Restore settings for NodeJS");
-            branch.AddCommand<NotYetImplementedCommand>("env")
+            branch.AddCommand<RestoreEnvCommand>("env")
                 .WithAlias("e")
                 .WithDescription("Restore environment variables");
 
