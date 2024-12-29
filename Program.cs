@@ -53,7 +53,7 @@ namespace WebDev.Tool
                 config.AddBranch("apache", branch => AddApacheCommandBranch(branch, additionalCommands));
                 config.AddBranch("services", branch => AddServicesCommandBranch(branch, additionalCommands));
                 config.AddBranch("config", branch => AddConfigCommandBranch(branch, additionalCommands));
-                config.AddBranch("mysql", branch => AddMysqlCommandBranch(branch, additionalCommands));
+                //config.AddBranch("mysql", branch => AddMysqlCommandBranch(branch, additionalCommands));
                 config.AddBranch("nodejs", branch => AddNodeJsCommandBranch(branch, additionalCommands));
                 config.AddBranch("php", branch => AddPhpCommandBranch(branch, additionalCommands));
                 config.AddBranch("restore", branch => AddRestoreCommandBranch(branch, additionalCommands));
@@ -91,7 +91,7 @@ namespace WebDev.Tool
         private static void OutputProgramHeader(string programVersion, bool showException = false)
         {
             AnsiConsole.Write(new FigletText("WebDev"));
-            AnsiConsole.Markup("[deepskyblue3]WebDev Tool[/] - Version [green]" + programVersion + "[/]");
+            AnsiConsole.MarkupLine("[deepskyblue3]WebDev Tool[/] - Version [green]" + programVersion + "[/]");
 
             // Try to load the config file
             ConfigHelper.ReadConfigFile(true);

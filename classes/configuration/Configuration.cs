@@ -6,6 +6,8 @@ namespace WebDev.Tool.Classes.Configuration
 
         public PhpConfiguration Php { get; set; } = new();
 
+        public EnvironmentConfiguration Environment { get; set; } = new();
+
         public NodeJsConfiguration Nodejs { get; set; } = new();
 
         public ServiceConfiguration Services { get; set; } = new();

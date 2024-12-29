@@ -1,0 +1,36 @@
+config:
+  allowPreReleases: false
+php:
+  version: 8.2
+  config: 
+    opcache.enable: "off"
+    xdebug.mode": "off"
+    xdebug.start_with_request: "yes"
+  configWeb:
+    memory_limit: "512M"
+  configCLI:
+    max_execution_time: "0"
+    memory_limit: "-1"
+nodejs:
+  version: "18.18.2"
+environment:
+  default: dev
+  settings:
+    dev:
+      name: "Development Settings"
+      description: "Settings that are used in the development process of an application."
+    prod:
+      name: "Production settings"
+      description: "Production settings for the application, for example with additional services for caching."
+      setUp:
+        - "test.sh"
+        - "test2.sh"
+      tearDown:
+        - "test3.sh"
+        - "test4.sh"
+    test:
+      name: "Test settings"
+      description: "Test settings for your application where for example headless browsers will be started for e2e testing"
+services:
+  active:
+    - mysql

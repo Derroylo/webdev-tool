@@ -73,7 +73,7 @@ namespace WebDev.Tool.Helper.Internal.Config
                 workspacePath = Directory.GetCurrentDirectory();
             }
 
-            return workspacePath + "/.devcontainer/devcontainer.json";
+            return workspacePath + "/.devcontainer/webdev.yml";
         }
     }
 }

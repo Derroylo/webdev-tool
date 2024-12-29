@@ -21,16 +21,6 @@
                 "ms-dotnettools.csharp",
 				"ms-dotnettools.csdevkit"
 			]
-		},
-		"webdev" : {
-			"services": {
-				"active": [
-					"mysql",
-					"redis",
-					"phpmyadmin",
-					"mailpit"
-				]
-			}
 		}
 	},
 
@@ -46,6 +36,6 @@
 	// "remoteUser": "root"
 
 	"containerEnv": {
-    	"WEBDEV_WORKSPACE_FOLDER": "/workspaces/webdev-tool"
+    	"WEBDEV_WORKSPACE_FOLDER": "/IdeaProjects/webdev-tool"
 	}
 }
