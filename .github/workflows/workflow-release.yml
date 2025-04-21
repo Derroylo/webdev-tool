@@ -1,4 +1,4 @@
-name: .NET Core
+name: .NET Core Release
 
 on:
   push:
@@ -17,13 +17,13 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 7.0.100
+          dotnet-version: 9.0.100
       - name: Install dependencies
         run: dotnet restore
       - name: Build
         run: dotnet build -r linux-x64 --configuration Release --no-restore --self-contained false /p:PublishSingleFile=true /p:PublishTrimmed=true
       - name: Zip the Build
-        run: cd ./bin/Release/net7.0/linux-x64/ && zip -r ../../../../webdev-tool.zip ./* && cd -
+        run: cd ./bin/Release/net9.0/linux-x64/ && zip -r ../../../../webdev-tool.zip ./* && cd -
       - uses: actions/upload-artifact@v3
         with:
           name: zipped-tool
