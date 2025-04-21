@@ -23,10 +23,10 @@ jobs:
         run: dotnet publish --runtime linux-x64 --configuration Release --no-restore --self-contained false /p:PublishSingleFile=true /p:PublishTrimmed=true
       - name: Zip the Build
         run: cd ./bin/Release/net9.0/linux-x64/ && zip -r ../../../../webdev-tool.zip ./* && cd -
-      #- uses: actions/upload-artifact@v3
-      #  with:
-      #    name: zipped-tool
-      #    path: webdev-tool.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zipped-tool
+          path: webdev-tool.zip
 
   publish:
     runs-on: ubuntu-latest
@@ -34,7 +34,7 @@ jobs:
     
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: zipped-tool
       - uses: ncipollo/release-action@v1
