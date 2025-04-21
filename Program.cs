@@ -57,7 +57,7 @@ namespace WebDev.Tool
                 config.AddBranch("nodejs", branch => AddNodeJsCommandBranch(branch, additionalCommands));
                 config.AddBranch("php", branch => AddPhpCommandBranch(branch, additionalCommands));
                 config.AddBranch("restore", branch => AddRestoreCommandBranch(branch, additionalCommands));
-                config.AddCommand<NotYetImplementedCommand>("update").WithDescription("Update this tool to the latest version");
+                config.AddCommand<SelfUpdateCommand>("update").WithDescription("Update this tool to the latest version");
 
                 List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore" };
 
@@ -91,8 +91,26 @@ namespace WebDev.Tool
         private static void OutputProgramHeader(string programVersion, bool showException = false)
         {
             AnsiConsole.Write(new FigletText("WebDev"));
-            AnsiConsole.MarkupLine("[deepskyblue3]WebDev Tool[/] - Version [green]" + programVersion + "[/]");
+            AnsiConsole.Markup("[deepskyblue3]WebDev Tool[/] - Version [green]" + programVersion + "[/]");
 
+            try {
+                // Check for updates
+                var latestVersion = UpdateHelper.GetLatestVersion().Result;
+                var isUpdateAvailable = UpdateHelper.IsUpdateAvailable();
+
+                if (isUpdateAvailable) {
+                    AnsiConsole.MarkupLine(" - [orange3]Latest Version is " + latestVersion + ". Use 'webdev update' to update.[/]");
+                } else {
+                    AnsiConsole.MarkupLine("");
+                }
+            } catch (Exception e) {
+                AnsiConsole.MarkupLine(" - [red]Check for update failed[/]");
+
+                if (showException) {
+                    AnsiConsole.WriteException(e);
+                }
+            }
+            
             // Try to load the config file
             ConfigHelper.ReadConfigFile(true);
         }

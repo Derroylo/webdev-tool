@@ -12,6 +12,20 @@ WEBDEVDIR=$SCRIPTPATH
 # run the application and pass all arguments to it
 dotnet "$WEBDEVDIR/webdev-tool.dll" "$@"
 
+# Check if the update folder exists
+if [ -d "/home/webdev/webdev/update" ]; then
+    cd /home/webdev/webdev
+
+    # Move all files from the update folder to the current one and remove it afterwards
+    mv update/* .
+
+    # Remove the update folder
+    rm -rf update
+
+    # Set execution rights for the shell script
+    chmod +x webdev.sh
+fi
+
 # Check if we want to start services
 if [ -f "$WEBDEVDIR/.services_start" ]; then
     startCommand=$(<"$WEBDEVDIR/.services_start")
