@@ -1,10 +1,10 @@
 config:
   allowPreReleases: false
 php:
-  version: 8.2
-  config: 
+  version: 8.3
+  config:
     opcache.enable: "off"
-    xdebug.mode": "off"
+    xdebug.mode: "off"
     xdebug.start_with_request: "yes"
   configWeb:
     memory_limit: "512M"
@@ -13,6 +13,12 @@ php:
     memory_limit: "-1"
 nodejs:
   version: "18.18.2"
+secrets:
+  composer:
+    sourceType: "gitlab-variable"
+    sourceName: "COMPOSER_AUTH"
+    targetType: "composer-auth"
+    projectId: 1234
 environment:
   default: dev
   settings:
@@ -31,6 +37,27 @@ environment:
     test:
       name: "Test settings"
       description: "Test settings for your application where for example headless browsers will be started for e2e testing"
+tasks:
+  services:
+    name: Start all active services
+    mode: all
+    prebuild:
+      - echo "1prebuild 1 dasdasd"
+      - echo "2prebuild 2 adasd"
+    command:
+      - echo "1command 1 adad"
+  apache:
+    name: Run apache and output its log to the terminal
+    mode: local
+    command:
+      - echo "command 1"
+  test:
+    name: Test task
+    mode: devcontainer
+    command:
+      - echo "command 1"    
 services:
   active:
     - mysql
+    - phpmyadmin
+    - mailpit

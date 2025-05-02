@@ -49,7 +49,7 @@ namespace WebDev.Tool.Helper
             using (System.Diagnostics.Process proc = new())
             {
                 proc.StartInfo.FileName = "/bin/bash";
-                proc.StartInfo.Arguments = "-c \" " + command + " \"";
+                proc.StartInfo.Arguments = "-c \"" + command.Replace("\"", "\\\"") + "\"";
                 proc.StartInfo.UseShellExecute = false;
                 proc.StartInfo.RedirectStandardOutput = true;
                 proc.StartInfo.RedirectStandardError = true;

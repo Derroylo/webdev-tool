@@ -15,6 +15,8 @@ using WebDev.Tool.Commands.ModeJS;
 using WebDev.Tool.Commands.NodeJS;
 using WebDev.Tool.Commands.Php;
 using WebDev.Tool.Commands.Restore;
+using WebDev.Tool.Commands.secrets;
+using WebDev.Tool.Commands.tasks;
 
 namespace WebDev.Tool
 {
@@ -50,16 +52,27 @@ namespace WebDev.Tool
                 config.SetApplicationVersion(version);
 
                 // Add Branches and their commands
-                config.AddBranch("apache", branch => AddApacheCommandBranch(branch, additionalCommands));
-                config.AddBranch("services", branch => AddServicesCommandBranch(branch, additionalCommands));
+                if (EnvironmentHelper.IsRunningInDevContainer())
+                {
+                    config.AddBranch("apache", branch => AddApacheCommandBranch(branch, additionalCommands));
+                    config.AddBranch("services", branch => AddServicesCommandBranch(branch, additionalCommands));
+                }
+                
                 config.AddBranch("config", branch => AddConfigCommandBranch(branch, additionalCommands));
                 //config.AddBranch("mysql", branch => AddMysqlCommandBranch(branch, additionalCommands));
-                config.AddBranch("nodejs", branch => AddNodeJsCommandBranch(branch, additionalCommands));
-                config.AddBranch("php", branch => AddPhpCommandBranch(branch, additionalCommands));
-                config.AddBranch("restore", branch => AddRestoreCommandBranch(branch, additionalCommands));
+
+                if (EnvironmentHelper.IsRunningInDevContainer())
+                {
+                    config.AddBranch("nodejs", branch => AddNodeJsCommandBranch(branch, additionalCommands));
+                    config.AddBranch("php", branch => AddPhpCommandBranch(branch, additionalCommands));
+                    config.AddBranch("restore", branch => AddRestoreCommandBranch(branch, additionalCommands));
+                }
+                
+                config.AddBranch("secrets", branch => AddSecretsCommandBranch(branch, additionalCommands));
+                config.AddBranch("tasks", branch => AddTasksCommandBranch(branch, additionalCommands));
                 config.AddCommand<SelfUpdateCommand>("update").WithDescription("Update this tool to the latest version");
 
-                List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore" };
+                List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks" };
 
                 // Add branches that haven´t been added yet via custom commands
                 foreach (KeyValuePair<string, CustomBranch> entry in additionalCommands.Where(x => !reservedBranches.Contains(x.Key))) {
@@ -88,10 +101,13 @@ namespace WebDev.Tool
             app.Run(args);
         }
 
+        
         private static void OutputProgramHeader(string programVersion, bool showException = false)
         {
             AnsiConsole.Write(new FigletText("WebDev"));
             AnsiConsole.Markup("[deepskyblue3]WebDev Tool[/] - Version [green]" + programVersion + "[/]");
+
+            AnsiConsole.Write(EnvironmentHelper.IsRunningInDevContainer() ? " - DevContainer Mode" : " - Local Mode");
 
             try {
                 // Check for updates
@@ -132,6 +148,23 @@ namespace WebDev.Tool
             }
         }
 
+        private static void AddTasksCommandBranch(IConfigurator<CommandSettings> branch, Dictionary<string, CustomBranch> additionalCommands)
+        {
+            branch.SetDescription("Run tasks defined in the config file");
+                    
+            branch.AddCommand<RunTaskCommand>("run")
+                .WithAlias("r")
+                .WithDescription(@"Run a task");                    
+
+            if (additionalCommands.TryGetValue("tasks", out CustomBranch customBranch)) {
+                foreach (CustomCommand cmd in customBranch.Commands) {
+                    branch.AddCommand<ShellFileCommand>(cmd.Command)
+                        .WithData(cmd)
+                        .WithDescription(cmd.Description);
+                }
+            }
+        }
+        
         private static void AddPhpCommandBranch(IConfigurator<CommandSettings> branch, Dictionary<string, CustomBranch> additionalCommands)
         {
             branch.SetDescription("Different commands to change active php version, ini settings etc.");
@@ -263,6 +296,23 @@ namespace WebDev.Tool
                 .WithDescription("Restore environment variables");
 
             if (additionalCommands.TryGetValue("restore", out CustomBranch customBranch)) {
+                foreach (CustomCommand cmd in customBranch.Commands) {
+                    branch.AddCommand<ShellFileCommand>(cmd.Command)
+                        .WithData(cmd)
+                        .WithDescription(cmd.Description);
+                }
+            }
+        }
+        
+        private static void AddSecretsCommandBranch(IConfigurator<CommandSettings> branch, Dictionary<string, CustomBranch> additionalCommands)
+        {
+            branch.SetDescription("Loads external secrets");
+                    
+            branch.AddCommand<LoadSecretsCommand>("load")
+                .WithAlias("l")
+                .WithDescription(@"Reads the config file and loads the defined secrets");                    
+
+            if (additionalCommands.TryGetValue("secrets", out CustomBranch customBranch)) {
                 foreach (CustomCommand cmd in customBranch.Commands) {
                     branch.AddCommand<ShellFileCommand>(cmd.Command)
                         .WithData(cmd)

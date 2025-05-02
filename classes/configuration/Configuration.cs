@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace WebDev.Tool.Classes.Configuration
 {
     internal class Configuration
@@ -8,6 +10,10 @@ namespace WebDev.Tool.Classes.Configuration
 
         public EnvironmentConfiguration Environment { get; set; } = new();
 
+        public Dictionary<string, SecretConfiguration> Secrets { get; set; } = new();
+        
+        public Dictionary<string, TaskEntryConfiguration> Tasks { get; set; } = new();
+        
         public NodeJsConfiguration Nodejs { get; set; } = new();
 
         public ServiceConfiguration Services { get; set; } = new();
