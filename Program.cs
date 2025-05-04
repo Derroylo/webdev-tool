@@ -14,6 +14,7 @@ using WebDev.Tool.Commands.Config;
 using WebDev.Tool.Commands.ModeJS;
 using WebDev.Tool.Commands.NodeJS;
 using WebDev.Tool.Commands.Php;
+using WebDev.Tool.Commands.Project;
 using WebDev.Tool.Commands.Restore;
 using WebDev.Tool.Commands.secrets;
 using WebDev.Tool.Commands.tasks;
@@ -59,6 +60,7 @@ namespace WebDev.Tool
                 }
                 
                 config.AddBranch("config", branch => AddConfigCommandBranch(branch, additionalCommands));
+                config.AddBranch("project", branch => AddProjectCommandBranch(branch, additionalCommands));
                 //config.AddBranch("mysql", branch => AddMysqlCommandBranch(branch, additionalCommands));
 
                 if (EnvironmentHelper.IsRunningInDevContainer())
@@ -313,6 +315,23 @@ namespace WebDev.Tool
                 .WithDescription(@"Reads the config file and loads the defined secrets");                    
 
             if (additionalCommands.TryGetValue("secrets", out CustomBranch customBranch)) {
+                foreach (CustomCommand cmd in customBranch.Commands) {
+                    branch.AddCommand<ShellFileCommand>(cmd.Command)
+                        .WithData(cmd)
+                        .WithDescription(cmd.Description);
+                }
+            }
+        }
+        
+        private static void AddProjectCommandBranch(IConfigurator<CommandSettings> branch, Dictionary<string, CustomBranch> additionalCommands)
+        {
+            branch.SetDescription("Project commands");
+                    
+            branch.AddCommand<InitProjectCommand>("init")
+                .WithAlias("i")
+                .WithDescription(@"Creates a new project from a given Repo and sets up the necessary devcontainer");                    
+
+            if (additionalCommands.TryGetValue("project", out CustomBranch customBranch)) {
                 foreach (CustomCommand cmd in customBranch.Commands) {
                     branch.AddCommand<ShellFileCommand>(cmd.Command)
                         .WithData(cmd)
