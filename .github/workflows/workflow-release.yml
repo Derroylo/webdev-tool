@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: dotnet restore
       - name: Build
-        run: dotnet build -r linux-x64 --configuration Release --no-restore --self-contained false /p:PublishSingleFile=true /p:PublishTrimmed=true
+        run: dotnet publish --runtime linux-x64 --configuration Release --no-restore --self-contained false /p:PublishSingleFile=true /p:PublishTrimmed=true
       - name: Zip the Build
         run: cd ./bin/Release/net9.0/linux-x64/ && zip -r ../../../../webdev-tool.zip ./* && cd -
       - uses: actions/upload-artifact@v4
