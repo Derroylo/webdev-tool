@@ -22,6 +22,36 @@ internal class InitProjectCommand : Command
 
         var targetFolder = "";
         
+        // Check if the devcontainer CLI is installed
+        if (!DevContainerHelper.IsDevContainerCliInstalled())
+        {
+            AnsiConsole.MarkupLine("[red]Error:[/] devcontainer CLI is not installed.");
+            
+            var installConfirm = AnsiConsole.Confirm("To apply the template, you need to install the devcontainer CLI. Do you want to install it now?");
+            if (installConfirm)
+            {
+                if (!DevContainerHelper.IsNpmInstalled())
+                {
+                    AnsiConsole.MarkupLine("[red]Error:[/] npm is not installed. Please install it first.");
+                    
+                    return 1;
+                }
+                
+                if (!DevContainerHelper.InstallDevContainerCli())
+                {
+                    AnsiConsole.MarkupLine("[red]Error:[/] Installing the devcontainer cli failed. Please install it manually.");
+
+                    return 1;
+                }
+                
+                AnsiConsole.MarkupLine("[green]devcontainer CLI installed successfully.[/]");
+            }
+            else
+            {
+                return 1;
+            }
+        }
+        
         // Ask the user if he wants to clone the repo or if he has already done so
         var cloneRepo = AnsiConsole.Confirm("Do you want to [green]clone a Git repository[/]?");
         if (cloneRepo)

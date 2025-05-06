@@ -1,17 +1,81 @@
 using System;
+using System.Diagnostics;
 using System.IO;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Spectre.Console;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace WebDev.Tool.Helper.devcontainer;
 
 public class DevContainerHelper
 {
+    public static bool IsDevContainerCliInstalled()
+    {
+        // Check if the devcontainer CLI is installed
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "which",
+                Arguments = "devcontainer",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+
+        process.Start();
+        var output = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+
+        return !string.IsNullOrWhiteSpace(output);
+    }
+    
+    public static bool IsNpmInstalled()
+    {
+        // Check if npm is installed
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "which",
+                Arguments = "npm",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+
+        process.Start();
+        var output = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+
+        return !string.IsNullOrWhiteSpace(output);
+    }
+    
+    public static bool InstallDevContainerCli()
+    {
+        // Install the devcontainer cli via npm
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "npm",
+                Arguments = "install -g @devcontainers/cli",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+
+        process.Start();
+        process.WaitForExit();
+
+        return process.ExitCode == 0;
+    }
+    
     public static string ApplyTemplate(string workspacePath, string templateId, string templateArgs = null, string features = null)
     {
         var cmd = "devcontainer templates apply";
