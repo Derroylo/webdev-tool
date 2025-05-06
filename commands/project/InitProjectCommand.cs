@@ -18,28 +18,58 @@ internal class InitProjectCommand : Command
 {
     public override int Execute(CommandContext context)
     {
-        // Prompt for the Git repository URL
-        var repoUrl = AnsiConsole.Ask<string>("Enter the [green]URL[/] of the Git repository:");
+        AnsiConsole.WriteLine("This command will help you to setup a dev environment for your project.");
 
-        // Prompt for the target folder
-        var targetFolder = AnsiConsole.Ask<string>("Enter the [green]target folder[/] to clone the repository into:");
-
-        // Check if the folder exists
-        if (Directory.Exists(targetFolder))
+        var targetFolder = "";
+        
+        // Ask the user if he wants to clone the repo or if he has already done so
+        var cloneRepo = AnsiConsole.Confirm("Do you want to [green]clone a Git repository[/]?");
+        if (cloneRepo)
         {
-            AnsiConsole.MarkupLine("[red]Error:[/] The target folder already exists.");
+            // Prompt for the Git repository URL
+            var repoUrl = AnsiConsole.Ask<string>("Enter the [green]URL[/] of the Git repository:");
+            
+            // Prompt for the target folder
+            targetFolder = AnsiConsole.Ask<string>("Enter the [green]folder[/] to clone the repository into:");
+            
+            // Check if the folder exists
+            if (Directory.Exists(targetFolder))
+            {
+                AnsiConsole.MarkupLine("[red]Error:[/] The target folder already exists.");
+            
+                return 1;
+            }
+
+            // Clone the repository
+            if (!CloneRepository(repoUrl, targetFolder))
+            {
+                return 1;
+            }
+        }
+        else
+        {
+            // Prompt for the target folder
+            targetFolder = AnsiConsole.Ask<string>("Enter the [green]folder[/] of your project:");
+            
+            // Check if the folder exists
+            if (!Directory.Exists(targetFolder))
+            {
+                AnsiConsole.MarkupLine("[red]Error:[/] The target folder doesn´t exist.");
+            
+                return 1;
+            }
+        }
+        
+        // Check if the folder already contains a devcontainer.json file
+        if (File.Exists(Path.Combine(targetFolder, ".devcontainer/devcontainer.json")))
+        {
+            AnsiConsole.MarkupLine("[red]Error:[/] The target folder already contains a devcontainer.json file.");
             
             return 1;
         }
-
-        // Clone the repository
-        if (!CloneRepository(repoUrl, targetFolder))
-        {
-            return 1;
-        }
-
+        
         // Ask which devcontainer template to use
-        var template = SelectDecontainerTemplate();
+        var template = SelectDevContainerTemplate();
 
         if (string.IsNullOrEmpty(template))
         {
@@ -50,13 +80,11 @@ internal class InitProjectCommand : Command
         
         // Prompt for devcontainer basic settings like name
         var devContainerName = AnsiConsole.Ask<string>("Enter the [green]name[/] of the devcontainer:");
-        var devContainerDescription = AnsiConsole.Ask<string>("Enter the [green]description[/] of the devcontainer:");
         
         // Create a summary of all selected options
         AnsiConsole.MarkupLine("[green]Summary:[/]");
         AnsiConsole.MarkupLine($"[green]Template:[/] {template}");
         AnsiConsole.MarkupLine($"[green]Name:[/] {devContainerName}");
-        AnsiConsole.MarkupLine($"[green]Description:[/] {devContainerDescription}");
         
         // Ask for confirmation to proceed
         var proceed = AnsiConsole.Confirm("Do you want to proceed with the setup?");
@@ -68,10 +96,10 @@ internal class InitProjectCommand : Command
         }
         
         // Apply the devcontainer template
-        AnsiConsole.WriteLine(DevContainerHelper.ApplyTemplate(targetFolder, "ghcr.io/devcontainers/templates/cpp:latest"));
+        AnsiConsole.WriteLine(DevContainerHelper.ApplyTemplate(targetFolder, "ghcr.io/Derroylo/devcontainer-templates/" + template + ":latest"));
         
         // Update the devcontainer.json with the name and description
-        DevContainerHelper.UpdateNameAndDescription(targetFolder, devContainerName, devContainerDescription);
+        DevContainerHelper.UpdateNameAndDescription(targetFolder, devContainerName);
         
         AnsiConsole.MarkupLine("[green]All done.[/]");
         
@@ -117,10 +145,10 @@ internal class InitProjectCommand : Command
         return true;
     }
 
-    private string SelectDecontainerTemplate()
+    private string SelectDevContainerTemplate()
     {
-        var repoUrl = "https://github.com/devcontainers/templates.git";
-        var localRepoPath = Path.Combine(Directory.GetCurrentDirectory(), "devContainerTemplates");
+        var repoUrl = "https://github.com/Derroylo/devcontainer-templates.git";
+        var localRepoPath = Path.Combine(Path.GetTempPath(), "devContainerTemplates");
         var srcPath = Path.Combine(localRepoPath, "src");
         var templates = new Dictionary<string, string>();
 
@@ -163,9 +191,13 @@ internal class InitProjectCommand : Command
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[red]Error:[/] {ex.Message}");
+            Directory.Delete(localRepoPath, recursive: true);
+            
             return string.Empty;
         }
         
+        Directory.Delete(localRepoPath, recursive: true);
+
         templates = templates.OrderBy(t => t.Key).ToDictionary(t => t.Key, t => t.Value);
         
         if (templates.Count == 0)
@@ -180,6 +212,6 @@ internal class InitProjectCommand : Command
                 .AddChoices(templates.Keys)
         );
 
-        return templates[selected];
+        return selected;
     }
 }

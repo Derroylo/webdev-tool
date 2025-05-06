@@ -60,7 +60,12 @@ namespace WebDev.Tool
                 }
                 
                 config.AddBranch("config", branch => AddConfigCommandBranch(branch, additionalCommands));
-                config.AddBranch("project", branch => AddProjectCommandBranch(branch, additionalCommands));
+                
+                if (!EnvironmentHelper.IsRunningInDevContainer())
+                {
+                    config.AddBranch("project", branch => AddProjectCommandBranch(branch, additionalCommands));
+                }
+                
                 //config.AddBranch("mysql", branch => AddMysqlCommandBranch(branch, additionalCommands));
 
                 if (EnvironmentHelper.IsRunningInDevContainer())
@@ -70,7 +75,7 @@ namespace WebDev.Tool
                     config.AddBranch("restore", branch => AddRestoreCommandBranch(branch, additionalCommands));
                 }
                 
-                config.AddBranch("secrets", branch => AddSecretsCommandBranch(branch, additionalCommands));
+                //config.AddBranch("secrets", branch => AddSecretsCommandBranch(branch, additionalCommands));
                 config.AddBranch("tasks", branch => AddTasksCommandBranch(branch, additionalCommands));
                 config.AddCommand<SelfUpdateCommand>("update").WithDescription("Update this tool to the latest version");
 

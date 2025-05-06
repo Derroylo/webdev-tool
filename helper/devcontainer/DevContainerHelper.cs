@@ -2,7 +2,11 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Spectre.Console;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace WebDev.Tool.Helper.devcontainer;
 
@@ -28,23 +32,29 @@ public class DevContainerHelper
         return ExecCommand.ExecWithDirectOutput(cmd + args);
     }
     
-    public static void UpdateNameAndDescription(string workspacePath, string name, string description)
+    public static void UpdateNameAndDescription(string workspacePath, string name)
     {
-        var jsonContent = File.ReadAllText(workspacePath + "/.devcontainer/devcontainer.json");
+        var filePath = Path.Combine(workspacePath, ".devcontainer", "devcontainer.json");
 
-        var jsonObject = JsonNode.Parse(jsonContent) as JsonObject;
-        if (jsonObject == null)
+        try
         {
-            AnsiConsole.MarkupLine("[red]Error:[/] Failed to parse devcontainer.json.");
-            return;
+            // Read the file content
+            var jsonContent = File.ReadAllText(filePath);
+
+            // Replace the "name" property value
+            var updatedContent = Regex.Replace(
+                jsonContent,
+                @"""name""\s*:\s*"".*?""",
+                $@"""name"": ""{name}""",
+                RegexOptions.Singleline
+            );
+
+            // Write the updated content back to the file
+            File.WriteAllText(filePath, updatedContent);
         }
-
-        // Add or update the name and description properties
-        jsonObject["name"] = name;
-        jsonObject["description"] = description;
-
-        // Serialize and save the updated JSON
-        var updatedJson = JsonSerializer.Serialize(jsonObject, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(workspacePath + "/.devcontainer/devcontainer.json", updatedJson);
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]Error updating devcontainer.json: {ex.Message}[/]");
+        }
     }
 }
