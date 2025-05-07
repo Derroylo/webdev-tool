@@ -50,9 +50,9 @@ if [ -f "$WEBDEVDIR/.nodejs" ]; then
 
     rm "$WEBDEVDIR/.nodejs"
 
-    . ~/.nvm/nvm.sh
-
-    nvm use $version
+    source /usr/local/share/nvm/nvm.sh
     
-    nvm alias default $version
+    nvm install $version
+  
+    nvm use $version --save
 fi
