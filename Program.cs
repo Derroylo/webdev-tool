@@ -78,7 +78,11 @@ namespace WebDev.Tool
                 }
                 
                 //config.AddBranch("secrets", branch => AddSecretsCommandBranch(branch, additionalCommands));
-                config.AddBranch("task", branch => AddTaskCommandBranch(branch, TasksConfig.Tasks));
+                if (TasksConfig.Tasks.Count > 0)
+                {
+                    config.AddBranch("task", branch => AddTaskCommandBranch(branch, TasksConfig.Tasks));
+                }
+                
                 config.AddBranch("tasks", branch => AddTasksCommandBranch(branch, additionalCommands));
                 config.AddCommand<SelfUpdateCommand>("update").WithDescription("Update this tool to the latest version");
 
