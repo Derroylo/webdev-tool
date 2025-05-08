@@ -295,7 +295,7 @@ namespace WebDev.Tool
             branch.AddCommand<RestorePhpCommand>("php")
                 .WithAlias("p")
                 .WithDescription("Restore settings for php");
-            branch.AddCommand<RestorePhpCommand>("nodejs")
+            branch.AddCommand<RestoreNodeJsCommand>("nodejs")
                 .WithAlias("n")
                 .WithDescription("Restore settings for NodeJS");
             branch.AddCommand<RestoreEnvCommand>("env")
