@@ -13,43 +13,41 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
 {
     public class Settings : CommandSettings
     {
-        [CommandArgument(0, "[Task]")]
-        [Description("Execute the commands that are defined in this task")]
-        public string Task { get; set; }
-        
-        [CommandOption("-i|--init")]
-        [Description("Run commands defined under \"init\"")]
+        [CommandOption("-c|--create")]
+        [Description("Run commands defined under \"create\"")]
         [DefaultValue(false)]
-        public bool RunInitCommands { get; set; }
+        public bool RunCreateCommands { get; set; }
         
-        [CommandOption("-c|--commands")]
-        [Description("Run commands defined under \"commands\"")]
+        [CommandOption("-s|--start")]
+        [Description("Run commands defined under \"start\"")]
         [DefaultValue(true)]
-        public bool RunNormalCommands { get; set; }
+        public bool RunStartCommands { get; set; }
         
         [CommandOption("-p|--prebuild")]
         [Description("Run commands defined under \"prebuild\"")]
-        [DefaultValue(true)]
+        [DefaultValue(false)]
         public bool RunPreBuildCommands { get; set; }
     }
     
     public override int Execute(CommandContext context, Settings settings)
     {
-        if (string.Empty == settings.Task)
+        string taskName = context.Data?.ToString();
+        
+        if (string.IsNullOrEmpty(taskName))
         {
-            AnsiConsole.MarkupLine("[red]No task specified.[/");
+            AnsiConsole.MarkupLine("[red]No task specified.[/]");
+
+            return 0;
+        }
+        
+        if (!TasksConfig.Tasks.TryGetValue(taskName, out TaskEntryConfiguration task))
+        {
+            AnsiConsole.MarkupLine("[red]Unable to find the task \"" + taskName + "\" in the config file.[/]");
 
             return 0;
         }
 
-        if (!TasksConfig.Tasks.TryGetValue(settings.Task, out TaskEntryConfiguration task))
-        {
-            AnsiConsole.MarkupLine("[red]Unable to find the task \"" + settings.Task + "\" in the config file.[/]");
-
-            return 0;
-        }
-
-        if (EnvironmentHelper.IsRunningInDevContainer() && task.Mode != TaskMode.All && task.Mode != TaskMode.DevContainer || !EnvironmentHelper.IsRunningInDevContainer() && task.Mode != TaskMode.All && task.Mode != TaskMode.Local)
+        if (task.Mode != TaskMode.All && ((EnvironmentHelper.IsRunningInDevContainer() && task.Mode != TaskMode.DevContainer) || (!EnvironmentHelper.IsRunningInDevContainer() && task.Mode != TaskMode.Local)))
         {
             AnsiConsole.MarkupLine("[red]This task is not available in the current environment.[/]");
 
@@ -59,11 +57,11 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
         AnsiConsole.WriteLine("-------------------");
         AnsiConsole.MarkupLine("[deepskyblue3]Executing commands for task[/] " + task.Name);
         
-        if (settings.RunInitCommands && task.Init.Count > 0)
+        if (settings.RunCreateCommands && task.Create.Count > 0)
         {
-            AnsiConsole.MarkupLine("[green]Init[/]");
+            AnsiConsole.MarkupLine("[green]Create[/]");
             
-            foreach (string cmd in task.Init)
+            foreach (string cmd in task.Create)
             {
                 ExecCommand.ExecWithDirectOutput(cmd);
             }
@@ -79,11 +77,11 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
             }
         }
 
-        if (settings.RunNormalCommands && task.Command.Count > 0)
+        if (settings.RunStartCommands && task.Start.Count > 0)
         {
-            AnsiConsole.MarkupLine("[green]Commands[/]");
+            AnsiConsole.MarkupLine("[green]Start[/]");
             
-            foreach (string cmd in task.Command)
+            foreach (string cmd in task.Start)
             {
                 ExecCommand.ExecWithDirectOutput(cmd);
             }

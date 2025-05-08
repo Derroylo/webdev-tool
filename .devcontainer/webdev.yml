@@ -41,20 +41,23 @@ tasks:
   services:
     name: Start all active services
     mode: all
+    create:
+      - echo "1init 1 dasdasd"
+      - echo "2init 2 adasd"
     prebuild:
       - echo "1prebuild 1 dasdasd"
       - echo "2prebuild 2 adasd"
-    command:
+    start:
       - echo "1command 1 adad"
   apache:
     name: Run apache and output its log to the terminal
     mode: local
-    command:
+    start:
       - echo "command 1"
   test:
     name: Test task
     mode: devcontainer
-    command:
+    start:
       - echo "command 1"    
 services:
   active:

@@ -17,7 +17,7 @@ internal class TaskEntryConfiguration
         
     public List<string> Prebuild { get; set; } = new();
     
-    public List<string> Init { get; set; } = new();
+    public List<string> Create { get; set; } = new();
     
-    public List<string> Command { get; set; } = new();
+    public List<string> Start { get; set; } = new();
 }

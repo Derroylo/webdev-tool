@@ -6,6 +6,7 @@ using Spectre.Console.Cli;
 using WebDev.Tool.Helper.Internal;
 using WebDev.Tool.Helper.Internal.Config;
 using WebDev.Tool.Classes;
+using WebDev.Tool.Classes.Configuration;
 using WebDev.Tool.Commands.Shell;
 using WebDev.Tool.Commands.Apache;
 using WebDev.Tool.Commands.Services;
@@ -18,6 +19,7 @@ using WebDev.Tool.Commands.Project;
 using WebDev.Tool.Commands.Restore;
 using WebDev.Tool.Commands.secrets;
 using WebDev.Tool.Commands.tasks;
+using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool
 {
@@ -76,10 +78,11 @@ namespace WebDev.Tool
                 }
                 
                 //config.AddBranch("secrets", branch => AddSecretsCommandBranch(branch, additionalCommands));
+                config.AddBranch("task", branch => AddTaskCommandBranch(branch, TasksConfig.Tasks));
                 config.AddBranch("tasks", branch => AddTasksCommandBranch(branch, additionalCommands));
                 config.AddCommand<SelfUpdateCommand>("update").WithDescription("Update this tool to the latest version");
 
-                List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks" };
+                List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task" };
 
                 // Add branches that haven´t been added yet via custom commands
                 foreach (KeyValuePair<string, CustomBranch> entry in additionalCommands.Where(x => !reservedBranches.Contains(x.Key))) {
@@ -155,14 +158,36 @@ namespace WebDev.Tool
             }
         }
 
+        private static void AddTaskCommandBranch(IConfigurator<CommandSettings> branch, Dictionary<string, TaskEntryConfiguration> Tasks)
+        {
+            branch.SetDescription("Run a specific task defined in the config file");
+
+            foreach (KeyValuePair<string, TaskEntryConfiguration> entry in Tasks) {
+                branch.AddCommand<RunTaskCommand>(entry.Key)
+                    .WithData(entry.Key)
+                    .WithDescription(entry.Value.Name);
+            }
+        }
+        
         private static void AddTasksCommandBranch(IConfigurator<CommandSettings> branch, Dictionary<string, CustomBranch> additionalCommands)
         {
-            branch.SetDescription("Run tasks defined in the config file");
-                    
-            branch.AddCommand<RunTaskCommand>("run")
-                .WithAlias("r")
-                .WithDescription(@"Run a task");                    
+            branch.SetDescription("Run a specific section of all tasks defined in the config file");
 
+            branch.AddCommand<RunTasksCommand>("prebuild")
+                .WithData("prebuild")
+                .WithAlias("p")
+                .WithDescription(@"Runs prebuild sections of all tasks");                    
+
+            branch.AddCommand<RunTasksCommand>("create")
+                .WithData("create")
+                .WithAlias("c")
+                .WithDescription(@"Runs create sections of all tasks");
+            
+            branch.AddCommand<RunTasksCommand>("start")
+                .WithData("start")
+                .WithAlias("s")
+                .WithDescription(@"Runs start sections of all tasks");
+            
             if (additionalCommands.TryGetValue("tasks", out CustomBranch customBranch)) {
                 foreach (CustomCommand cmd in customBranch.Commands) {
                     branch.AddCommand<ShellFileCommand>(cmd.Command)
