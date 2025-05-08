@@ -119,6 +119,9 @@ namespace WebDev.Tool
 
             AnsiConsole.Write(EnvironmentHelper.IsRunningInDevContainer() ? " - DevContainer Mode" : " - Local Mode");
 
+            // Try to load the config file
+            ConfigHelper.ReadConfigFile(true);
+            
             try {
                 // Check for updates
                 var latestVersion = UpdateHelper.GetLatestVersion().Result;
@@ -136,9 +139,6 @@ namespace WebDev.Tool
                     AnsiConsole.WriteException(e);
                 }
             }
-            
-            // Try to load the config file
-            ConfigHelper.ReadConfigFile(true);
         }
 
         private static void AddConfigCommandBranch(IConfigurator<CommandSettings> branch, Dictionary<string, CustomBranch> additionalCommands)

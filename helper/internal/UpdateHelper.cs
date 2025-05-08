@@ -23,9 +23,9 @@ namespace WebDev.Tool.Helper.Internal
                     ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
                 
                 // Include PreRelease Version info if it exists
-                if (!String.IsNullOrEmpty(preReleaseName))
+                if (!String.IsNullOrEmpty(preReleaseName) && preReleaseName != currentVersion)
                 {
-                    currentVersion += preReleaseName.Substring(0, preReleaseName.IndexOf('+'));
+                    currentVersion += preReleaseName;
                 }
 
                 return currentVersion;
