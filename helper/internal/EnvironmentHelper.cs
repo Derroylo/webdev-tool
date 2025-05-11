@@ -8,4 +8,9 @@ internal static class EnvironmentHelper
     {
         return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DEVCONTAINER"));
     }
+
+    public static bool DisableProgramHeader()
+    {
+        return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBDEV_DISABLE_HEADER"));
+    }
 }
