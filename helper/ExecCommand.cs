@@ -6,14 +6,14 @@ namespace WebDev.Tool.Helper
 {
     internal class ExecCommand
     {
-        public static string Exec(string command, int timeoutInSeconds = 300)
+        public static string Exec(string command, bool isInteractive = false, bool disableJobControl = false, int timeoutInSeconds = 300)
         {
             string result = "";
 
             using (System.Diagnostics.Process proc = new())
             {
                 proc.StartInfo.FileName = "/bin/bash";
-                proc.StartInfo.Arguments = "-ic \"set +m; " + command.Replace("\"", "\\\"") + " \"";
+                proc.StartInfo.Arguments = "-c" + (isInteractive ? "i" : "") + " \"" + (disableJobControl ? "set +m; " : "") + command.Replace("\"", "\\\"") + " \"";
                 proc.StartInfo.EnvironmentVariables["WEBDEV_DISABLE_HEADER"] = "true";
                 proc.StartInfo.UseShellExecute = false;
                 proc.EnableRaisingEvents = true;
@@ -43,14 +43,14 @@ namespace WebDev.Tool.Helper
             return result.TrimEnd('\n');
         }
 
-        public static string ExecWithDirectOutput(string command)
+        public static string ExecWithDirectOutput(string command, bool isInteractive = false, bool disableJobControl = false)
         {
             string result = "";
 
             using (System.Diagnostics.Process proc = new())
             {
                 proc.StartInfo.FileName = "/bin/bash";
-                proc.StartInfo.Arguments = "-ic \"set +m;" + command.Replace("\"", "\\\"") + "\"";
+                proc.StartInfo.Arguments = "-c" + (isInteractive ? "i" : "") + " \"" + (disableJobControl ? "set +m; " : "") + command.Replace("\"", "\\\"") + "\"";
                 proc.StartInfo.EnvironmentVariables["WEBDEV_DISABLE_HEADER"] = "true";
                 proc.StartInfo.UseShellExecute = false;
                 proc.StartInfo.RedirectStandardOutput = true;

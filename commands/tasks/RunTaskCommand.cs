@@ -63,7 +63,7 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
             
             foreach (string cmd in task.Create)
             {
-                ExecCommand.ExecWithDirectOutput(cmd);
+                ExecCommand.ExecWithDirectOutput(cmd, true, true);
             }
         }
         
@@ -73,7 +73,7 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
             
             foreach (string cmd in task.Prebuild)
             {
-                ExecCommand.ExecWithDirectOutput(cmd);
+                ExecCommand.ExecWithDirectOutput(cmd, true, true);
             }
         }
 
@@ -83,7 +83,7 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
             
             foreach (string cmd in task.Start)
             {
-                ExecCommand.ExecWithDirectOutput(cmd);
+                ExecCommand.ExecWithDirectOutput(cmd, true, true);
             }
         }
         

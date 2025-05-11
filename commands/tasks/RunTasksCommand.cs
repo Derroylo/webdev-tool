@@ -26,7 +26,7 @@ internal class RunTasksCommand: Command
             {
                 foreach (string cmd in entry.Value.Create)
                 {
-                    ExecCommand.ExecWithDirectOutput(cmd);
+                    ExecCommand.ExecWithDirectOutput(cmd, true, true);
                 }
             }
             
@@ -34,7 +34,7 @@ internal class RunTasksCommand: Command
             {
                 foreach (string cmd in entry.Value.Prebuild)
                 {
-                    ExecCommand.ExecWithDirectOutput(cmd);
+                    ExecCommand.ExecWithDirectOutput(cmd, true, true);
                 }
             }
             
@@ -42,7 +42,7 @@ internal class RunTasksCommand: Command
             {
                 foreach (string cmd in entry.Value.Start)
                 {
-                    ExecCommand.ExecWithDirectOutput(cmd);
+                    ExecCommand.ExecWithDirectOutput(cmd, true, true);
                 }
             }
         }

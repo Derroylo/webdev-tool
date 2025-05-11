@@ -72,7 +72,7 @@ namespace WebDev.Tool.Helper.NodeJs
 
                     ctx.Status("Switching to new nodejs version...");
 
-                    ExecCommand.Exec("source \"$NVM_DIR\"/nvm-lazy.sh && nvm install " + newVersion, 300);
+                    ExecCommand.Exec("source \"$NVM_DIR\"/nvm-lazy.sh && nvm install " + newVersion);
 
                     // Write the selected version to a file, so we can change the active nodejs version via the gpt.sh script
                     var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -82,7 +82,7 @@ namespace WebDev.Tool.Helper.NodeJs
 
                     // Fetch the packages installed in the new version
                     // We have to set the version again, otherwise it will just show the old nodejs output
-                    var listPackagesOutput = ExecCommand.Exec(". ~/.nvm/nvm.sh && nvm use " + newVersion + " && nvm alias default " + newVersion + " && npm list -g --depth=0", 300);
+                    var listPackagesOutput = ExecCommand.Exec(". ~/.nvm/nvm.sh && nvm use " + newVersion + " && nvm alias default " + newVersion + " && npm list -g --depth=0");
                     var installedPackagesNew = NodeJsPackageHelper.GetCurrentInstalledNodeJSPackages(listPackagesOutput);
 
                     var missingPackages = installedPackages.Where(p => !installedPackagesNew.Contains(p)).ToList();
@@ -90,7 +90,7 @@ namespace WebDev.Tool.Helper.NodeJs
                     if (missingPackages.Count > 0) {
                         ctx.Status("Installing packages that are missing in the new version...");
 
-                        ExecCommand.Exec(". ~/.nvm/nvm.sh && nvm use " + newVersion + " && nvm alias default " + newVersion + " && npm install -g " + string.Join(" ", missingPackages), 300);
+                        ExecCommand.Exec(". ~/.nvm/nvm.sh && nvm use " + newVersion + " && nvm alias default " + newVersion + " && npm install -g " + string.Join(" ", missingPackages));
                     }
 
                     // In some older versions of npm it could have happened that the folder rights were set incorrect
