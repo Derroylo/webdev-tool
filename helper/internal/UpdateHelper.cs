@@ -112,7 +112,7 @@ namespace WebDev.Tool.Helper.Internal
         public static async Task<bool> UpdateToLatestRelease()
         {
             var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
-            var newDir = "/home/webdev/webdev";
+            var newDir = "/home/webdev/webdev/";
 
             JObject cacheFile = JObject.Parse(File.ReadAllText(applicationDir + "releases.json"));
 

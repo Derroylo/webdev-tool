@@ -17,7 +17,7 @@ if [ -d "/home/webdev/webdev/update" ]; then
     cd /home/webdev/webdev
 
     # Move all files from the update folder to the current one and remove it afterwards
-    mv update/* .
+    rsync -a update/* .
 
     # Remove the update folder
     rm -rf update
