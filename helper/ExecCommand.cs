@@ -13,7 +13,8 @@ namespace WebDev.Tool.Helper
             using (System.Diagnostics.Process proc = new())
             {
                 proc.StartInfo.FileName = "/bin/bash";
-                proc.StartInfo.Arguments = "-c \" " + command + " \"";
+                proc.StartInfo.Arguments = "-ic \"set +m; " + command.Replace("\"", "\\\"") + " \"";
+                proc.StartInfo.EnvironmentVariables["WEBDEV_DISABLE_HEADER"] = "true";
                 proc.StartInfo.UseShellExecute = false;
                 proc.EnableRaisingEvents = true;
                 proc.StartInfo.RedirectStandardOutput = true;
@@ -49,7 +50,8 @@ namespace WebDev.Tool.Helper
             using (System.Diagnostics.Process proc = new())
             {
                 proc.StartInfo.FileName = "/bin/bash";
-                proc.StartInfo.Arguments = "-c \"" + command.Replace("\"", "\\\"") + "\"";
+                proc.StartInfo.Arguments = "-ic \"set +m;" + command.Replace("\"", "\\\"") + "\"";
+                proc.StartInfo.EnvironmentVariables["WEBDEV_DISABLE_HEADER"] = "true";
                 proc.StartInfo.UseShellExecute = false;
                 proc.StartInfo.RedirectStandardOutput = true;
                 proc.StartInfo.RedirectStandardError = true;

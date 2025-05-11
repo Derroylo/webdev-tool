@@ -118,13 +118,21 @@ namespace WebDev.Tool
         
         private static void OutputProgramHeader(string programVersion, bool showException = false)
         {
-            AnsiConsole.Write(new FigletText("WebDev"));
-            AnsiConsole.Markup("[deepskyblue3]WebDev Tool[/] - Version [green]" + programVersion + "[/]");
+            if (!EnvironmentHelper.DisableProgramHeader())
+            {
+                AnsiConsole.Write(new FigletText("WebDev"));
+                AnsiConsole.Markup("[deepskyblue3]WebDev Tool[/] - Version [green]" + programVersion + "[/]");
 
-            AnsiConsole.Write(EnvironmentHelper.IsRunningInDevContainer() ? " - DevContainer Mode" : " - Local Mode");
+                AnsiConsole.Write(EnvironmentHelper.IsRunningInDevContainer() ? " - DevContainer Mode" : " - Local Mode");
+            }
 
             // Try to load the config file
             ConfigHelper.ReadConfigFile(true);
+
+            if (EnvironmentHelper.DisableProgramHeader())
+            {
+                return;
+            }
             
             try {
                 // Check for updates
