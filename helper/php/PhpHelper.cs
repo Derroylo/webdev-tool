@@ -35,6 +35,9 @@ namespace WebDev.Tool.Helper.Php
                         ExecCommand.Exec("sudo update-alternatives --set php-config /usr/bin/php-config" + newVersion);
                         AnsiConsole.MarkupLine("update-alternatives --set php-config /usr/bin/php-config" + newVersion + "...[green1]Success[/]");
 
+                        ExecCommand.Exec("sudo update-alternatives --set phpize /usr/bin/phpize" + newVersion);
+                        AnsiConsole.MarkupLine("update-alternatives --set phpize /usr/bin/phpize" + newVersion + "...[green1]Success[/]");
+                        
                         // Update the version apache uses
                         ExecCommand.Exec("sudo apt-get update");
                         AnsiConsole.MarkupLine("apt-get update...[green1]Success[/]");
