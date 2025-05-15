@@ -58,9 +58,9 @@ namespace WebDev.Tool
                 if (EnvironmentHelper.IsRunningInDevContainer())
                 {
                     config.AddBranch("apache", branch => AddApacheCommandBranch(branch, additionalCommands));
-                    config.AddBranch("services", branch => AddServicesCommandBranch(branch, additionalCommands));
                 }
                 
+                config.AddBranch("services", branch => AddServicesCommandBranch(branch, additionalCommands));
                 config.AddBranch("config", branch => AddConfigCommandBranch(branch, additionalCommands));
                 
                 if (!EnvironmentHelper.IsRunningInDevContainer())
@@ -199,6 +199,11 @@ namespace WebDev.Tool
                 .WithData("start")
                 .WithAlias("s")
                 .WithDescription(@"Runs start sections of all tasks");
+            
+            branch.AddCommand<RunTasksCommand>("init")
+                .WithData("init")
+                .WithAlias("i")
+                .WithDescription(@"Runs init sections of all tasks");
             
             if (additionalCommands.TryGetValue("tasks", out CustomBranch customBranch)) {
                 foreach (CustomCommand cmd in customBranch.Commands) {
@@ -373,6 +378,10 @@ namespace WebDev.Tool
                 .WithAlias("i")
                 .WithDescription(@"Creates a new project from a given Repo and sets up the necessary devcontainer");                    
 
+            branch.AddCommand<StartProjectCommand>("start")
+                .WithAlias("s")
+                .WithDescription(@"Checks if the current folder contains a devcontainer spec and starts it");
+            
             if (additionalCommands.TryGetValue("project", out CustomBranch customBranch)) {
                 foreach (CustomCommand cmd in customBranch.Commands) {
                     branch.AddCommand<ShellFileCommand>(cmd.Command)

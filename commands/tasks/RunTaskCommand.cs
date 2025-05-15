@@ -13,6 +13,11 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
 {
     public class Settings : CommandSettings
     {
+        [CommandOption("-i|--init")]
+        [Description("Run commands defined under \"init\"")]
+        [DefaultValue(false)]
+        public bool RunInitCommands { get; set; }
+        
         [CommandOption("-c|--create")]
         [Description("Run commands defined under \"create\"")]
         [DefaultValue(false)]
@@ -56,6 +61,16 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
 
         AnsiConsole.WriteLine("-------------------");
         AnsiConsole.MarkupLine("[deepskyblue3]Executing commands for task[/] " + task.Name);
+        
+        if (settings.RunInitCommands && task.Init.Count > 0)
+        {
+            AnsiConsole.MarkupLine("[green]Init[/]");
+            
+            foreach (string cmd in task.Init)
+            {
+                ExecCommand.ExecWithDirectOutput(cmd, true, true);
+            }
+        }
         
         if (settings.RunCreateCommands && task.Create.Count > 0)
         {

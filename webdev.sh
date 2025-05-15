@@ -31,7 +31,7 @@ if [ -f "$WEBDEVDIR/.services_start" ]; then
     startCommand=$(<"$WEBDEVDIR/.services_start")
 
     rm "$WEBDEVDIR/.services_start"
-
+    
     docker-compose $startCommand
 fi
 
@@ -55,4 +55,11 @@ if [ -f "$WEBDEVDIR/.nodejs" ]; then
     nvm install $version
   
     nvm use $version --save
+fi
+
+# Check if we want to start a devcontainer workspace
+if [ -f "$WEBDEVDIR/.devcontainer_up" ]; then
+    rm "$WEBDEVDIR/.devcontainer_up"
+       
+    devcontainer up --workspace-folder .
 fi

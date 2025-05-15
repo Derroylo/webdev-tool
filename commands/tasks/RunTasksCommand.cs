@@ -22,6 +22,14 @@ internal class RunTasksCommand: Command
 
         foreach (KeyValuePair<string, TaskEntryConfiguration> entry in TasksConfig.Tasks)
         {
+            if (sectionName == "init" && entry.Value.Init.Count > 0)
+            {
+                foreach (string cmd in entry.Value.Init)
+                {
+                    ExecCommand.ExecWithDirectOutput(cmd, true, true);
+                }
+            }
+            
             if (sectionName == "create" && entry.Value.Create.Count > 0)
             {
                 foreach (string cmd in entry.Value.Create)
