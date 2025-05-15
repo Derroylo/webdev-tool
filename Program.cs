@@ -127,7 +127,7 @@ namespace WebDev.Tool
             }
 
             // Try to load the config file
-            ConfigHelper.ReadConfigFile(true);
+            ConfigHelper.ReadConfigFile();
 
             if (EnvironmentHelper.DisableProgramHeader())
             {
@@ -149,6 +149,20 @@ namespace WebDev.Tool
 
                 if (showException) {
                     AnsiConsole.WriteException(e);
+                }
+            }
+            
+            if (!ConfigHelper.ConfigFileExists) {
+                AnsiConsole.MarkupLine("[orange3]No config file found - falling back to default settings[/]");
+            } else if(!ConfigHelper.IsConfigFileValid) {
+                AnsiConsole.MarkupLine("[red]Config file is invalid - falling back to default settings[/] - [orange3]Append '--debug' to show more details[/]");
+
+                if (showException) {
+                    try {
+                        ConfigHelper.ReadConfigFile(true);
+                    } catch (Exception e) {
+                        AnsiConsole.WriteException(e);
+                    }
                 }
             }
         }
