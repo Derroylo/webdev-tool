@@ -74,7 +74,7 @@ namespace WebDev.Tool.Helper.NodeJs
 
                     ExecCommand.Exec("source \"$NVM_DIR\"/nvm-lazy.sh && nvm install " + newVersion);
 
-                    // Write the selected version to a file, so we can change the active nodejs version via the gpt.sh script
+                    // Write the selected version to a file, so we can change the active nodejs version via the webdev.sh script
                     var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
                     File.WriteAllText(applicationDir + ".nodejs", newVersion);
 
@@ -94,7 +94,7 @@ namespace WebDev.Tool.Helper.NodeJs
                     }
 
                     // In some older versions of npm it could have happened that the folder rights were set incorrect
-                    ExecCommand.Exec("sudo chown -R gitpod:gitpod /home/gitpod/.npm");
+                    ExecCommand.Exec("sudo chown -R webdev:webdev /home/webdev/.npm");
 
                     ctx.Status("Saving the new active version so it can be restored...");
 
