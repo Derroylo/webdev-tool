@@ -1,13 +1,46 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Spectre.Console;
+using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Helper.devcontainer;
 
 public class DevContainerHelper
 {
+    public static JsonDocument ReadDevContainerConfig(string workspacePath = null)
+    {
+        // determine path
+        var baseDir = workspacePath ?? Directory.GetCurrentDirectory();
+        var filePath = Path.Combine(baseDir, ".devcontainer", "devcontainer.json");
+        
+        // read and strip comments (// and /* */)
+        var raw = File.ReadAllText(filePath);
+        var cleaned = Regex.Replace(raw, @"(\/\/.*?$)|(/\*.*?\*/)", "", RegexOptions.Singleline | RegexOptions.Multiline);
+        
+        return JsonDocument.Parse(cleaned);
+    }
+
+    public static void WriteEnvFile()
+    {
+        var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
+        
+        if (string.IsNullOrEmpty(workspacePath)) {
+            workspacePath = Directory.GetCurrentDirectory();
+        }
+        
+        var filePath = Path.Combine(workspacePath, ".devcontainer", ".env");
+
+        var envVars = new List<string>();
+        envVars.Add("WEBDEV_PROXY_DOMAIN=" + GeneralConfig.Proxy.Domain);
+        envVars.Add("WEBDEV_PROXY_SUBDOMAIN=" + GeneralConfig.Proxy.Subdomain);
+            
+        File.WriteAllLines(filePath, envVars);
+    }
+    
     public static bool IsDevContainerCliInstalled()
     {
         // Check if the devcontainer CLI is installed
@@ -54,14 +87,14 @@ public class DevContainerHelper
         return !string.IsNullOrWhiteSpace(output);
     }
     
-    public static bool InstallDevContainerCli()
+    public static bool InstallDevContainerCli(bool useSudo = false)
     {
         // Install the devcontainer cli via npm
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = "npm",
+                FileName = (useSudo ? "sudo " : "") + "npm",
                 Arguments = "install -g @devcontainers/cli",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

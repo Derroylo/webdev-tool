@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Text.Json;
 using WebDev.Tool.Helper.Docker;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using WebDev.Tool.Helper.devcontainer;
 
 namespace WebDev.Tool.Commands.Services
 {
@@ -46,8 +48,11 @@ namespace WebDev.Tool.Commands.Services
             }
 
             var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
+            var projectName = Path.GetFileName(Directory.GetCurrentDirectory()) + "_devcontainer";
 
-            File.WriteAllText(applicationDir + ".services_start", "-f " + DockerComposeHelper.GetFile() + " up " + (settings.Detached ? "-d " : "") +  string.Join(' ', activeServices));
+            DevContainerHelper.WriteEnvFile();
+            
+            File.WriteAllText(applicationDir + ".services_start", "-f " + DockerComposeHelper.GetFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") +  string.Join(' ', activeServices));
 
             return 0;
         }
