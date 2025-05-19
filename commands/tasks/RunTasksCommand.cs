@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Classes.Configuration;
@@ -13,6 +15,8 @@ internal class RunTasksCommand: Command
     {
         string sectionName = context.Data?.ToString();
         
+        var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
+        
         if (string.IsNullOrEmpty(sectionName))
         {
             AnsiConsole.MarkupLine("[red]No section specified.[/]");
@@ -22,35 +26,53 @@ internal class RunTasksCommand: Command
 
         foreach (KeyValuePair<string, TaskEntryConfiguration> entry in TasksConfig.Tasks)
         {
+            AnsiConsole.WriteLine("[green]Running commands for task: " + entry.Value.Name + "[/]");
+            
             if (sectionName == "init" && entry.Value.Init.Count > 0)
             {
+                AnsiConsole.WriteLine("[green]Running init commands[/]");
+                
                 foreach (string cmd in entry.Value.Init)
                 {
-                    ExecCommand.ExecWithDirectOutput(cmd, true, true);
+                    ExecCommand.ExecWithDirectOutput(cmd, false, true);
                 }
             }
             
             if (sectionName == "create" && entry.Value.Create.Count > 0)
             {
-                foreach (string cmd in entry.Value.Create)
+                if (!File.Exists(workspacePath + "/.devcontainer/.createDoneLock"))
                 {
-                    ExecCommand.ExecWithDirectOutput(cmd, true, true);
+                    AnsiConsole.WriteLine("[green]Running create commands[/]");
+                
+                    foreach (string cmd in entry.Value.Create)
+                    {
+                        ExecCommand.ExecWithDirectOutput(cmd, false, true);
+                    }
+
+                    File.Create(workspacePath + "/.devcontainer/.createDoneLock");
                 }
+                else
+                {
+                    AnsiConsole.WriteLine("[red]Create commands already executed. Skipping...[/]");
+                }
+                
             }
             
             if (sectionName == "prebuild" && entry.Value.Prebuild.Count > 0)
             {
                 foreach (string cmd in entry.Value.Prebuild)
                 {
-                    ExecCommand.ExecWithDirectOutput(cmd, true, true);
+                    ExecCommand.ExecWithDirectOutput(cmd, false, true);
                 }
             }
             
             if (sectionName == "start" && entry.Value.Start.Count > 0)
             {
+                AnsiConsole.WriteLine("[green]Running start commands[/]");
+
                 foreach (string cmd in entry.Value.Start)
                 {
-                    ExecCommand.ExecWithDirectOutput(cmd, true, true);
+                    ExecCommand.ExecWithDirectOutput(cmd, false, true);
                 }
             }
         }
