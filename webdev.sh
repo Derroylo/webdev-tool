@@ -16,8 +16,8 @@ WEBDEVDIR=$SCRIPTPATH
 dotnet "$WEBDEVDIR/webdev-tool.dll" "$@"
 
 # Check if the update folder exists
-if [ -d "/home/webdev/webdev/update" ]; then
-    cd /home/webdev/webdev
+if [ -d "$WEBDEVDIR/update" ]; then
+    cd $WEBDEVDIR
 
     # Move all files from the update folder to the current one and remove it afterwards
     rsync -a update/* .
