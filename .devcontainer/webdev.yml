@@ -1,5 +1,8 @@
 config:
   allowPreReleases: false
+  proxy:
+    domain: "webdev"
+    subdomain: "dev.localhost"
 php:
   version: 8.3
   config:
@@ -38,27 +41,20 @@ environment:
       name: "Test settings"
       description: "Test settings for your application where for example headless browsers will be started for e2e testing"
 tasks:
-  services:
-    name: Start all active services
-    mode: all
+  vendorFolder:
+    name: "Fixes the owner of the vendor folder"
     create:
-      - echo "1init 1 dasdasd"
-      - echo "2init 2 adasd"
+      - sudo chown -R webdev /var/www/html/vendor
+  services:
+    name: "Start the active services"
     prebuild:
-      - echo "1prebuild 1 dasdasd"
-      - echo "2prebuild 2 adasd"
+      - webdev services start -d
     start:
-      - echo "1command 1 adad"
-  apache:
-    name: Run apache and output its log to the terminal
-    mode: local
+      - webdev services start -d
+  settings:
+    name: "Restore all settings for nodejs, php etc."
     start:
-      - echo "command 1"
-  test:
-    name: Test task
-    mode: devcontainer
-    start:
-      - echo "command 1"    
+      - webdev restore all
 services:
   active:
     - mysql

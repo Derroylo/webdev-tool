@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Disable job control
+set +m
+
 # This file is the entrypoint for the tool and is required for the self-update
 
 # Get the location of this script

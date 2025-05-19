@@ -32,9 +32,8 @@ __If you are not using bashrc, you might need to change the following lines acco
 mkdir ~/webdev
 unzip webdev-tool.zip -d ~/webdev/
 rm webdev-tool.zip
-echo "alias webdev='dotnet $HOME/webdev/webdev.sh'" > .bash_aliases
 chmod +x $HOME/webdev/webdev-tool.sh
-source ~/.bashrc
+sudo ln -s $HOME/webdev/webdev.sh /usr/local/bin/webdev
 ```
 
 If everything worked, then you should be able to use the `webdev` command in the terminal.

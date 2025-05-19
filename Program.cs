@@ -114,7 +114,6 @@ namespace WebDev.Tool
 
             app.Run(args);
         }
-
         
         private static void OutputProgramHeader(string programVersion, bool showException = false)
         {
