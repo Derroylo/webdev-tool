@@ -66,3 +66,12 @@ if [ -f "$WEBDEVDIR/.devcontainer_up" ]; then
        
     devcontainer up --workspace-folder .
 fi
+
+# Check if we want to open a terminal in the devcontainer
+if [ -f "$WEBDEVDIR/.terminal" ]; then
+    id=$(<"$WEBDEVDIR/.terminal")
+    
+    rm "$WEBDEVDIR/.terminal"
+
+    docker exec -it -w /var/www/html $id bash
+fi
