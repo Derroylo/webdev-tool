@@ -112,25 +112,14 @@ namespace WebDev.Tool.Helper.Internal
         public static async Task<bool> UpdateToLatestRelease()
         {
             var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
-            var newDir = "/home/webdev/webdev/";
 
             JObject cacheFile = JObject.Parse(File.ReadAllText(applicationDir + "releases.json"));
-
-            try {
-                if (!Directory.Exists(newDir)) {
-                    Directory.CreateDirectory(newDir);
-                }
-            } catch (Exception e) {
-                AnsiConsole.WriteException(e);
-
-                return false;
-            }
 
             try {
                 var httpClient = new HttpClient();
                 var httpResult = await httpClient.GetAsync((string) cacheFile["download_url"]);
                 using var resultStream = await httpResult.Content.ReadAsStreamAsync();
-                using var fileStream = File.Create(newDir + "webdev-tool.zip");
+                using var fileStream = File.Create(applicationDir + "webdev-tool.zip");
 
                 resultStream.CopyTo(fileStream);
             } catch (Exception e) {
@@ -139,14 +128,14 @@ namespace WebDev.Tool.Helper.Internal
                 return false;
             }
             
-            if (!File.Exists(newDir + "webdev-tool.zip")) {
+            if (!File.Exists(applicationDir + "webdev-tool.zip")) {
                 AnsiConsole.WriteLine("Downloading the latest release failed");
 
                 return false;
             }
 
             try {
-                ZipFile.ExtractToDirectory(newDir + "webdev-tool.zip", newDir + "update", true);
+                ZipFile.ExtractToDirectory(applicationDir + "webdev-tool.zip", applicationDir + "update", true);
             } catch (Exception e) {
                 AnsiConsole.WriteException(e);
 
