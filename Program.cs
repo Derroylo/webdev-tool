@@ -19,6 +19,7 @@ using WebDev.Tool.Commands.Project;
 using WebDev.Tool.Commands.Restore;
 using WebDev.Tool.Commands.secrets;
 using WebDev.Tool.Commands.tasks;
+using WebDev.Tool.Commands.terminal;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool
@@ -84,6 +85,12 @@ namespace WebDev.Tool
                 }
                 
                 config.AddBranch("tasks", branch => AddTasksCommandBranch(branch, additionalCommands));
+
+                if (!EnvironmentHelper.IsRunningInDevContainer())
+                {
+                    config.AddCommand<OpenDevcontainerTerminalCommand>("terminal").WithDescription("Open a terminal to the running devcontainer");
+                }
+
                 config.AddCommand<SelfUpdateCommand>("update").WithDescription("Update this tool to the latest version");
 
                 List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task" };

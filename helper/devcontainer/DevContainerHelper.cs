@@ -41,6 +41,13 @@ public class DevContainerHelper
         File.WriteAllLines(filePath, envVars);
     }
     
+    public static string GetDevContainerId()
+    {
+        var output = ExecCommand.Exec("docker ps --filter \"name=devcontainer-app\" --format \"{{.ID}}\"");
+        
+        return string.IsNullOrEmpty(output) ? null : output.Trim();
+    }
+    
     public static bool IsDevContainerCliInstalled()
     {
         // Check if the devcontainer CLI is installed
