@@ -32,8 +32,15 @@ namespace WebDev.Tool.Commands.Services
             var services = DockerComposeHelper.GetServices(DockerComposeHelper.GetFile());
 
             if (ServicesConfig.ActiveServices.Count == 0) {
-                AnsiConsole.WriteLine("[red]No active services selected[/]");
+                AnsiConsole.MarkupLine("[red]No active services selected[/]");
 
+                AnsiConsole.MarkupLine($"\n[bold yellow]How to select active services?[/]");
+                AnsiConsole.MarkupLine($"Execute [green]webdev services select[/] to select which services should be started or");
+                AnsiConsole.MarkupLine($"edit the file [green].devcontainer/webdev.yml[/] manually to add services to the [green]services.active[/] section.");
+                
+                AnsiConsole.MarkupLine($"\n[bold yellow]Need more information?[/]");
+                AnsiConsole.MarkupLine($"Visit [green]https://derroylo.github.io/[/] to checkout the docs.");
+                
                 return 0;
             }
 

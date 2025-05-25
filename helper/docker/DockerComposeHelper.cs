@@ -49,6 +49,10 @@ namespace WebDev.Tool.Helper.Docker
                             serviceInfos.Add("category", dockerCompose["services"][serviceName]["labels"]["com.webdev.category"].ToString());
                         }
                     
+                        if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.name")) {
+                            serviceInfos.Add("name", dockerCompose["services"][serviceName]["labels"]["com.webdev.name"].ToString());
+                        }
+                        
                         if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.description")) {
                             serviceInfos.Add("description", dockerCompose["services"][serviceName]["labels"]["com.webdev.description"].ToString());
                         }

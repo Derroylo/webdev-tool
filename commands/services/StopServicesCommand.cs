@@ -6,14 +6,9 @@ using Spectre.Console.Cli;
 
 namespace WebDev.Tool.Commands.Services
 {
-    internal class StopServicesCommand : Command<StopServicesCommand.Settings>
+    internal class StopServicesCommand : Command
     {
-        public class Settings : CommandSettings
-        {
-
-        }
-
-        public override int Execute(CommandContext context, Settings settings)
+        public override int Execute(CommandContext context)
         {
             if (!File.Exists(DockerComposeHelper.GetFile())) {
                 AnsiConsole.MarkupLine($"[red]{DockerComposeHelper.GetFile()} not found[/]");

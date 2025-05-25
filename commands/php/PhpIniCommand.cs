@@ -109,7 +109,7 @@ namespace WebDev.Tool.Commands.Php
                 var splittedSetting = setting.Split("=");
 
                 if (splittedSetting.Length != 2) {
-                    AnsiConsole.MarkupLine("[red]\"" + setting + "\" is not a valid value.[/] It needs to be written in the format \"setting=newValue\". For example \"gpt php ini memory_limit=512M\"");
+                    AnsiConsole.MarkupLine("[red]\"" + setting + "\" is not a valid value.[/] It needs to be written in the format \"setting=newValue\". For example \"webdev php ini memory_limit=512M\"");
 
                     return 1;
                 }

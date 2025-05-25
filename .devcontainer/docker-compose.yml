@@ -14,14 +14,15 @@ services:
         VIRTUAL_HOST: ${WEBDEV_PROXY_SUBDOMAIN:-devcontainer}.${WEBDEV_PROXY_DOMAIN:-dev.localhost}
         VIRTUAL_PORT: 8080
   
-  # Nginx-proxy
-  # For more infos check: https://github.com/nginx-proxy/nginx-proxy
+    # Nginx-proxy
+    # For more infos check: https://github.com/nginx-proxy/nginx-proxy
     proxy:
       labels:
         com.webdev.category: "tools"
-        com.webdev.description: "Nginx Proxy - Reverse Proxy for Web Development"
+        com.webdev.name: "Nginx Proxy"
+        com.webdev.description: "Reverse Proxy for Web Development"
       image: nginxproxy/nginx-proxy:1.7
-      container_name: ${COMPOSE_PROJECT_NAME:-devcontainer}-proxy
+      container_name: "proxy"
       networks:
         - webdev-network
       ports:
@@ -34,7 +35,8 @@ services:
     mysql:
       labels:
         com.webdev.category: "database"
-        com.webdev.description: "MySQL Server - Relational Database"
+        com.webdev.name: "MySQL Server"
+        com.webdev.description: "Relational Database"
       image: mysql:5.7
       container_name: "mysql"
       ports:
@@ -50,7 +52,8 @@ services:
     mailpit:
       labels:
         com.webdev.category: "mail"
-        com.webdev.description: "Mailpit - email testing tool"
+        com.webdev.name: "Mailpit"
+        com.webdev.description: "email testing tool"
       image: axllent/mailpit:latest
       container_name: "mailpit"
       ports:
@@ -67,7 +70,8 @@ services:
     redis:
       labels:
         com.webdev.category: "cache"
-        com.webdev.description: "Redis Server - Key-Value Store"
+        com.webdev.name: "Redis Server"
+        com.webdev.description: "In-Memory Key-Value Store"
       image: redis:latest
       container_name: "redis"
       ports:
@@ -78,7 +82,8 @@ services:
     phpmyadmin:
       labels:
         com.webdev.category: "tools"
-        com.webdev.description: "PhpMyAdmin - MySQL Admin Tool"
+        com.webdev.name: "PhpMyAdmin"
+        com.webdev.description: "MySQL Admin Tool"
       image: phpmyadmin/phpmyadmin:latest
       container_name: "pma"
       restart: always
@@ -103,7 +108,8 @@ services:
     phpcacheadmin:
       labels:
         com.webdev.category: "tools"
-        com.webdev.description: "PhpCacheAdmin - UI for managing PHP cache systems"
+        com.webdev.name: "PhpCacheAdmin"
+        com.webdev.description: "UI for managing PHP cache systems"
       image: robinn/phpcacheadmin
       container_name: "phpcacheadmin"
       ports:

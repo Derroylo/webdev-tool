@@ -26,17 +26,25 @@ namespace WebDev.Tool.Commands.Services
 
             var servicesTable = new Table();
 
-            servicesTable.AddColumn("Name");
-            servicesTable.AddColumn("Status");
-            servicesTable.AddColumn("Active per default");
+            servicesTable.AddColumn("[bold yellow]Name[/]");
+            servicesTable.AddColumn("[bold yellow]Description[/]");
+            servicesTable.AddColumn("[bold yellow]Status[/]");
+            servicesTable.AddColumn("[bold yellow]Active per default[/]");
 
             foreach(KeyValuePair<string, Dictionary<string, string>> item in services) {
+                if (item.Key == "devcontainer")
+                {
+                    continue;
+                }
+                
                 var serviceAlias = item.Value["alias"];
+                var serviceName = item.Value.ContainsKey("name") ? item.Value["name"] : item.Key;
+                var serviceDescription = item.Value.ContainsKey("description") ? item.Value["description"] : "-";
 
                 bool isActive = ServicesConfig.ActiveServices.Contains(item.Key);
                 bool isRunning = DockerComposeHelper.IsServiceStarted(serviceAlias);
 
-                servicesTable.AddRow(item.Key + (item.Key != serviceAlias ? " (" + serviceAlias + ")" : ""), isRunning ? "[green1]Running[/]" : "[red]Not started[/]", isActive ? "[green1]Active[/]" : "[red]Inactive[/]");
+                servicesTable.AddRow(serviceName, serviceDescription, isRunning ? "[green1]Running[/]" : "[red]Not started[/]", isActive ? "[green1]Active[/]" : "[red]Inactive[/]");
             }
             
             AnsiConsole.Write(servicesTable);
