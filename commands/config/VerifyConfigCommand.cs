@@ -5,6 +5,7 @@ using WebDev.Tool.Helper.Internal.Config;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using WebDev.Tool.Helper.Docker;
 
 namespace WebDev.Tool.Commands.Config
 {
@@ -51,18 +52,46 @@ namespace WebDev.Tool.Commands.Config
 
             if (!showSingleOutput || settings.VerifyPhp) {
                 OutputPhpSettings();
+
+                if (!showSingleOutput)
+                {
+                    AnsiConsole.Write(new Rule() {
+                        Style = new Style(Color.White, null, Decoration.Dim) 
+                    });
+                }
+            }
+            
+            if (!showSingleOutput || settings.VerifyNodeJs) {
+                OutputNodeJsSettings();
+                
+                if (!showSingleOutput)
+                {
+                    AnsiConsole.Write(new Rule() {
+                        Style = new Style(Color.White, null, Decoration.Dim) 
+                    });
+                }
             }
             
             if (!showSingleOutput || settings.VerifyServices) {
-                OutputServiceSettings();
+                OutputServiceServices();
+                
+                if (!showSingleOutput)
+                {
+                    AnsiConsole.Write(new Rule() {
+                        Style = new Style(Color.White, null, Decoration.Dim) 
+                    });
+                }
             }
 
             if (!showSingleOutput || settings.VerifyShellScripts) {
                 OutputShellScriptSettings();
-            }
-
-            if (!showSingleOutput || settings.VerifyNodeJs) {
-                OutputNodeJsSettings();
+                
+                if (!showSingleOutput)
+                {
+                    AnsiConsole.Write(new Rule() {
+                        Style = new Style(Color.White, null, Decoration.Dim) 
+                    });
+                }
             }
 
             return 0;
@@ -70,17 +99,15 @@ namespace WebDev.Tool.Commands.Config
 
         private void OutputPhpSettings()
         {
-            Rule rule = new() {Title = "[red]PHP[/]", Justification = Justify.Left};
-            
-            AnsiConsole.Write(rule);
+            AnsiConsole.MarkupLine($"[bold yellow]PHP Settings[/]");
 
             if (PhpConfig.PhpVersion != string.Empty) {
-                // Show php configuration
-                AnsiConsole.WriteLine("Version: " + PhpConfig.PhpVersion);
+                AnsiConsole.Markup($"[bold]Version[/]".PadRight(30));
+                AnsiConsole.Markup($"[green]{PhpConfig.PhpVersion}[/]\n");
             }
             
             if (PhpConfig.Config.Count > 0) {
-                AnsiConsole.WriteLine("Overrides (CLI and Web):");
+                AnsiConsole.MarkupLine($"\n[bold yellow]Overrides CLI and Web[/]");
 
                 // Create a table
                 var settingsTable = new Table();
@@ -98,7 +125,7 @@ namespace WebDev.Tool.Commands.Config
             }
 
             if (PhpConfig.ConfigCli.Count > 0) {
-                AnsiConsole.WriteLine("Overrides CLI:");
+                AnsiConsole.MarkupLine($"\n[bold yellow]Overrides CLI[/]");
 
                 // Create a table
                 var settingsTable = new Table();
@@ -116,7 +143,7 @@ namespace WebDev.Tool.Commands.Config
             }
 
             if (PhpConfig.ConfigWeb.Count > 0) {
-                AnsiConsole.WriteLine("Overrides Web:");
+                AnsiConsole.MarkupLine($"\n[bold yellow]Overrides Web[/]");
 
                 // Create a table
                 var settingsTable = new Table();
@@ -134,7 +161,7 @@ namespace WebDev.Tool.Commands.Config
             }
 
             if (PhpConfig.Packages.Count > 0) {
-                AnsiConsole.WriteLine("Packages:");
+                AnsiConsole.MarkupLine($"\n[bold yellow]Packages[/]");
 
                 // Create a table
                 var settingsTable = new Table();
@@ -153,45 +180,46 @@ namespace WebDev.Tool.Commands.Config
 
         private void OutputNodeJsSettings()
         {
-            Rule rule = new() {Title = "[red]NodeJS[/]", Justification = Justify.Left};
-            
-            AnsiConsole.Write(rule);
+            AnsiConsole.MarkupLine($"[bold yellow]NodeJS Settings[/]");
 
             if (NodeJsConfig.NodeJsVersion != string.Empty) {
-                // Show NodeJS configuration
-                AnsiConsole.WriteLine("Version: " + NodeJsConfig.NodeJsVersion);
+                AnsiConsole.Markup($"[bold]Version[/]".PadRight(30));
+                AnsiConsole.Markup($"[green]{NodeJsConfig.NodeJsVersion}[/]\n");
             }
         }
 
-        private void OutputServiceSettings()
+        private void OutputServiceServices()
         {
-            Rule rule = new() {Title = "[red]Services[/]", Justification = Justify.Left};
-            
-            AnsiConsole.Write(rule);
+            AnsiConsole.MarkupLine($"[bold yellow]Service Settings[/]");
 
-            if (ServicesConfig.ActiveServices.Count > 0) {
-                AnsiConsole.WriteLine("Settings:");
+            var services = DockerComposeHelper.GetServices(DockerComposeHelper.GetFile());
 
-                // Create a table
-                var settingsTable = new Table();
+            var servicesTable = new Table();
 
-                // Add columns
-                settingsTable.AddColumn("Name");
+            servicesTable.AddColumn("[bold yellow]Name[/]");
+            servicesTable.AddColumn("[bold yellow]Description[/]");
+            servicesTable.AddColumn("[bold yellow]Active per default[/]");
 
-                foreach(string item in ServicesConfig.ActiveServices) {
-                    settingsTable.AddRow(item);
+            foreach(KeyValuePair<string, Dictionary<string, string>> item in services) {
+                if (item.Key == "devcontainer")
+                {
+                    continue;
                 }
                 
-                // Render the table to the console
-                AnsiConsole.Write(settingsTable);
+                var serviceName = item.Value.ContainsKey("name") ? item.Value["name"] : item.Key;
+                var serviceDescription = item.Value.ContainsKey("description") ? item.Value["description"] : "-";
+
+                var isActive = ServicesConfig.ActiveServices.Contains(item.Key);
+
+                servicesTable.AddRow(serviceName, serviceDescription, isActive ? "[green1]Active[/]" : "[red]Inactive[/]");
             }
+            
+            AnsiConsole.Write(servicesTable);
         }
 
         private void OutputShellScriptSettings()
         {
-            Rule rule = new() {Title = "[red]Shell scripts[/]", Justification = Justify.Left};
-
-            AnsiConsole.Write(rule);
+            AnsiConsole.MarkupLine($"[bold yellow]Shell scripts[/]");
 
             if (ShellScriptConfig.AdditionalDirectories.Count > 0) {
                 AnsiConsole.WriteLine("Additional directories:");
@@ -200,9 +228,9 @@ namespace WebDev.Tool.Commands.Config
                 var directoriesTable = new Table();
 
                 // Add columns
-                directoriesTable.AddColumn("Directory");
-                directoriesTable.AddColumn("Exists");
-                directoriesTable.AddColumn("Scripts found");
+                directoriesTable.AddColumn("[bold yellow]Directory[/]");
+                directoriesTable.AddColumn("[bold yellow]Exists[/]");
+                directoriesTable.AddColumn("[bold yellow]Scripts found[/]");
 
                 var currentDir = Directory.GetCurrentDirectory() + "/";
 
