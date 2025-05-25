@@ -96,6 +96,7 @@ namespace WebDev.Tool
 
                 // Commands that are executed for various actions, like project start, to show the user some infos and what he can do next etc.
                 config.AddCommand<ShowProjectStartSummaryCommand>("project-start-summary").IsHidden();
+                config.AddCommand<ShowWebdevInstallSummaryCommand>("webdev-install-summary").IsHidden();
                 
                 List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task" };
 

@@ -6,7 +6,12 @@ This CLI Tool aims to make it easier to use devcontainer for web development.
 ## Documentation
 The documentation can be found under [WebDev Documentation](https://derroylo.github.io).
 
-## Local installation in Linux or WSL2
+## Installation via installer script
+```
+sudo bash <(curl -s https://raw.githubusercontent.com/Derroylo/webdev-tool/main/install_webdev.sh)
+```
+
+## Manual installation in Linux or WSL2
 
 Add the microsoft repository as the official ubuntu package manager doesn´t contain the dotnet runtime in version 9
 ```
