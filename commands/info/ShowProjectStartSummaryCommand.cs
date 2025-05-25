@@ -21,7 +21,8 @@ internal class ShowProjectStartSummaryCommand: Command
             {
                 services.TryGetValue(service, out var serviceConfig);
                 
-                var serviceDescription = serviceConfig != null && serviceConfig.ContainsKey("description") ? serviceConfig["description"] : service;
+                var serviceDescription = serviceConfig != null && serviceConfig.ContainsKey("name") ? serviceConfig["name"] : service;
+                serviceDescription += serviceConfig != null && serviceConfig.ContainsKey("description") ? " - " + serviceConfig["description"] : "";
                 
                 if (serviceDescription.Length > 60)
                 {
