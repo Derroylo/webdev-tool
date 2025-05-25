@@ -1,8 +1,8 @@
 config:
   allowPreReleases: false
   proxy:
-    domain: "webdev"
-    subdomain: "dev.localhost"
+    domain: "dev.localhost"
+    subdomain: "webdev"
 php:
   version: 8.3
   config:
@@ -57,6 +57,8 @@ tasks:
       - webdev restore all
 services:
   active:
+    - proxy
     - mysql
     - phpmyadmin
     - mailpit
+    - phpcacheadmin

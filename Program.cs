@@ -12,6 +12,7 @@ using WebDev.Tool.Commands.Apache;
 using WebDev.Tool.Commands.Services;
 using WebDev.Tool.Commands;
 using WebDev.Tool.Commands.Config;
+using WebDev.Tool.Commands.Info;
 using WebDev.Tool.Commands.ModeJS;
 using WebDev.Tool.Commands.NodeJS;
 using WebDev.Tool.Commands.Php;
@@ -93,6 +94,9 @@ namespace WebDev.Tool
 
                 config.AddCommand<SelfUpdateCommand>("update").WithDescription("Update this tool to the latest version");
 
+                // Commands that are executed for various actions, like project start, to show the user some infos and what he can do next etc.
+                config.AddCommand<ShowProjectStartSummaryCommand>("project-start-summary").IsHidden();
+                
                 List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task" };
 
                 // Add branches that haven´t been added yet via custom commands

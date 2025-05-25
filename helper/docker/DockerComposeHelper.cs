@@ -42,12 +42,28 @@ namespace WebDev.Tool.Helper.Docker
 
                 serviceInfos.Add("alias", alias);
 
-                if (((Dictionary<object, object>) dockerCompose["services"][serviceName]).ContainsKey("labels")) {
-                    if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.gitpod.gpt.category")) {
-                        serviceInfos.Add("category", dockerCompose["services"][serviceName]["labels"]["com.gitpod.gpt.category"].ToString());
+                try
+                {
+                    if (((Dictionary<object, object>) dockerCompose["services"][serviceName]).ContainsKey("labels")) {
+                        if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.category")) {
+                            serviceInfos.Add("category", dockerCompose["services"][serviceName]["labels"]["com.webdev.category"].ToString());
+                        }
+                    
+                        if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.description")) {
+                            serviceInfos.Add("description", dockerCompose["services"][serviceName]["labels"]["com.webdev.description"].ToString());
+                        }
                     }
-                }
 
+                    if (((Dictionary<object, object>) dockerCompose["services"][serviceName]).ContainsKey("environment")) {
+                        if (dockerCompose["services"][serviceName]["environment"].ContainsKey("VIRTUAL_HOST")) {
+                            serviceInfos.Add("url", dockerCompose["services"][serviceName]["environment"]["VIRTUAL_HOST"].ToString());
+                        }
+                    }
+                } catch (Exception)
+                {
+                    // Ignore if keys are not found
+                }
+                
                 services.Add(item.Key.ToString(), serviceInfos);
             }
 

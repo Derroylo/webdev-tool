@@ -2,18 +2,39 @@
 services:
     # Base image for our devcontainer
     devcontainer:
+      labels:
+        com.webdev.description: "Apache webserver with PHP and NodeJS"
       build: 
         context: .
         dockerfile: Dockerfile
       volumes:
         - ..:/var/www/html:cached
       command: sleep infinity
+      environment:
+        VIRTUAL_HOST: ${WEBDEV_PROXY_SUBDOMAIN:-devcontainer}.${WEBDEV_PROXY_DOMAIN:-dev.localhost}
+        VIRTUAL_PORT: 8080
+  
+  # Nginx-proxy
+  # For more infos check: https://github.com/nginx-proxy/nginx-proxy
+    proxy:
+      labels:
+        com.webdev.category: "tools"
+        com.webdev.description: "Nginx Proxy - Reverse Proxy for Web Development"
+      image: nginxproxy/nginx-proxy:1.7
+      container_name: ${COMPOSE_PROJECT_NAME:-devcontainer}-proxy
+      networks:
+        - webdev-network
+      ports:
+        - "80:80"
+      volumes:
+        - /var/run/docker.sock:/tmp/docker.sock:ro
 
     # MySql Server
     # For more infos check: https://hub.docker.com/_/mysql/
     mysql:
       labels:
         com.webdev.category: "database"
+        com.webdev.description: "MySQL Server - Relational Database"
       image: mysql:5.7
       container_name: "mysql"
       ports:
@@ -21,7 +42,7 @@ services:
         - 3306:3306
       environment:
         # mysql root password
-        - MYSQL_ROOT_PASSWORD=gitpod
+        MYSQL_ROOT_PASSWORD: gitpod
       command: [mysqld, --query-cache-type=1, --query_cache_size=128M, --query_cache_limit=16M, --key_buffer_size=16M, --table_open_cache=64, --sort_buffer_size=512K, --net_buffer_length=8K, --read_buffer_size=256K, --read_rnd_buffer_size=512K, --myisam_sort_buffer_size=8M]
 
     # Mailpit (can fetch all outgoing mails and show them via webinterface)
@@ -29,6 +50,7 @@ services:
     mailpit:
       labels:
         com.webdev.category: "mail"
+        com.webdev.description: "Mailpit - email testing tool"
       image: axllent/mailpit:latest
       container_name: "mailpit"
       ports:
@@ -36,12 +58,16 @@ services:
         - 8025:8025
         # port for incoming mails
         - 1025:1025
+      environment:
+        VIRTUAL_HOST: mail.${WEBDEV_PROXY_SUBDOMAIN:-devcontainer}.${WEBDEV_PROXY_DOMAIN:-dev.localhost}
+        VIRTUAL_PORT: 8025
 
     # Redis Server
     # For more infos check: https://hub.docker.com/_/redis
     redis:
       labels:
         com.webdev.category: "cache"
+        com.webdev.description: "Redis Server - Key-Value Store"
       image: redis:latest
       container_name: "redis"
       ports:
@@ -52,12 +78,15 @@ services:
     phpmyadmin:
       labels:
         com.webdev.category: "tools"
+        com.webdev.description: "PhpMyAdmin - MySQL Admin Tool"
       image: phpmyadmin/phpmyadmin:latest
       container_name: "pma"
       restart: always
       links:
         - mysql
       environment:
+        VIRTUAL_HOST: pma.${WEBDEV_PROXY_SUBDOMAIN:-devcontainer}.${WEBDEV_PROXY_DOMAIN:-dev.localhost}
+        VIRTUAL_PORT: 80
         PMA_HOST: "mysql"
         PMA_PORT: 3306
         PMA_USER: "root"
@@ -74,13 +103,16 @@ services:
     phpcacheadmin:
       labels:
         com.webdev.category: "tools"
+        com.webdev.description: "PhpCacheAdmin - UI for managing PHP cache systems"
       image: robinn/phpcacheadmin
       container_name: "phpcacheadmin"
       ports:
         - "8082:80"
       environment:
-        - PCA_REDIS_0_HOST=redis
-        - PCA_REDIS_0_PORT=6379
+        VIRTUAL_HOST: pca.${WEBDEV_PROXY_SUBDOMAIN:-devcontainer}.${WEBDEV_PROXY_DOMAIN:-dev.localhost}
+        VIRTUAL_PORT: 80
+        PCA_REDIS_0_HOST: redis
+        PCA_REDIS_0_PORT: 6379
       links:
         - redis
       volumes:

@@ -65,6 +65,9 @@ if [ -f "$WEBDEVDIR/.devcontainer_up" ]; then
     rm "$WEBDEVDIR/.devcontainer_up"
        
     devcontainer up --workspace-folder .
+    
+    # Show a summary of the project to help user getting started
+    WEBDEV_DISABLE_HEADER=1 dotnet "$WEBDEVDIR/webdev-tool.dll" "dotnet run project-start-summary"
 fi
 
 # Check if we want to open a terminal in the devcontainer
