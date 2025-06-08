@@ -61,4 +61,22 @@ services:
     - mysql
     - phpmyadmin
     - mailpit
-    - phpcacheadmin
+workspaces:
+  sulu:
+    name: "Sulu CMS"
+    description: "An example SULU CMS to test the webdev environment."
+    repository: "https://github.com/Derroylo/webdev-tool.git"
+    branch: "develop"
+    folder: "sulu"
+    docRoot: "public"
+    mode: "vhost"
+    subDomain: "sulu"
+  symfony:
+    name: "Symfony Application"
+    description: "An example Symfony application to test the webdev environment."
+    repository: "https://github.com/Derroylo/webdev-tool.git"
+    branch: "develop"
+    folder: "symfony"
+    docRoot: "public"
+    mode: "vhost"
+    subDomain: "symfony"

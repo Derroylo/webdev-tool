@@ -21,6 +21,7 @@ using WebDev.Tool.Commands.Restore;
 using WebDev.Tool.Commands.secrets;
 using WebDev.Tool.Commands.tasks;
 using WebDev.Tool.Commands.terminal;
+using WebDev.Tool.Commands.workspaces;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool
@@ -97,6 +98,10 @@ namespace WebDev.Tool
                 // Commands that are executed for various actions, like project start, to show the user some infos and what he can do next etc.
                 config.AddCommand<ShowProjectStartSummaryCommand>("project-start-summary").IsHidden();
                 config.AddCommand<ShowWebdevInstallSummaryCommand>("webdev-install-summary").IsHidden();
+                
+                // Prepare and run workspaces
+                config.AddCommand<OnInitWorkspacesCommand>("workspaces-on-init").IsHidden();
+                config.AddCommand<PostStartWorkspacesCommand>("workspaces-post-start").IsHidden();
                 
                 List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task" };
 

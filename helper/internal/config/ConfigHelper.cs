@@ -67,13 +67,7 @@ namespace WebDev.Tool.Helper.Internal.Config
 
         public static string GetConfigFileWithPath()
         {
-            var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
-
-            if (string.IsNullOrEmpty(workspacePath)) {
-                workspacePath = Directory.GetCurrentDirectory();
-            }
-
-            return workspacePath + "/.devcontainer/webdev.yml";
+            return PathHelper.GetWorkspacePath() + "/.devcontainer/webdev.yml";
         }
     }
 }

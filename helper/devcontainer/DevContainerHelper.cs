@@ -26,13 +26,7 @@ public class DevContainerHelper
 
     public static void WriteEnvFile()
     {
-        var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
-        
-        if (string.IsNullOrEmpty(workspacePath)) {
-            workspacePath = Directory.GetCurrentDirectory();
-        }
-        
-        var filePath = Path.Combine(workspacePath, ".devcontainer", ".env");
+        var filePath = Path.Combine(PathHelper.GetWorkspacePath(), ".devcontainer", ".env");
 
         var envVars = new List<string>();
         envVars.Add("WEBDEV_PROXY_DOMAIN=" + GeneralConfig.Proxy.Domain);

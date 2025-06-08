@@ -5,5 +5,7 @@ namespace WebDev.Tool.Classes.Configuration
         public bool AllowPreReleases { get; set; } = false;
         
         public ProxyConfiguration Proxy { get; set; } = new();
+        
+        public string WorkspaceFolder { get; set; } = "workspaces";
     }
 }

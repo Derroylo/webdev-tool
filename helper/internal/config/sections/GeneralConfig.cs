@@ -7,5 +7,15 @@ namespace WebDev.Tool.Helper.Internal.Config.Sections
         public static bool AllowPreReleases => appConfig.Config.AllowPreReleases;
         
         public static ProxyConfiguration Proxy => appConfig.Config.Proxy;
+
+        public static string WorkspaceFolder
+        {
+            get => appConfig.Config.WorkspaceFolder;
+            set
+            {
+                ConfigUpdated = true;
+                appConfig.Config.WorkspaceFolder = value;
+            }
+        }
     }
 }

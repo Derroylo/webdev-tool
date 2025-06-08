@@ -16,7 +16,7 @@ namespace WebDev.Tool.Commands.Services
         public class Settings : CommandSettings
         {
             [CommandOption("-d|--detached")]
-            [Description("Outputs debug information")]
+            [Description("Start the services in detached mode")]
             [DefaultValue(false)]
             public bool Detached { get; set; }
         }

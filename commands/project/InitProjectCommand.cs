@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Octokit;
 using WebDev.Tool.Helper.devcontainer;
+using WebDev.Tool.Helper.git;
 using Repository = LibGit2Sharp.Repository;
 
 namespace WebDev.Tool.Commands.Project;
@@ -71,10 +72,12 @@ internal class InitProjectCommand : Command
             }
 
             // Clone the repository
-            if (!CloneRepository(repoUrl, targetFolder))
+            if (!GitHelper.CloneRepository(repoUrl, targetFolder))
             {
                 return 1;
             }
+            
+            AnsiConsole.MarkupLine("[green]Repository cloned successfully![/]");
         }
         else
         {
@@ -134,45 +137,6 @@ internal class InitProjectCommand : Command
         AnsiConsole.MarkupLine("[green]All done.[/]");
         
         return 0;
-    }
-
-    private bool CloneRepository(string repoUrl, string targetFolder)
-    {
-        try
-        {
-            AnsiConsole.Status()
-                .Start("Cloning repository...", ctx =>
-                {
-                    var cloneOptions = new CloneOptions();
-
-                    // Prompt for username/password if authentication is required
-                    cloneOptions.FetchOptions.CredentialsProvider = (_url, _user, _cred) =>
-                    {
-                        var username = AnsiConsole.Ask<string>("Enter [green]username[/]:");
-                        var password = AnsiConsole.Prompt(
-                            new TextPrompt<string>("Enter [green]password[/]:")
-                                .PromptStyle("red")
-                                .Secret());
-                        return new UsernamePasswordCredentials
-                        {
-                            Username = username,
-                            Password = password
-                        };
-                    };
-
-                    Repository.Clone(repoUrl, targetFolder, cloneOptions);
-                });
-
-            AnsiConsole.MarkupLine("[green]Repository cloned successfully![/]");
-        }
-        catch (Exception ex)
-        {
-            AnsiConsole.MarkupLine($"[red]Error:[/] {ex.Message}");
-            
-            return false;
-        }
-
-        return true;
     }
 
     private string SelectDevContainerTemplate()

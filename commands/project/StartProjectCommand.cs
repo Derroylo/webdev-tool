@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using WebDev.Tool.Helper;
 using WebDev.Tool.Helper.devcontainer;
 
 namespace WebDev.Tool.Commands.Project;
@@ -43,7 +44,7 @@ internal class StartProjectCommand: Command
         }
         
         // Check if the folder already contains a devcontainer.json file
-        if (!File.Exists("./.devcontainer/devcontainer.json"))
+        if (!File.Exists(PathHelper.GetWorkspacePath(false) + "/.devcontainer/devcontainer.json"))
         {
             AnsiConsole.MarkupLine("[red]Error:[/] The current folder doesn´t contain a devcontainer.json file. Make sure you are in the right folder or use the \"webdev project init\" command to create a new project.");
             
