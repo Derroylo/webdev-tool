@@ -67,7 +67,7 @@ if [ -f "$WEBDEVDIR/.devcontainer_up" ]; then
     devcontainer up --workspace-folder .
     
     # Show a summary of the project to help user getting started
-    WEBDEV_DISABLE_HEADER=1 dotnet "$WEBDEVDIR/webdev-tool.dll" "dotnet run project-start-summary"
+    WEBDEV_DISABLE_HEADER=1 dotnet "$WEBDEVDIR/webdev-tool.dll" "project-start-summary"
 fi
 
 if [ -f "$WEBDEVDIR/.workspaces_start" ]; then
@@ -85,7 +85,21 @@ if [ -f "$WEBDEVDIR/.workspaces_start" ]; then
     rm "$WEBDEVDIR/.workspaces_start"
        
     # Show a summary of the workspaces to help user getting started
-    WEBDEV_DISABLE_HEADER=1 dotnet "$WEBDEVDIR/webdev-tool.dll" "dotnet run workspaces-start-summary"
+    WEBDEV_DISABLE_HEADER=1 dotnet "$WEBDEVDIR/webdev-tool.dll" "workspaces-start-summary"
+fi
+
+if [ -f "$WEBDEVDIR/.workspaces_tasks" ]; then
+    while IFS= read -r line; do
+        # Check if the line is not empty
+        if [ -n "$line" ]; then
+            # Start the workspace
+            cd "$line" || continue
+            devcontainer up --workspace-folder .
+            cd "$WEBDEVDIR" || exit 1
+        fi
+    done < "$WEBDEVDIR/.workspaces_tasks"
+  
+    rm "$WEBDEVDIR/.workspaces_tasks"
 fi
 
 # Check if we want to open a terminal in the devcontainer
