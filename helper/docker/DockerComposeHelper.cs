@@ -56,6 +56,14 @@ namespace WebDev.Tool.Helper.Docker
                         if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.description")) {
                             serviceInfos.Add("description", dockerCompose["services"][serviceName]["labels"]["com.webdev.description"].ToString());
                         }
+                        
+                        if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.proxy.subdomain")) {
+                            serviceInfos.Add("proxy.subdomain", dockerCompose["services"][serviceName]["labels"]["com.webdev.proxy.subdomain"].ToString());
+                        }
+                        
+                        if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.proxy.port")) {
+                            serviceInfos.Add("proxy.port", dockerCompose["services"][serviceName]["labels"]["com.webdev.proxy.port"].ToString());
+                        }
                     }
 
                     if (((Dictionary<object, object>) dockerCompose["services"][serviceName]).ContainsKey("environment")) {

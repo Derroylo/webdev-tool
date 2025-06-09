@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Spectre.Console;
 using WebDev.Tool.Classes.Configuration;
+using WebDev.Tool.Helper.apache;
 using WebDev.Tool.Helper.Docker;
 using WebDev.Tool.Helper.git;
 using WebDev.Tool.Helper.Internal.Config.Sections;
@@ -94,6 +95,25 @@ internal class WorkspaceHelper
         var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
         var workspaces = new List<string>();
 
+        // Add the main project as vhost too
+        var composeFile = Path.Combine(PathHelper.GetWorkspacePath(), ".devcontainer", "docker-compose.yml");
+        var services = DockerComposeHelper.GetServices(composeFile);
+        var devContainerService = services.ContainsKey("devcontainer") ? services["devcontainer"] : null;
+
+        if (null != devContainerService)
+        {
+            var proxyDomain = devContainerService.ContainsKey("proxy.subdomain") ? devContainerService["proxy.subdomain"] : "";
+            var proxyPort = devContainerService.ContainsKey("proxy.port") ? devContainerService["proxy.port"] : "";
+            
+            var mainWorkspace = new WorkspaceEntryConfiguration()
+            {
+                SubDomain = proxyDomain,
+                DocRoot = "public"
+            };
+            
+            CreateVhostWorkspace(mainWorkspace, true);
+        }
+        
         foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
         {
             if (workspace.Value.Folder != "" &&
@@ -122,11 +142,11 @@ internal class WorkspaceHelper
         return true;
     }
 
-    private static void CreateVhostWorkspace(WorkspaceEntryConfiguration workspace)
+    private static void CreateVhostWorkspace(WorkspaceEntryConfiguration workspace, bool isMainWorkspace = false)
     {
         var vHostConfig = """
             <VirtualHost *:8080>
-              ServerName #SUDOMAIN#.dev.localhost
+              ServerName #WSSUDOMAIN#.#SUBDOMAIN#.#DOMAIN#
 
               ServerAdmin webmaster@localhost
               DocumentRoot #DOCROOT#
@@ -141,8 +161,18 @@ internal class WorkspaceHelper
             </VirtualHost>
             """;
         
-        vHostConfig = vHostConfig.Replace("#SUDOMAIN#", workspace.SubDomain);
-        vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", GeneralConfig.WorkspaceFolder, workspace.Folder, workspace.DocRoot));
+        vHostConfig = vHostConfig.Replace("#WSSUDOMAIN#", workspace.SubDomain);
+        vHostConfig = vHostConfig.Replace("#SUBDOMAIN#", GeneralConfig.Proxy.Subdomain);
+        vHostConfig = vHostConfig.Replace("#DOMAIN#", GeneralConfig.Proxy.Domain);
+
+        if (!isMainWorkspace)
+        {
+            vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", GeneralConfig.WorkspaceFolder, workspace.Folder, workspace.DocRoot));
+        }
+        else
+        {
+            vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", workspace.DocRoot));
+        }
 
         var workspacePath = PathHelper.GetWorkspacePath();
 
@@ -152,5 +182,86 @@ internal class WorkspaceHelper
         }
         
         File.WriteAllText(Path.Combine(workspacePath, ".devcontainer", "vhost") + "/" + workspace.SubDomain + ".conf", vHostConfig);
+    }
+
+    public static void EnableVhostConfigurations(bool debug = false)
+    {
+        // Create symlinks for each entry in the vhost directory(.devcontainer/vhost) to the Apache configuration directory
+        var workspacePath = PathHelper.GetWorkspacePath();
+        var vhostDir = Path.Combine(workspacePath, ".devcontainer", "vhost");
+        
+        if (!Directory.Exists(vhostDir))
+        {
+            if (debug)
+            {
+                AnsiConsole.MarkupLine($"[red]Vhost directory does not exist: {vhostDir}[/]");
+            }
+
+            return;
+        }
+        
+        var apacheVhostDir = "/etc/apache2/sites-available/";
+        foreach (var file in Directory.GetFiles(vhostDir, "*.conf"))
+        {
+            var fileName = Path.GetFileName(file);
+            var symlinkPath = Path.Combine(apacheVhostDir, fileName);
+
+            if (File.Exists(symlinkPath))
+            {
+                if (debug)
+                {
+                    AnsiConsole.MarkupLine($"[yellow]Symlink {fileName} already exists. Skipping...[/]");
+                }
+
+                continue;
+            }
+
+            try
+            {
+                File.CreateSymbolicLink(symlinkPath, file);
+
+                if (debug)
+                {
+                    AnsiConsole.MarkupLine($"[yellow]Creating symlink: {symlinkPath} -> {file}[/]");
+                }
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]Failed to create symlink for {fileName}: {ex.Message}[/]");
+            }
+
+            // Enable the site configuration
+            ApacheHelper.EnableVhost(Path.GetFileNameWithoutExtension(file), debug);
+        }
+
+        // Make sure the following line is in the Apache configuration file:
+        var apacheConfigFile = "/etc/apache2/apache2.conf";
+        if (!File.Exists(apacheConfigFile))
+        {
+            AnsiConsole.MarkupLine($"[red]Apache configuration file does not exist: {apacheConfigFile}[/]");
+            return;
+        }
+        
+        var configContent = File.ReadAllText(apacheConfigFile);
+        if (!configContent.Contains("IncludeOptional /etc/apache2/sites-enabled/*.conf"))
+        {
+            configContent += "\nIncludeOptional /etc/apache2/sites-enabled/*.conf\n";
+            File.WriteAllText(apacheConfigFile, configContent);
+
+            if (debug)
+            {
+                AnsiConsole.MarkupLine($"[green]Added IncludeOptional directive to {apacheConfigFile}[/]");
+            }
+        }
+        else if (debug)
+        {
+            AnsiConsole.MarkupLine($"[yellow]IncludeOptional directive already exists in {apacheConfigFile}[/]");
+        }
+        
+        // Make sure that the default config is disabled
+        ApacheHelper.DisableVhost("000-default", debug);
+
+        // Reload Apache to apply the changes
+        ApacheHelper.ReloadApache(debug);
     }
 }

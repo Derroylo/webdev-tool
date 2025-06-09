@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Spectre.Console.Cli;
+using WebDev.Tool.Helper.proxy;
 using WebDev.Tool.Helper.workspaces;
 
 namespace WebDev.Tool.Commands.workspaces;
@@ -21,6 +22,11 @@ internal class OnInitWorkspacesCommand: Command<OnInitWorkspacesCommand.Settings
             return 1;
         }
 
+        if (!TraefikHelper.CreateServiceLabels(settings.Debug))
+        {
+            return 1;
+        }
+        
         return !WorkspaceHelper.PrepareWorkspaces(settings.Debug) ? 1 : 0;
     }
 }
