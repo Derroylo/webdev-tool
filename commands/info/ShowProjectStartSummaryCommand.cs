@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Linq;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using WebDev.Tool.Classes.Configuration;
 using WebDev.Tool.Helper.Docker;
 using WebDev.Tool.Helper.Internal.Config;
 using WebDev.Tool.Helper.Internal.Config.Sections;
@@ -11,12 +13,14 @@ internal class ShowProjectStartSummaryCommand: Command
 {
     public override int Execute(CommandContext context)
     {
+        AnsiConsole.WriteLine("\n");
+        
+        var services = DockerComposeHelper.GetServices(DockerComposeHelper.GetFile());
+        
         var panelContent = $"[bold yellow]Services:[/]\n";
         
         if (ServicesConfig.ActiveServices != null && ServicesConfig.ActiveServices.Any())
         {
-            var services = DockerComposeHelper.GetServices(DockerComposeHelper.GetFile());
-            
             foreach (var service in ServicesConfig.ActiveServices)
             {
                 services.TryGetValue(service, out var serviceConfig);
@@ -28,12 +32,12 @@ internal class ShowProjectStartSummaryCommand: Command
                 {
                     serviceDescription = serviceDescription.Substring(0, 57) + "...";
                 }
-                       
+
                 panelContent += $"[bold]{serviceDescription}[/]".PadRight(65);
 
-                if (IsProxyActive() && serviceConfig != null && serviceConfig.ContainsKey("url"))
+                if (IsProxyActive() && serviceConfig != null && serviceConfig.ContainsKey("proxy.subdomain"))
                 {
-                    panelContent += $"[green]http://" + serviceConfig["url"].Replace("${WEBDEV_PROXY_SUBDOMAIN:-devcontainer}", GeneralConfig.Proxy.Subdomain).Replace("${WEBDEV_PROXY_DOMAIN:-dev.localhost}", GeneralConfig.Proxy.Domain) + "[/]";
+                    panelContent += $"[green]https://" + serviceConfig["proxy.subdomain"] + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]";
                 }
                 
                 panelContent += "\n";
@@ -46,6 +50,25 @@ internal class ShowProjectStartSummaryCommand: Command
         
         AnsiConsole.MarkupLine(panelContent);
 
+        var workspacePanelContent = $"[bold yellow]Workspaces:[/]\n";
+        
+        // Add main workspace
+        var mainService = services["devcontainer"];
+        
+        workspacePanelContent += $"[bold]Main[/]".PadRight(30);
+        workspacePanelContent += $"[green]https://" + mainService["proxy.subdomain"] + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]";
+        workspacePanelContent += "\n";
+        
+        // Add additional workspaces
+        foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
+        {
+            workspacePanelContent += $"[bold]{workspace.Value.Name}[/]".PadRight(30);
+            workspacePanelContent += $"[green]https://" + workspace.Value.SubDomain + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]";
+            workspacePanelContent += "\n";
+        }
+
+        AnsiConsole.MarkupLine(workspacePanelContent);
+        
         AnsiConsole.MarkupLine($"[bold yellow]Versions[/]");
         AnsiConsole.Markup($"[bold]PHP[/]".PadRight(30));
         AnsiConsole.Markup($"[green]{PhpConfig.PhpVersion}[/]\n");
@@ -56,7 +79,7 @@ internal class ShowProjectStartSummaryCommand: Command
         AnsiConsole.MarkupLine($"Visit [green]https://derroylo.github.io/[/] to checkout the docs.");
         
         AnsiConsole.MarkupLine($"\n[bold yellow]What´s next?[/]");
-        AnsiConsole.MarkupLine($"Open [green]http://{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}[/] in your browser to access your application.");
+        AnsiConsole.MarkupLine($"Open [green]https://{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}[/] in your browser to access your application.");
         AnsiConsole.MarkupLine($"Open the project with your favorite IDE to start coding: [green]code .[/] or [green]phpstorm .[/]");
         
         AnsiConsole.MarkupLine("\n[bold green]Happy coding! :rocket:[/]");
@@ -66,6 +89,6 @@ internal class ShowProjectStartSummaryCommand: Command
     
     private static bool IsProxyActive()
     {
-        return ServicesConfig.ActiveServices !=null && ServicesConfig.ActiveServices.Contains("proxy");
+        return ServicesConfig.ActiveServices !=null && ServicesConfig.ActiveServices.Contains("traefik");
     }
 }

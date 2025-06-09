@@ -23,17 +23,6 @@ public class DevContainerHelper
         
         return JsonDocument.Parse(cleaned);
     }
-
-    public static void WriteEnvFile()
-    {
-        var filePath = Path.Combine(PathHelper.GetWorkspacePath(), ".devcontainer", ".env");
-
-        var envVars = new List<string>();
-        envVars.Add("WEBDEV_PROXY_DOMAIN=" + GeneralConfig.Proxy.Domain);
-        envVars.Add("WEBDEV_PROXY_SUBDOMAIN=" + GeneralConfig.Proxy.Subdomain);
-            
-        File.WriteAllLines(filePath, envVars);
-    }
     
     public static string GetDevContainerId()
     {

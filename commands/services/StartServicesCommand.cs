@@ -56,8 +56,6 @@ namespace WebDev.Tool.Commands.Services
 
             var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
             var projectName = Path.GetFileName(Directory.GetCurrentDirectory()) + "_devcontainer";
-
-            DevContainerHelper.WriteEnvFile();
             
             File.WriteAllText(applicationDir + ".services_start", "-f " + DockerComposeHelper.GetFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") +  string.Join(' ', activeServices));
 

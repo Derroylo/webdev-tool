@@ -103,8 +103,7 @@ internal class WorkspaceHelper
         if (null != devContainerService)
         {
             var proxyDomain = devContainerService.ContainsKey("proxy.subdomain") ? devContainerService["proxy.subdomain"] : "";
-            var proxyPort = devContainerService.ContainsKey("proxy.port") ? devContainerService["proxy.port"] : "";
-            
+
             var mainWorkspace = new WorkspaceEntryConfiguration()
             {
                 SubDomain = proxyDomain,
@@ -260,8 +259,5 @@ internal class WorkspaceHelper
         
         // Make sure that the default config is disabled
         ApacheHelper.DisableVhost("000-default", debug);
-
-        // Reload Apache to apply the changes
-        ApacheHelper.ReloadApache(debug);
     }
 }

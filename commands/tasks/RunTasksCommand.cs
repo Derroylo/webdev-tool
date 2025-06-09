@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Reflection.Metadata.Ecma335;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Classes.Configuration;
@@ -18,6 +19,11 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
         [Description("Outputs debug information")]
         [DefaultValue(false)]
         public bool Debug { get; set; }
+        
+        [CommandOption("-n|--not-main")]
+        [Description("Execute commands only with the flag IsMain set to false")]
+        [DefaultValue(null)]
+        public bool IsNotMain { get; set; }
     }
     
     public override int Execute(CommandContext context, Settings settings)
@@ -36,6 +42,11 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
         foreach (KeyValuePair<string, TaskEntryConfiguration> entry in TasksConfig.Tasks)
         {
             AnsiConsole.MarkupLine("[green]Running commands for task: " + entry.Value.Name + "[/]");
+
+            if (settings.IsNotMain && !entry.Value.OnlyMain)
+            {
+                continue;
+            }
             
             if (sectionName == "init" && entry.Value.Init.Count > 0)
             {
@@ -90,7 +101,7 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
             
             if (sectionName == "start" && entry.Value.Start.Count > 0)
             {
-                AnsiConsole.WriteLine("[green]Running start commands[/]");
+                AnsiConsole.MarkupLine("[green]Running start commands[/]");
 
                 foreach (string cmd in entry.Value.Start)
                 {
@@ -108,7 +119,20 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
         {
             File.Create(workspacePath + "/.devcontainer/.createDoneLock");
         }
+
+        if (WorkspacesConfig.Workspaces.Count <= 0) return 1;
         
+        var commands = new List<string>();
+            
+        foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
+        {
+            commands.Add("cd " + Path.Combine("/var/www/html", GeneralConfig.WorkspaceFolder, workspace.Value.Folder) + " && webdev tasks " + sectionName + " --not-main");
+        }
+            
+        var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
+            
+        File.WriteAllLines(applicationDir + ".workspaces_tasks", commands);
+
         return 1;
     }
 }

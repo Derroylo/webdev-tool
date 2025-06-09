@@ -15,6 +15,8 @@ internal class TaskEntryConfiguration
     
     public TaskMode Mode { get; set; } = TaskMode.All;
     
+    public bool OnlyMain { get; set; } = true;
+    
     public List<string> Init { get; set; } = new();
     
     public List<string> Prebuild { get; set; } = new();

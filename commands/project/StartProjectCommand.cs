@@ -51,8 +51,6 @@ internal class StartProjectCommand: Command
             return 1;
         }
         
-        DevContainerHelper.WriteEnvFile();
-        
         var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
         
         File.WriteAllText(applicationDir + ".devcontainer_up", "devcontainer up");
