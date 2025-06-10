@@ -20,6 +20,19 @@ namespace WebDev.Tool.Helper.Docker
 
             return workspacePath + "/.devcontainer/" + filename;
         }
+        
+        public static string GetProxyFile()
+        {
+            var filename = ServicesConfig.DockerComposeFile.Replace(".yml", ".proxy.yml");
+
+            var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
+
+            if (string.IsNullOrEmpty(workspacePath)) {
+                workspacePath = Directory.GetCurrentDirectory();
+            }
+
+            return workspacePath + "/.devcontainer/" + filename;
+        }
 
         public static Dictionary<string, Dictionary<string, string>> GetServices(string filename)
         {

@@ -5,6 +5,7 @@ using System.Linq;
 using Spectre.Console;
 using WebDev.Tool.Classes.Configuration;
 using WebDev.Tool.Helper.Docker;
+using WebDev.Tool.Helper.Internal;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
@@ -25,7 +26,7 @@ internal class TraefikHelper
             return false;
         }
 
-        var workspacePath = PathHelper.GetWorkspacePath();
+        var workspacePath = PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer());
         var composeFile = Path.Combine(workspacePath, ".devcontainer", "docker-compose.yml");
         var proxyFile = Path.Combine(workspacePath, ".devcontainer", "docker-compose.proxy.yml");
 

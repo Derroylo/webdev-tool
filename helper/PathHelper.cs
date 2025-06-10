@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Helper;
 
@@ -10,10 +9,10 @@ internal class PathHelper
     
     public static string GetWorkspacePath(bool insideContainer = true)
     {
-        return insideContainer ? GetWorkspacePathInternal() : GetWorkspacePathExternal();
+        return insideContainer ? GetWorkspacePathInsideContainer() : GetWorkspacePathHost();
     }
     
-    private static string GetWorkspacePathInternal()
+    private static string GetWorkspacePathInsideContainer()
     {
         var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
         
@@ -30,10 +29,8 @@ internal class PathHelper
         return workspacePath;
     }
     
-    private static string GetWorkspacePathExternal()
+    private static string GetWorkspacePathHost()
     {
-        var workspacePath = Directory.GetCurrentDirectory();
-
-        return workspacePath;
+        return Directory.GetCurrentDirectory();
     }
 }

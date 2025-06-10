@@ -56,8 +56,15 @@ namespace WebDev.Tool.Commands.Services
 
             var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
             var projectName = Path.GetFileName(Directory.GetCurrentDirectory()) + "_devcontainer";
-            
-            File.WriteAllText(applicationDir + ".services_start", "-f " + DockerComposeHelper.GetFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") +  string.Join(' ', activeServices));
+
+            if (File.Exists(DockerComposeHelper.GetProxyFile()))
+            {
+                File.WriteAllText(applicationDir + ".services_start", "-f " + DockerComposeHelper.GetFile() + " -f" + DockerComposeHelper.GetProxyFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") +  string.Join(' ', activeServices));
+            }
+            else
+            {
+                File.WriteAllText(applicationDir + ".services_start", "-f " + DockerComposeHelper.GetFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") +  string.Join(' ', activeServices));
+            }
 
             return 0;
         }

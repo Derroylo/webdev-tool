@@ -6,6 +6,7 @@ using WebDev.Tool.Classes.Configuration;
 using WebDev.Tool.Helper.apache;
 using WebDev.Tool.Helper.Docker;
 using WebDev.Tool.Helper.git;
+using WebDev.Tool.Helper.Internal;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Helper.workspaces;
@@ -96,7 +97,7 @@ internal class WorkspaceHelper
         var workspaces = new List<string>();
 
         // Add the main project as vhost too
-        var composeFile = Path.Combine(PathHelper.GetWorkspacePath(), ".devcontainer", "docker-compose.yml");
+        var composeFile = Path.Combine(PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer()), ".devcontainer", "docker-compose.yml");
         var services = DockerComposeHelper.GetServices(composeFile);
         var devContainerService = services.ContainsKey("devcontainer") ? services["devcontainer"] : null;
 
@@ -173,7 +174,7 @@ internal class WorkspaceHelper
             vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", workspace.DocRoot));
         }
 
-        var workspacePath = PathHelper.GetWorkspacePath();
+        var workspacePath = PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer());
 
         if (!Directory.Exists(Path.Combine(workspacePath, ".devcontainer", "vhost")))
         {

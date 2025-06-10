@@ -65,9 +65,9 @@ namespace WebDev.Tool.Helper.Internal.Config
             }
         }
 
-        public static string GetConfigFileWithPath()
+        private static string GetConfigFileWithPath()
         {
-            return PathHelper.GetWorkspacePath() + "/.devcontainer/webdev.yml";
+            return PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer()) + "/.devcontainer/webdev.yml";
         }
     }
 }

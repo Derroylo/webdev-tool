@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Helper.proxy;
 using WebDev.Tool.Helper.workspaces;
@@ -17,6 +18,11 @@ internal class OnInitWorkspacesCommand: Command<OnInitWorkspacesCommand.Settings
     
     public override int Execute(CommandContext context, Settings settings)
     {
+        if (settings.Debug)
+        {
+            AnsiConsole.WriteLine("Executing OnInitWorkspacesCommand with debug mode enabled.");
+        }
+        
         if (!WorkspaceHelper.ValidateWorkspaces(settings.Debug))
         {
             return 1;
