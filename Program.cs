@@ -22,6 +22,7 @@ using WebDev.Tool.Commands.secrets;
 using WebDev.Tool.Commands.tasks;
 using WebDev.Tool.Commands.terminal;
 using WebDev.Tool.Commands.workspaces;
+using WebDev.Tool.Helper;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool
@@ -32,6 +33,11 @@ namespace WebDev.Tool
         {
             var app     = new CommandApp();
             var version = UpdateHelper.CurrentVersion;
+
+            if (args.Contains("--not-main") || args.Contains("-n"))
+            {
+                PathHelper.IsMainWorkspace = false;
+            }
 
             // Output the program name, version and info if the config file could not be read
             OutputProgramHeader(version, args.Contains("--debug"));

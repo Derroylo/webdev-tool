@@ -88,14 +88,15 @@ if [ -f "$WEBDEVDIR/.workspaces_start" ]; then
     WEBDEV_DISABLE_HEADER=1 dotnet "$WEBDEVDIR/webdev-tool.dll" "workspaces-start-summary"
 fi
 
-if [ -f "$WEBDEVDIR/.workspaces_tasks" ]; then
+if [ -f "$WEBDEVDIR/.workspaces_tasks" ] && [[ ! "$@" == *"--not-main"* ]]; then   
+    WORKSPACE_DIR=$(pwd)
+    
     while IFS= read -r line; do
         # Check if the line is not empty
         if [ -n "$line" ]; then
-            # Start the workspace
-            cd "$line" || continue
-            devcontainer up --workspace-folder .
-            cd "$WEBDEVDIR" || exit 1
+            # Execute the commands given in the variable
+            eval "$line"
+            cd "$WORKSPACE_DIR" || exit 1
         fi
     done < "$WEBDEVDIR/.workspaces_tasks"
   

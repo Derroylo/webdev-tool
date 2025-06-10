@@ -22,7 +22,7 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
         
         [CommandOption("-n|--not-main")]
         [Description("Execute commands only with the flag IsMain set to false")]
-        [DefaultValue(null)]
+        [DefaultValue(false)]
         public bool IsNotMain { get; set; }
     }
     
@@ -38,18 +38,21 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
 
             return 0;
         }
-
+        
         foreach (KeyValuePair<string, TaskEntryConfiguration> entry in TasksConfig.Tasks)
         {
-            AnsiConsole.MarkupLine("[green]Running commands for task: " + entry.Value.Name + "[/]");
-
-            if (settings.IsNotMain && !entry.Value.OnlyMain)
+            if (settings.IsNotMain && entry.Value.OnlyMain)
             {
                 continue;
             }
+
+            var shownRunningCommands = false;
             
             if (sectionName == "init" && entry.Value.Init.Count > 0)
             {
+                AnsiConsole.MarkupLine("[green]Running commands for task: " + entry.Value.Name + "[/]");
+                shownRunningCommands = true;
+                
                 AnsiConsole.MarkupLine("[green]Running init commands[/]");
                 
                 foreach (string cmd in entry.Value.Init)
@@ -65,6 +68,12 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
             
             if (sectionName == "create" && entry.Value.Create.Count > 0)
             {
+                if (!shownRunningCommands)
+                {
+                    AnsiConsole.MarkupLine("[green]Running commands for task: " + entry.Value.Name + "[/]");
+                    shownRunningCommands = true;
+                }
+                
                 if (!File.Exists(workspacePath + "/.devcontainer/.createDoneLock"))
                 {
                     AnsiConsole.MarkupLine("[green]Running create commands[/]");
@@ -88,6 +97,12 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
             
             if (sectionName == "prebuild" && entry.Value.Prebuild.Count > 0)
             {
+                if (!shownRunningCommands)
+                {
+                    AnsiConsole.MarkupLine("[green]Running commands for task: " + entry.Value.Name + "[/]");
+                    shownRunningCommands = true;
+                }
+                
                 foreach (string cmd in entry.Value.Prebuild)
                 {
                     if (settings.Debug)
@@ -101,6 +116,11 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
             
             if (sectionName == "start" && entry.Value.Start.Count > 0)
             {
+                if (!shownRunningCommands)
+                {
+                    AnsiConsole.MarkupLine("[green]Running commands for task: " + entry.Value.Name + "[/]");
+                }
+                
                 AnsiConsole.MarkupLine("[green]Running start commands[/]");
 
                 foreach (string cmd in entry.Value.Start)
@@ -121,12 +141,14 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
         }
 
         if (WorkspacesConfig.Workspaces.Count <= 0) return 1;
+
+        if (settings.IsNotMain) return 1;
         
         var commands = new List<string>();
             
         foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
         {
-            commands.Add("cd " + Path.Combine("/var/www/html", GeneralConfig.WorkspaceFolder, workspace.Value.Folder) + " && webdev tasks " + sectionName + " --not-main");
+            commands.Add("cd " + Path.Combine("./", GeneralConfig.WorkspaceFolder, workspace.Value.Folder) + " && WEBDEV_DISABLE_HEADER=1 webdev tasks " + sectionName + " --not-main");
         }
             
         var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
