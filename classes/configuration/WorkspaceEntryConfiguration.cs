@@ -23,4 +23,6 @@ internal class WorkspaceEntryConfiguration
     public WorkspaceMode Mode { get; set; } = WorkspaceMode.Vhost;
     
     public string SubDomain { get; set; } = "";
+    
+    public bool DisableWeb { get; set; } = false;
 }

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using WebDev.Tool.Helper.proxy;
+using WebDev.Tool.Helper.Proxy;
 using WebDev.Tool.Helper.workspaces;
 
 namespace WebDev.Tool.Commands.workspaces;

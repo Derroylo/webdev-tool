@@ -11,21 +11,12 @@ using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace WebDev.Tool.Helper.proxy;
+namespace WebDev.Tool.Helper.Proxy;
 
 internal class TraefikHelper
 {
     public static bool CreateServiceLabels(bool debug = false)
     {
-        if (WorkspacesConfig.Workspaces.Count == 0)
-        {
-            if (debug)
-            {
-                AnsiConsole.MarkupLine($"[red]No workspaces defined in the config.[/]");
-            }
-            return false;
-        }
-
         var workspacePath = PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer());
         var composeFile = Path.Combine(workspacePath, ".devcontainer", "docker-compose.yml");
         var proxyFile = Path.Combine(workspacePath, ".devcontainer", "docker-compose.proxy.yml");
@@ -63,6 +54,16 @@ internal class TraefikHelper
             var proxyDomain = service.Value.ContainsKey("proxy.subdomain") ? service.Value["proxy.subdomain"] : "";
             var proxyPort = service.Value.ContainsKey("proxy.port") ? service.Value["proxy.port"] : "";
 
+            if (serviceName == "mkcert")
+            {
+                traefikLabels.Add($"domain", "*." + globalSubDomain + "." + domain);
+                traefikLabels.Add($"traefik.enable", "false");
+                
+                newServices[serviceName] = new Dictionary<string, object> { { "environment", traefikLabels }, { "labels", traefikLabels } };
+
+                continue;
+            }
+            
             if (proxyDomain == "" || proxyPort == "")
             {
                 traefikLabels.Add($"traefik.enable", "false");
@@ -86,7 +87,7 @@ internal class TraefikHelper
             {
                 foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
                 {
-                    if (workspace.Value.Mode != WorkspaceMode.Vhost) continue;
+                    if (workspace.Value.Mode != WorkspaceMode.Vhost || workspace.Value.DisableWeb) continue;
 
                     traefikLabels.Add($"traefik.http.routers.{serviceName}-{workspace.Value.SubDomain}.rule", $"Host(`{workspace.Value.SubDomain}.{globalSubDomain}.{domain}`)");
                     traefikLabels.Add($"traefik.http.routers.{serviceName}-{workspace.Value.SubDomain}.entrypoints", "https" );

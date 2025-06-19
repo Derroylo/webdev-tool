@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Reflection.Metadata.Ecma335;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Classes.Configuration;
 using WebDev.Tool.Helper;
+using WebDev.Tool.Helper.Internal;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Commands.tasks;
@@ -74,7 +74,7 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
                     shownRunningCommands = true;
                 }
                 
-                if (!File.Exists(workspacePath + "/.devcontainer/.createDoneLock"))
+                if (!File.Exists(PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer()) + "/.devcontainer/.createDoneLock"))
                 {
                     AnsiConsole.MarkupLine("[green]Running create commands[/]");
                 
@@ -137,7 +137,7 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
 
         if (sectionName == "create")
         {
-            File.Create(workspacePath + "/.devcontainer/.createDoneLock");
+            File.Create(PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer()) + "/.devcontainer/.createDoneLock");
         }
 
         if (WorkspacesConfig.Workspaces.Count <= 0) return 1;

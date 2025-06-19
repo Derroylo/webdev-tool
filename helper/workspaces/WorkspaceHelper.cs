@@ -22,7 +22,7 @@ internal class WorkspaceHelper
                 AnsiConsole.MarkupLine($"[red]No workspaces defined in the config.[/]");
             }
 
-            return false;
+            return true;
         }
 
         foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
@@ -83,16 +83,6 @@ internal class WorkspaceHelper
     
     public static bool PrepareWorkspaces(bool debug = false)
     {
-        if (WorkspacesConfig.Workspaces.Count == 0)
-        {
-            if (debug)
-            {
-                AnsiConsole.MarkupLine($"[red]No workspaces defined in the config.[/]");
-            }
-
-            return false;
-        }
-        
         var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
         var workspaces = new List<string>();
 
@@ -114,8 +104,23 @@ internal class WorkspaceHelper
             CreateVhostWorkspace(mainWorkspace, true);
         }
         
+        if (WorkspacesConfig.Workspaces.Count == 0)
+        {
+            if (debug)
+            {
+                AnsiConsole.MarkupLine($"[red]No workspaces defined in the config.[/]");
+            }
+
+            return false;
+        }
+        
         foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
         {
+            if (workspace.Value.DisableWeb)
+            {
+                continue;
+            }
+            
             if (workspace.Value.Folder != "" &&
                 (workspace.Value.Folder.StartsWith("./") || workspace.Value.Folder.StartsWith("../")))
             {
