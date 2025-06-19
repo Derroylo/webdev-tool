@@ -56,10 +56,11 @@ internal class TraefikHelper
 
             if (serviceName == "mkcert")
             {
-                traefikLabels.Add($"domain", "*." + globalSubDomain + "." + domain);
-                traefikLabels.Add($"traefik.enable", "false");
-                
-                newServices[serviceName] = new Dictionary<string, object> { { "environment", traefikLabels }, { "labels", traefikLabels } };
+                newServices[serviceName] = new Dictionary<string, object>
+                {
+                    { "environment", new Dictionary<string, string>() {{"domain", "*." + globalSubDomain + "." + domain}} }, 
+                    { "labels", new Dictionary<string, string>() {{"traefik.enable", "false"}} }
+                };
 
                 continue;
             }
