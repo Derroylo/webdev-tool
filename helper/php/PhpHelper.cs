@@ -56,21 +56,25 @@ namespace WebDev.Tool.Helper.Php
                         ExecCommand.Exec("apachectl start");
                         
                         AnsiConsole.MarkupLine("Restarting apache...[green1]Success[/]");
+                        
+                        string testResult = PhpVersionHelper.GetCurrentPhpVersionOutput();
+
+                        if (isDebug) {
+                            AnsiConsole.WriteLine(testResult);
+                        }
+
+                        if (!testResult.Contains(newVersion)) {
+                            AnsiConsole.MarkupLine("Validating that the new version has been set....[red]Failed[/]");
+
+                            return;
+                        }
+
+                        AnsiConsole.MarkupLine("Validating that the new version has been set...[green1]Success[/]");
                     }
-
-                    string testResult = PhpVersionHelper.GetCurrentPhpVersionOutput();
-
-                    if (isDebug) {
-                        AnsiConsole.WriteLine(testResult);
+                    else
+                    {
+                        AnsiConsole.MarkupLine("Selected PHP-Version is already active...[green1]Success[/]");
                     }
-
-                    if (!testResult.Contains(newVersion)) {
-                        AnsiConsole.MarkupLine("Validating that the new version has been set....[red]Failed[/]");
-
-                        return;
-                    }
-
-                    AnsiConsole.MarkupLine("Validating that the new version has been set...[green1]Success[/]");
 
                     ctx.Status("Checking if the active php version has the same packages installed as the newest one...");
 
@@ -166,8 +170,13 @@ namespace WebDev.Tool.Helper.Php
 
                     ctx.Status("Saving the new active version so it can be restored...");
 
+                    if (newVersion == currentPhpVersion)
+                    {
+                        return;
+                    }
+                    
                     try {
-                        PhpConfig.PhpVersion  = newVersion;
+                        PhpConfig.PhpVersion = newVersion;
 
                         AnsiConsole.MarkupLine("Saving the new active version so it can be restored...[green1]Done[/]");
                     } catch {

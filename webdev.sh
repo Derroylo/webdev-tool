@@ -65,9 +65,6 @@ if [ -f "$WEBDEVDIR/.devcontainer_up" ]; then
     rm "$WEBDEVDIR/.devcontainer_up"
        
     devcontainer up --workspace-folder .
-    
-    # Show a summary of the project to help user getting started
-    WEBDEV_DISABLE_HEADER=1 dotnet "$WEBDEVDIR/webdev-tool.dll" "project-start-summary"
 fi
 
 if [ -f "$WEBDEVDIR/.workspaces_start" ]; then

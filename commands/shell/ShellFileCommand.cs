@@ -41,7 +41,7 @@ namespace WebDev.Tool.Commands.Shell
             CustomCommand cmd = (CustomCommand) context.Data;
 
             if (settings.ShowArguments) {
-                this.ShowShellFileArguments(cmd);
+                ShowShellFileArguments(cmd);
 
                 return 0;
             }
@@ -72,6 +72,13 @@ namespace WebDev.Tool.Commands.Shell
                     args = string.Join(' ', settings.Arguments);
                 }
 
+                var workingDirectory = "./";
+
+                if (cmd.WorkspaceFolder != null)
+                {
+                    workingDirectory = cmd.WorkspaceFolder;
+                }
+                
                 // Execute the shell script
                 var process = new Process();
 
@@ -79,7 +86,7 @@ namespace WebDev.Tool.Commands.Shell
                 {
                     WindowStyle = ProcessWindowStyle.Hidden,
                     FileName = $"/bin/bash",
-                    WorkingDirectory = "./",
+                    WorkingDirectory = workingDirectory,
                     Arguments = $"-c \"" + cmd.File + (args != String.Empty ? " " + args : "") + "\"",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,

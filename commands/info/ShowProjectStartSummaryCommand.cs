@@ -4,6 +4,7 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Classes.Configuration;
 using WebDev.Tool.Helper.Docker;
+using WebDev.Tool.Helper.Internal;
 using WebDev.Tool.Helper.Internal.Config;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 
@@ -63,7 +64,12 @@ internal class ShowProjectStartSummaryCommand: Command
         foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
         {
             workspacePanelContent += $"[bold]{workspace.Value.Name}[/]".PadRight(30);
-            workspacePanelContent += $"[green]https://" + workspace.Value.SubDomain + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]";
+
+            if (!workspace.Value.DisableWeb)
+            {
+                workspacePanelContent += $"[green]https://" + workspace.Value.SubDomain + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]";
+            }
+            
             workspacePanelContent += "\n";
         }
 
@@ -79,8 +85,12 @@ internal class ShowProjectStartSummaryCommand: Command
         AnsiConsole.MarkupLine($"Visit [green]https://derroylo.github.io/[/] to checkout the docs.");
         
         AnsiConsole.MarkupLine($"\n[bold yellow]What´s next?[/]");
-        AnsiConsole.MarkupLine($"Open [green]https://{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}[/] in your browser to access your application.");
-        AnsiConsole.MarkupLine($"Open the project with your favorite IDE to start coding: [green]code .[/] or [green]phpstorm .[/]");
+        AnsiConsole.MarkupLine($"Open [green]https://{mainService["proxy.subdomain"]}.{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}[/] in your browser to access your application.");
+
+        if (!EnvironmentHelper.IsRunningInDevContainer())
+        {
+            AnsiConsole.MarkupLine($"Open the project with your favorite IDE to start coding: [green]code .[/] or [green]phpstorm .[/]");
+        }
         
         AnsiConsole.MarkupLine("\n[bold green]Happy coding! :rocket:[/]");
 

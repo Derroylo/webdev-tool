@@ -13,7 +13,9 @@ namespace WebDev.Tool.Classes
 
         public List<string> Arguments { get; } = new();
 
-        public CustomCommand(string command, string file, string description = null, List<string> arguments = null) {
+        public string WorkspaceFolder { get; } = null;
+        
+        public CustomCommand(string command, string file, string description = null, List<string> arguments = null, string workspaceFolder = null) {
             if (string.IsNullOrEmpty(command) || command.Length < 1) {
                 throw new Exception("Missing command for custom command");
             }
@@ -22,15 +24,16 @@ namespace WebDev.Tool.Classes
                 throw new Exception("Missing file for custom command");
             }
 
-            this.Command = command;
-            this.File = file;
+            Command = command;
+            File = file;
+            WorkspaceFolder = workspaceFolder;
 
             if (description != null && description.Length > 0) {
-                this.Description = description;
+                Description = description;
             }
 
             if (arguments != null && arguments.Count > 0) {
-                this.Arguments = arguments;
+                Arguments = arguments;
             }
         }
     }

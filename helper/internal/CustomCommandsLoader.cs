@@ -2,6 +2,8 @@ using System.IO;
 using System.Collections.Generic;
 using WebDev.Tool.Classes;
 using System.Text.RegularExpressions;
+using Spectre.Console;
+using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Helper.Internal
 {
@@ -11,16 +13,30 @@ namespace WebDev.Tool.Helper.Internal
         {           
             var scripts = SearchForShellScripts(".devcontainer/scripts");
 
-            /*if (ShellScriptConfig.AdditionalDirectories.Count > 0) {
+            if (ShellScriptConfig.AdditionalDirectories.Count > 0) {
                 foreach (string folder in ShellScriptConfig.AdditionalDirectories) {
                     scripts = SearchForShellScripts(folder, scripts);
                 }
-            }*/
-
+            }
+            
+            // Load additional commands from other workspaces
+            if (WorkspacesConfig.Workspaces.Count > 0) {
+                var workspacePath = PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer());
+                
+                foreach (var workspace in WorkspacesConfig.Workspaces) {
+                    if (!Directory.Exists(Path.Combine(workspacePath, GeneralConfig.WorkspaceFolder, workspace.Value.Folder, ".devcontainer", "scripts")))
+                    {
+                        continue;
+                    }
+                    
+                    scripts = SearchForShellScripts(Path.Combine(workspacePath, GeneralConfig.WorkspaceFolder, workspace.Value.Folder, ".devcontainer", "scripts"), scripts, Path.Combine(workspacePath, GeneralConfig.WorkspaceFolder, workspace.Value.Folder));
+                }
+            }
+            
             return scripts;
         }
 
-        private static Dictionary<string, CustomBranch> SearchForShellScripts(string folder, Dictionary<string, CustomBranch> commands = null)
+        private static Dictionary<string, CustomBranch> SearchForShellScripts(string folder, Dictionary<string, CustomBranch> commands = null, string workspaceFolder = null)
         {
             if (commands == null) {
                 var defaultBranch = new CustomBranch("default");
@@ -43,7 +59,7 @@ namespace WebDev.Tool.Helper.Internal
                     continue;
                 }
 
-                var newCustomCommand = new CustomCommand(shellScriptSettings.Command, file, shellScriptSettings.Description, shellScriptSettings.Arguments);
+                var newCustomCommand = new CustomCommand(shellScriptSettings.Command, file, shellScriptSettings.Description, shellScriptSettings.Arguments, workspaceFolder);
 
                 if (shellScriptSettings.Branch != string.Empty) {
                     if (commands.TryGetValue(shellScriptSettings.Branch, out CustomBranch customBranch)) {
@@ -62,7 +78,7 @@ namespace WebDev.Tool.Helper.Internal
             // Check for subdirectories
             string [] subDirectories = Directory.GetDirectories(folder);
             foreach(string subdirectory in subDirectories) {
-                commands = SearchForShellScripts(subdirectory, commands);
+                commands = SearchForShellScripts(subdirectory, commands, workspaceFolder);
             }
             
             return commands;
