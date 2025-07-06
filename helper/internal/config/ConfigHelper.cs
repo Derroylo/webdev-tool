@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Spectre.Console;
 using WebDev.Tool.Classes.Configuration;
+using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Helper.Internal.Config
 {
@@ -65,6 +66,17 @@ namespace WebDev.Tool.Helper.Internal.Config
             }
         }
 
+        public static void SaveConfigFile()
+        {
+            var configFileWithPath = GetConfigFileWithPath();
+
+            try {
+                ConfigWriter.WriteConfigFile(configFileWithPath, appConfig);
+            } catch {
+                throw;
+            }
+        }
+        
         private static string GetConfigFileWithPath()
         {
             return PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer()) + "/.devcontainer/webdev.yml";

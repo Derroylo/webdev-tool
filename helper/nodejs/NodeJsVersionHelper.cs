@@ -25,7 +25,7 @@ namespace WebDev.Tool.Helper.NodeJs
                 throw new Exception("Failed to parse the node version command output to find the active version. Make sure you have node installed.");
             }
 
-            return output;
+            return output.Substring(2);
         }
 
         [GeneratedRegex(@"v([0-9]+).([0-9]+).([0-9]+)")]
@@ -72,7 +72,7 @@ namespace WebDev.Tool.Helper.NodeJs
 
                     ctx.Status("Switching to new nodejs version...");
 
-                    ExecCommand.Exec("source \"$NVM_DIR\"/nvm-lazy.sh && nvm install " + newVersion);
+                    ExecCommand.Exec("nvm install " + newVersion);
 
                     // Write the selected version to a file, so we can change the active nodejs version via the webdev.sh script
                     var applicationDir = AppDomain.CurrentDomain.BaseDirectory;

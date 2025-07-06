@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -11,6 +12,7 @@ using WebDev.Tool.Commands.Shell;
 using WebDev.Tool.Commands.Apache;
 using WebDev.Tool.Commands.Services;
 using WebDev.Tool.Commands;
+using WebDev.Tool.Commands.Certificates;
 using WebDev.Tool.Commands.Config;
 using WebDev.Tool.Commands.Info;
 using WebDev.Tool.Commands.ModeJS;
@@ -42,6 +44,38 @@ namespace WebDev.Tool
             // Output the program name, version and info if the config file could not be read
             OutputProgramHeader(version, args.Contains("--debug"));
 
+            // If the traefik service is enabled, we need to know the path to the root cartificate
+            if (ServicesConfig.ActiveServices.Contains("proxy") && !EnvironmentHelper.IsRunningInDevContainer() && string.IsNullOrEmpty(AppSettingsHelper.AppSettings.Proxy.CaRootDirectory))
+            {
+                AnsiConsole.MarkupLine("The proxy service is enabled, but the CA Root Directory is not set. The root certificate should be stored in a folder outside the current project, so it can be used by all projects.");
+                
+                var rootCaPath = AnsiConsole.Ask("Please enter the path to the CA Root Directory: ", "~/webdev-ca-root");
+
+                if (string.IsNullOrEmpty(rootCaPath))
+                {
+                    AnsiConsole.MarkupLine("[red]You need to enter a valid path.[/]");
+
+                    return;
+                }
+                
+                if (!Directory.Exists(rootCaPath))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(rootCaPath);
+                    }
+                    catch
+                    {
+                        AnsiConsole.MarkupLine("[red]Unable to create the directory at the given path.[/]");
+
+                        return;
+                    }    
+                }
+                
+                AppSettingsHelper.AppSettings.Proxy.CaRootDirectory = rootCaPath;
+                AppSettingsHelper.SaveAppSettings();
+            }
+            
             // Load additional commands that are defined within shell scripts
             var additionalCommands = new Dictionary<string, CustomBranch>();
 
@@ -108,7 +142,13 @@ namespace WebDev.Tool
                 // Prepare and run workspaces
                 config.AddCommand<OnInitWorkspacesCommand>("workspaces-on-init").IsHidden();
                 config.AddCommand<PostStartWorkspacesCommand>("workspaces-post-start").IsHidden();
-                
+
+                if (!EnvironmentHelper.IsRunningInDevContainer())
+                {
+                    // Generate certificates for traefik
+                    config.AddCommand<CreateCertificatesCommand>("create-certificates").IsHidden();
+                }
+
                 List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task" };
 
                 // Add branches that haven´t been added yet via custom commands
@@ -136,6 +176,19 @@ namespace WebDev.Tool
             });
 
             app.Run(args);
+            
+            if (ConfigHelper.ConfigFileExists && ConfigHelper.IsConfigFileValid && ConfigHelper.ConfigUpdated) {
+                try {
+                    // Save config file
+                    ConfigHelper.SaveConfigFile();
+                } catch (Exception e) {
+                    AnsiConsole.WriteLine("[red]Saving the config file failed[/] - [orange3]Append '--debug' to show more details[/]");
+
+                    if (args.Contains("--debug")) {
+                        AnsiConsole.WriteException(e);
+                    }
+                }
+            }
         }
         
         private static void OutputProgramHeader(string programVersion, bool showException = false)
@@ -151,6 +204,9 @@ namespace WebDev.Tool
             // Try to load the config file
             ConfigHelper.ReadConfigFile();
 
+            // Try to load the app settings
+            AppSettingsHelper.LoadAppSettings(showException);
+            
             if (EnvironmentHelper.DisableProgramHeader())
             {
                 return;
