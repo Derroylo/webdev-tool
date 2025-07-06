@@ -45,13 +45,13 @@ namespace WebDev.Tool
             OutputProgramHeader(version, args.Contains("--debug"));
 
             // If the traefik service is enabled, we need to know the path to the root cartificate
-            if (ServicesConfig.ActiveServices.Contains("proxy") && !EnvironmentHelper.IsRunningInDevContainer() && string.IsNullOrEmpty(AppSettingsHelper.AppSettings.Proxy.CaRootDirectory))
+            if (ServicesConfig.ActiveServices.Contains("traefik") && !EnvironmentHelper.IsRunningInDevContainer() && string.IsNullOrEmpty(AppSettingsHelper.AppSettings.Proxy.CaRootDirectory))
             {
                 AnsiConsole.MarkupLine("The proxy service is enabled, but the CA Root Directory is not set. The root certificate should be stored in a folder outside the current project, so it can be used by all projects.");
                 
-                var rootCaPath = AnsiConsole.Ask("Please enter the path to the CA Root Directory: ", "~/webdev-ca-root");
+                var rootCaPath = AnsiConsole.Ask("Please enter the path to the CA Root Directory: ", "");
 
-                if (string.IsNullOrEmpty(rootCaPath))
+                if (string.IsNullOrEmpty(rootCaPath) || !Path.IsPathRooted(rootCaPath) || rootCaPath.Contains("~") || rootCaPath.Contains("..") || rootCaPath.Contains(" "))
                 {
                     AnsiConsole.MarkupLine("[red]You need to enter a valid path.[/]");
 
