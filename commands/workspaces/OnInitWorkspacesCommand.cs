@@ -33,6 +33,11 @@ internal class OnInitWorkspacesCommand: Command<OnInitWorkspacesCommand.Settings
             return 1;
         }
         
+        if (!TraefikHelper.CreateTraefikCertificates())
+        {
+            return 1;
+        }
+        
         return !WorkspaceHelper.PrepareWorkspaces(settings.Debug) ? 1 : 0;
     }
 }

@@ -12,7 +12,6 @@ using WebDev.Tool.Commands.Shell;
 using WebDev.Tool.Commands.Apache;
 using WebDev.Tool.Commands.Services;
 using WebDev.Tool.Commands;
-using WebDev.Tool.Commands.Certificates;
 using WebDev.Tool.Commands.Config;
 using WebDev.Tool.Commands.Info;
 using WebDev.Tool.Commands.ModeJS;
@@ -142,12 +141,6 @@ namespace WebDev.Tool
                 // Prepare and run workspaces
                 config.AddCommand<OnInitWorkspacesCommand>("workspaces-on-init").IsHidden();
                 config.AddCommand<PostStartWorkspacesCommand>("workspaces-post-start").IsHidden();
-
-                if (!EnvironmentHelper.IsRunningInDevContainer())
-                {
-                    // Generate certificates for traefik
-                    config.AddCommand<CreateCertificatesCommand>("create-certificates").IsHidden();
-                }
 
                 List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task" };
 
