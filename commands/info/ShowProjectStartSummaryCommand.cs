@@ -53,21 +53,24 @@ internal class ShowProjectStartSummaryCommand: Command
 
         var workspacePanelContent = $"[bold yellow]Workspaces:[/]\n";
         
-        // Add main workspace
-        var mainService = services["devcontainer"];
-        
-        workspacePanelContent += $"[bold]Main[/]".PadRight(30);
-        workspacePanelContent += $"[green]https://" + mainService["proxy.subdomain"] + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]";
-        workspacePanelContent += "\n";
-        
-        // Add additional workspaces
+        // Show Workspaces
         foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
         {
-            workspacePanelContent += $"[bold]{workspace.Value.Name}[/]".PadRight(30);
+            if (string.IsNullOrEmpty(workspace.Value.Name))
+            {
+                workspacePanelContent += $"[bold]{workspace.Value.Name}[/]".PadRight(30);
+            }
+            else
+            {
+                workspacePanelContent += $"[bold]{workspace.Key} Workspace[/]".PadRight(30);
+            }
 
-            if (!workspace.Value.DisableWeb)
+            if (!workspace.Value.DisableWeb && workspace.Value.Name != "main")
             {
                 workspacePanelContent += $"[green]https://" + workspace.Value.SubDomain + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]";
+            } else if (!workspace.Value.DisableWeb && workspace.Value.Name != "main") 
+            {
+                workspacePanelContent += $"[green]https://" + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]";
             }
             
             workspacePanelContent += "\n";
@@ -85,7 +88,7 @@ internal class ShowProjectStartSummaryCommand: Command
         AnsiConsole.MarkupLine($"Visit [green]https://derroylo.github.io/[/] to checkout the docs.");
         
         AnsiConsole.MarkupLine($"\n[bold yellow]What´s next?[/]");
-        AnsiConsole.MarkupLine($"Open [green]https://{mainService["proxy.subdomain"]}.{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}[/] in your browser to access your application.");
+        AnsiConsole.MarkupLine($"Open [green]https://{WorkspacesConfig.Workspaces["main"].SubDomain}.{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}[/] in your browser to access your application.");
 
         if (!EnvironmentHelper.IsRunningInDevContainer())
         {

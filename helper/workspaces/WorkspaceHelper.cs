@@ -17,16 +17,18 @@ internal class WorkspaceHelper
     {
         if (WorkspacesConfig.Workspaces.Count == 0)
         {
-            if (debug)
-            {
-                AnsiConsole.MarkupLine($"[red]No workspaces defined in the config.[/]");
-            }
+            AnsiConsole.MarkupLine($"[red]At least one workspace needs to be defined in the config.[/]");
 
-            return true;
+            return false;
         }
 
         foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
         {
+            if (workspace.Key == "main")
+            {
+                continue;
+            }
+            
             var workspaceFolder = "";
 
             if (workspace.Value.Folder != "" && (workspace.Value.Folder.StartsWith("./") || workspace.Value.Folder.StartsWith("../")))
@@ -46,16 +48,30 @@ internal class WorkspaceHelper
                 return false;
             }
             
-            if (!Directory.Exists(workspaceFolder) && workspace.Value.Repository != "")
+            if (!Directory.Exists(workspaceFolder) && !string.IsNullOrEmpty(workspace.Value.Repository))
             {
                 AnsiConsole.MarkupLine("Cloning repository {0} into {1}", workspace.Value.Repository, workspaceFolder);
                 
                 if (!GitHelper.CloneRepository(workspace.Value.Repository, workspaceFolder))
                 {
+                    AnsiConsole.MarkupLine($"[red]Failed to clone repository:[/] {workspace.Value.Repository}");
+                    
                     return false;
                 }
             
                 AnsiConsole.MarkupLine("[green]Repository cloned successfully![/]");
+
+                if (!string.IsNullOrEmpty(workspace.Value.Branch))
+                {
+                    if (!GitHelper.CheckoutBranch(workspaceFolder, workspace.Value.Branch))
+                    {
+                        AnsiConsole.MarkupLine($"[red]Failed to check out branch:[/] {workspace.Value.Branch}");
+                        
+                        return false;
+                    }
+                    
+                    AnsiConsole.MarkupLine($"[green]Checked out branch:[/] {workspace.Value.Branch}");
+                }
             }
 
             // This mode is not supported yet
@@ -85,31 +101,10 @@ internal class WorkspaceHelper
     {
         var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
         var workspaces = new List<string>();
-
-        // Add the main project as vhost too
-        var composeFile = Path.Combine(PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer()), ".devcontainer", "docker-compose.yml");
-        var services = DockerComposeHelper.GetServices(composeFile);
-        var devContainerService = services.ContainsKey("devcontainer") ? services["devcontainer"] : null;
-
-        if (null != devContainerService)
-        {
-            var proxyDomain = devContainerService.ContainsKey("proxy.subdomain") ? devContainerService["proxy.subdomain"] : "";
-
-            var mainWorkspace = new WorkspaceEntryConfiguration()
-            {
-                SubDomain = proxyDomain,
-                DocRoot = "public"
-            };
-            
-            CreateVhostWorkspace(mainWorkspace, true);
-        }
-        
+       
         if (WorkspacesConfig.Workspaces.Count == 0)
         {
-            if (debug)
-            {
-                AnsiConsole.MarkupLine($"[red]No workspaces defined in the config.[/]");
-            }
+            AnsiConsole.MarkupLine($"[red]No workspaces defined in the config.[/]");
 
             return false;
         }
@@ -118,6 +113,13 @@ internal class WorkspaceHelper
         {
             if (workspace.Value.DisableWeb)
             {
+                continue;
+            }
+
+            if (workspace.Key == "main")
+            {
+                CreateVhostWorkspace(workspace.Value, true);
+                
                 continue;
             }
             
@@ -147,11 +149,11 @@ internal class WorkspaceHelper
         return true;
     }
 
-    private static void CreateVhostWorkspace(WorkspaceEntryConfiguration workspace, bool isMainWorkspace = false)
+    private static void CreateVhostWorkspace(WorkspaceEntryConfiguration workspace, bool isMainWorkspace = false, bool isWwwSubdomain = false)
     {
         var vHostConfig = """
             <VirtualHost *:8080>
-              ServerName #WSSUDOMAIN#.#SUBDOMAIN#.#DOMAIN#
+              ServerName #WSSUDOMAIN##SUBDOMAIN#.#DOMAIN#
 
               ServerAdmin webmaster@localhost
               DocumentRoot #DOCROOT#
@@ -166,16 +168,29 @@ internal class WorkspaceHelper
             </VirtualHost>
             """;
         
-        vHostConfig = vHostConfig.Replace("#WSSUDOMAIN#", workspace.SubDomain);
         vHostConfig = vHostConfig.Replace("#SUBDOMAIN#", GeneralConfig.Proxy.Subdomain);
         vHostConfig = vHostConfig.Replace("#DOMAIN#", GeneralConfig.Proxy.Domain);
 
+        var configFileName = workspace.SubDomain + ".conf";
+        
         if (!isMainWorkspace)
         {
+            vHostConfig = vHostConfig.Replace("#WSSUDOMAIN#", workspace.SubDomain + ".");
             vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", GeneralConfig.WorkspaceFolder, workspace.Folder, workspace.DocRoot));
         }
         else
         {
+            if (isWwwSubdomain)
+            {
+                vHostConfig    = vHostConfig.Replace("#WSSUDOMAIN#", "www.");
+                configFileName = "www_main.conf";
+            }
+            else
+            {
+                vHostConfig    = vHostConfig.Replace("#WSSUDOMAIN#", "");
+                configFileName = "main.conf";
+            }
+            
             vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", workspace.DocRoot));
         }
 
@@ -186,7 +201,7 @@ internal class WorkspaceHelper
             Directory.CreateDirectory(Path.Combine(workspacePath, ".devcontainer", "vhost"));
         }
         
-        File.WriteAllText(Path.Combine(workspacePath, ".devcontainer", "vhost") + "/" + workspace.SubDomain + ".conf", vHostConfig);
+        File.WriteAllText(Path.Combine(workspacePath, ".devcontainer", "vhost") + "/" + configFileName, vHostConfig);
     }
 
     public static void EnableVhostConfigurations(bool debug = false)

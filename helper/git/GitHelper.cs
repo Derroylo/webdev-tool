@@ -42,4 +42,29 @@ internal class GitHelper
 
         return true;
     }
+
+    public static bool CheckoutBranch(string repoPath, string branchName)
+    {
+        try
+        {
+            using (var repo = new Repository(repoPath))
+            {
+                var branch = repo.Branches[branchName] ?? repo.Branches[$"origin/{branchName}"];
+                if (branch == null)
+                {
+                    return false;
+                }
+
+                LibGit2Sharp.Commands.Checkout(repo, branch);
+            }
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]Error:[/] {ex.Message}");
+
+            return false;
+        }
+
+        return true;
+    }
 }

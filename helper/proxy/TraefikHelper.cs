@@ -53,18 +53,7 @@ internal class TraefikHelper
             var serviceName = service.Key;
             var proxyDomain = service.Value.ContainsKey("proxy.subdomain") ? service.Value["proxy.subdomain"] : "";
             var proxyPort = service.Value.ContainsKey("proxy.port") ? service.Value["proxy.port"] : "";
-
-            if (serviceName == "mkcert")
-            {
-                newServices[serviceName] = new Dictionary<string, object>
-                {
-                    { "environment", new Dictionary<string, string>() {{"domain", "*." + globalSubDomain + "." + domain}} }, 
-                    { "labels", new Dictionary<string, string>() {{"traefik.enable", "false"}} }
-                };
-
-                continue;
-            }
-            
+           
             if (proxyDomain == "" || proxyPort == "")
             {
                 traefikLabels.Add($"traefik.enable", "false");
@@ -83,24 +72,45 @@ internal class TraefikHelper
                 { $"traefik.http.routers.{serviceName}.service", $"{serviceName}@docker" },
                 { $"traefik.http.services.{serviceName}.loadbalancer.server.port", proxyPort }
             };
-
-            if (serviceName == "devcontainer" && WorkspacesConfig.Workspaces.Count > 0)
-            {
-                foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
-                {
-                    if (workspace.Value.Mode != WorkspaceMode.Vhost || workspace.Value.DisableWeb) continue;
-
-                    traefikLabels.Add($"traefik.http.routers.{serviceName}-{workspace.Value.SubDomain}.rule", $"Host(`{workspace.Value.SubDomain}.{globalSubDomain}.{domain}`)");
-                    traefikLabels.Add($"traefik.http.routers.{serviceName}-{workspace.Value.SubDomain}.entrypoints", "https" );
-                    traefikLabels.Add($"traefik.http.routers.{serviceName}-{workspace.Value.SubDomain}.tls", "true");
-                    traefikLabels.Add($"traefik.http.routers.{serviceName}-{workspace.Value.SubDomain}.service", $"{serviceName}@docker");
-                    traefikLabels.Add($"traefik.http.services.{serviceName}-{workspace.Value.SubDomain}.loadbalancer.server.port", proxyPort);
-                }
-            }
             
             newServices[serviceName] = new Dictionary<string, object> { { "labels", traefikLabels } };
         }
 
+        if (WorkspacesConfig.Workspaces.Count > 0)
+        {
+            var traefikLabels = new Dictionary<string, string>();
+            
+            foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
+            {
+                if (workspace.Value.Mode != WorkspaceMode.Vhost || workspace.Value.DisableWeb) continue;
+
+                if (workspace.Key == "main")
+                {
+                    traefikLabels.Add($"traefik.http.routers.devcontainer-main.rule", $"Host(`{globalSubDomain}.{domain}`)");
+                    traefikLabels.Add($"traefik.http.routers.devcontainer-main.entrypoints", "https" );
+                    traefikLabels.Add($"traefik.http.routers.devcontainer-main.tls", "true");
+                    traefikLabels.Add($"traefik.http.routers.devcontainer-main.service", $"devcontainer@docker");
+                    traefikLabels.Add($"traefik.http.services.devcontainer-main.loadbalancer.server.port", "8080");
+                    
+                    traefikLabels.Add($"traefik.http.routers.devcontainer-www-main.rule", $"Host(`www.{globalSubDomain}.{domain}`)");
+                    traefikLabels.Add($"traefik.http.routers.devcontainer-www-main.entrypoints", "https" );
+                    traefikLabels.Add($"traefik.http.routers.devcontainer-www-main.tls", "true");
+                    traefikLabels.Add($"traefik.http.routers.devcontainer-www-main.service", $"devcontainer@docker");
+                    traefikLabels.Add($"traefik.http.services.devcontainer-www-main.loadbalancer.server.port", "8080");
+                }
+                else
+                {
+                    traefikLabels.Add($"traefik.http.routers.devcontainer-{workspace.Value.SubDomain}.rule", $"Host(`{workspace.Value.SubDomain}.{globalSubDomain}.{domain}`)");
+                    traefikLabels.Add($"traefik.http.routers.devcontainer-{workspace.Value.SubDomain}.entrypoints", "https" );
+                    traefikLabels.Add($"traefik.http.routers.devcontainer-{workspace.Value.SubDomain}.tls", "true");
+                    traefikLabels.Add($"traefik.http.routers.devcontainer-{workspace.Value.SubDomain}.service", $"devcontainer@docker");
+                    traefikLabels.Add($"traefik.http.services.devcontainer-{workspace.Value.SubDomain}.loadbalancer.server.port", "8080");
+                }
+            }
+            
+            newServices["devcontainer"] = new Dictionary<string, object> { { "labels", traefikLabels } };
+        }
+        
         if (newServices.Count == 0)
         {
             if (debug)

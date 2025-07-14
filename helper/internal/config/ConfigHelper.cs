@@ -38,6 +38,12 @@ namespace WebDev.Tool.Helper.Internal.Config
                 // Init the app config with default data if there is no config file present
                 appConfig = new Configuration();
 
+                // Add the default workspace
+                appConfig.Workspaces.Add("main", new WorkspaceEntryConfiguration {
+                    Name = "Main Workspace",
+                    Description = "This is the default workspace."
+                });
+                
                 return;
             }
 
@@ -52,6 +58,12 @@ namespace WebDev.Tool.Helper.Internal.Config
                     // Init the app config with default data if the existing config file is invalid
                     appConfig = new Configuration();
 
+                    // Add the default workspace
+                    appConfig.Workspaces.Add("main", new WorkspaceEntryConfiguration {
+                        Name = "Main Workspace",
+                        Description = "This is the default workspace."
+                    });
+                    
                     throw;
                 }
             }
@@ -61,8 +73,24 @@ namespace WebDev.Tool.Helper.Internal.Config
 
                 // Init the app config with default data if the existing config file is invalid
                 appConfig = new Configuration();
-            } else {
-                configFileValid = true;
+                
+                // Add the default workspace
+                appConfig.Workspaces.Add("main", new WorkspaceEntryConfiguration {
+                    Name = "Main Workspace",
+                    Description = "This is the default workspace."
+                });
+
+                return;
+            }
+            
+            configFileValid = true;
+            
+            // Make sure the default workspace is always present
+            if (!appConfig.Workspaces.ContainsKey("main")) {
+                appConfig.Workspaces.Add("main", new WorkspaceEntryConfiguration {
+                    Name = "Main Workspace",
+                    Description = "This is the default workspace."
+                });
             }
         }
 
