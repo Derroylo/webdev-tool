@@ -1,4 +1,4 @@
-namespace WebDev.Tool.Classes.settings;
+namespace WebDev.Tool.Classes.Settings;
 
 internal class ProxySetting
 {

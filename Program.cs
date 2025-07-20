@@ -19,7 +19,7 @@ using WebDev.Tool.Commands.NodeJS;
 using WebDev.Tool.Commands.Php;
 using WebDev.Tool.Commands.Project;
 using WebDev.Tool.Commands.Restore;
-using WebDev.Tool.Commands.secrets;
+using WebDev.Tool.Commands.Secrets;
 using WebDev.Tool.Commands.tasks;
 using WebDev.Tool.Commands.terminal;
 using WebDev.Tool.Commands.workspaces;
@@ -108,6 +108,7 @@ namespace WebDev.Tool
                 if (!EnvironmentHelper.IsRunningInDevContainer())
                 {
                     config.AddBranch("project", branch => AddProjectCommandBranch(branch, additionalCommands));
+                    config.AddBranch("secrets", branch => AddSecretsCommandBranch(branch, additionalCommands));
                 }
                 
                 //config.AddBranch("mysql", branch => AddMysqlCommandBranch(branch, additionalCommands));
@@ -119,7 +120,6 @@ namespace WebDev.Tool
                     config.AddBranch("restore", branch => AddRestoreCommandBranch(branch, additionalCommands));
                 }
                 
-                //config.AddBranch("secrets", branch => AddSecretsCommandBranch(branch, additionalCommands));
                 if (TasksConfig.Tasks.Count > 0)
                 {
                     config.AddBranch("task", branch => AddTaskCommandBranch(branch, TasksConfig.Tasks));
