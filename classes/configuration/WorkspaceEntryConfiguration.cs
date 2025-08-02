@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace WebDev.Tool.Classes.Configuration;
 
 internal enum WorkspaceMode
@@ -18,11 +20,14 @@ internal class WorkspaceEntryConfiguration
     
     public string Folder { get; set; } = "";
     
+    [DefaultValue("public")]
     public string DocRoot { get; set; } = "public";
     
+    [DefaultValue(WorkspaceMode.Vhost)]
     public WorkspaceMode Mode { get; set; } = WorkspaceMode.Vhost;
     
     public string SubDomain { get; set; } = "";
     
+    [DefaultValue(false)]
     public bool DisableWeb { get; set; } = false;
 }

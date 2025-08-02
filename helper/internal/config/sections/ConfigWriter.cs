@@ -10,11 +10,49 @@ internal class ConfigWriter
     public static void WriteConfigFile(string configFile, Configuration configuration)
     {
         var serializer = new SerializerBuilder()
-            .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitEmptyCollections | DefaultValuesHandling.OmitNull)
+            .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitEmptyCollections | DefaultValuesHandling.OmitNull | DefaultValuesHandling.OmitDefaults)
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
             .Build();
 
-        var stringResult = serializer.Serialize(configuration);
+        var tempConfig = new Configuration
+        {
+            Config = configuration.Config,
+            ShellScripts = configuration.ShellScripts,
+            Php = configuration.Php,
+            Nodejs = configuration.Nodejs,
+            Services = configuration.Services,
+            Environment = configuration.Environment,
+            Secrets = configuration.Secrets,
+            Tasks = configuration.Tasks,
+            Workspaces = configuration.Workspaces
+        };
+        
+        if (tempConfig.Workspaces.Count == 1) 
+        {
+            tempConfig.Workspaces = null;
+        }
+        
+        if (tempConfig.ShellScripts.AdditionalDirectories.Count == 0)
+        {
+            tempConfig.ShellScripts = null;
+        }
+        
+        if (tempConfig.Environment.Settings.Count == 0)
+        {
+            tempConfig.Environment = null;
+        }
+        
+        if (tempConfig.Tasks.Count == 0)
+        {
+            tempConfig.Tasks = null;
+        }
+        
+        if (tempConfig.Secrets.Count == 0)
+        {
+            tempConfig.Secrets = null;
+        }
+        
+        var stringResult = serializer.Serialize(tempConfig);
 
         File.WriteAllText(configFile, stringResult);
     }

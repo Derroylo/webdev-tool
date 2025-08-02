@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace WebDev.Tool.Classes.Configuration;
 
@@ -13,8 +14,10 @@ internal class TaskEntryConfiguration
 {
     public string Name { get; set; } = "";
     
+    [DefaultValue(TaskMode.All)]
     public TaskMode Mode { get; set; } = TaskMode.All;
     
+    [DefaultValue(true)]
     public bool OnlyMain { get; set; } = true;
     
     public List<string> Init { get; set; } = new();

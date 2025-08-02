@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace WebDev.Tool.Classes.Configuration
 {
@@ -6,6 +7,7 @@ namespace WebDev.Tool.Classes.Configuration
     {
         public List<string> Active { get; set; } = new();
 
+        [DefaultValue("docker-compose.yml")]
         public string File { get; set; } = "docker-compose.yml";
     }
 }

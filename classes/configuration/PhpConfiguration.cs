@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace WebDev.Tool.Classes.Configuration
 {
     internal class PhpConfiguration
     {
-        public string Version { get; set; } = "8.2";
+        [DefaultValue("8.3")]
+        public string Version { get; set; } = "8.3";
 
         public Dictionary<string, string> Config { get; set; } = new();
 
