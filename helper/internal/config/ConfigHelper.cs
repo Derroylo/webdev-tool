@@ -14,7 +14,7 @@ namespace WebDev.Tool.Helper.Internal.Config
 
         public static bool ConfigFileExists => configFileExists;
 
-        public static bool ConfigUpdated { get; set; } = false;
+        public static bool ConfigUpdated { get; set; }
 
         private static bool configFileValid = false;
 

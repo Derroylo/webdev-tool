@@ -1,5 +1,6 @@
 using WebDev.Tool.Helper.Internal.Config.Sections;
 using Spectre.Console;
+using WebDev.Tool.Helper.Internal.Config;
 
 namespace WebDev.Tool.Helper.Php
 {
@@ -26,6 +27,10 @@ namespace WebDev.Tool.Helper.Php
                 AnsiConsole.WriteLine(installRes);
             }
 
+            ExecCommand.Exec("apachectl stop");
+            ExecCommand.Exec("apachectl start");
+            AnsiConsole.MarkupLine("Restarting apache...[green1]Success[/]");
+            
             SavePackagesInConfig(newPackages);
         }
 
@@ -34,6 +39,8 @@ namespace WebDev.Tool.Helper.Php
             foreach (string package in packages) {
                 if (!PhpConfig.Packages.Contains(package)) {
                     PhpConfig.Packages.Add(package);
+                    
+                    ConfigHelper.ConfigUpdated = true;
                 }
             }    
         }
