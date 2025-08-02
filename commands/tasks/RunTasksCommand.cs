@@ -140,7 +140,7 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
             File.Create(PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer()) + "/.devcontainer/.createDoneLock");
         }
 
-        if (WorkspacesConfig.Workspaces.Count <= 0) return 1;
+        if (WorkspacesConfig.Workspaces.Count <= 1) return 1;
 
         if (settings.IsNotMain) return 1;
         
