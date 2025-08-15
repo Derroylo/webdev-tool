@@ -1,0 +1,52 @@
+config:
+  allowPreReleases: true
+  proxy:
+    subdomain: testenv
+php:
+  version: 8.1
+  config:
+    opcache.enable: off
+    xdebug.mode: off
+    xdebug.start_with_request: yes
+  configWeb:
+    memory_limit: 512M
+  configCLI:
+    max_execution_time: 0
+    memory_limit: -1
+  packages:
+  - php-soap
+nodejs:
+  version: 14.21.3
+services:
+  active:
+  - traefik
+  - mysql
+  - mailpit
+tasks:
+  fixOwner:
+    name: Fixes the owner of different folders
+    create:
+    - sudo chown -R $(id -u):$(id -g) /home/webdev
+  services:
+    name: Start the active services
+    init:
+    - webdev services start -d
+  settings:
+    name: Restore all settings for nodejs, php etc.
+    create:
+    - webdev restore all
+    start:
+    - webdev restore all
+  install:
+    name: Run composer install and setup everything
+    onlyMain: false
+    create:
+    - webdev shopware setup
+  apache:
+    name: Start apache
+    start:
+    - apachectl start
+  info:
+    name: Show information about the development environment
+    start:
+    - WEBDEV_DISABLE_HEADER=1 webdev project-start-summary

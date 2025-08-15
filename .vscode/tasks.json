@@ -1,0 +1,51 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Open DevContainer Terminal",
+            "options": {
+                "statusbar": {
+                    "label" : "$(terminal-bash) DevContainer Terminal"
+                }
+            },
+            "type": "shell",
+            "command": "./open_devcontainer_terminal.sh",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests",
+            "options": {
+                "statusbar": {
+                    "label" : "$(beaker) Run Tests"
+                }
+            },
+            "type": "shell",
+            "command": "./run_devcontainer_tests.sh",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        }
+    ]
+}

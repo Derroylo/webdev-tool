@@ -6,7 +6,12 @@
 	"image": "mcr.microsoft.com/devcontainers/dotnet:1-9.0",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"version": "latest",
+			"dockerDashComposeVersion": "v2"
+		}
+	},
 
 	// Configure tool-specific properties.
 	"customizations": {
@@ -16,10 +21,9 @@
 			"extensions": [
 				"streetsidesoftware.code-spell-checker",
                 "eamodio.gitlens",
-                "GitHub.copilot",
-                "GitHub.copilot-chat",
                 "ms-dotnettools.csharp",
-				"ms-dotnettools.csdevkit"
+				"ms-dotnettools.csdevkit",
+				"ms-azuretools.vscode-docker"
 			]
 		}
 	},
@@ -36,6 +40,6 @@
 	"remoteUser": "root",
 
 	"containerEnv": {
-    	"WEBDEV_WORKSPACE_FOLDER": "/IdeaProjects/webdev-tool",
+    	"WEBDEV_WORKSPACE_FOLDER": "/IdeaProjects/webdev-tool"
 	}
 }

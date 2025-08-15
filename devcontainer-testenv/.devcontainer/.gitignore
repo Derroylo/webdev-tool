@@ -1,0 +1,5 @@
+.createDoneLock
+vhost/*.conf
+traefik/certs/*.pem
+docker-compose.proxy.yml
+traefik/config/dynamic.yml
