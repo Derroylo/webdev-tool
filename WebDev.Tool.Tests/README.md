@@ -1,208 +1,141 @@
-# WebDev Tool DevContainer Testing Framework
+# WebDev.Tool.Tests
 
-This directory contains the automated testing system for the webdev tool that executes commands within a devcontainer environment.
+This project contains comprehensive tests for the WebDev.Tool, organized by functionality and test type.
 
-## Overview
+## Folder Structure
 
-The testing framework consists of:
-
-- **DevContainerCommandExecutor**: Executes commands within a devcontainer and captures output
-- **DevContainerTestBase**: Base class providing common test functionality and assertions
-- **TestUtilities**: Utility methods for configuration, logging, and common operations
-- **Sample Tests**: Example tests demonstrating the framework usage
-
-## Prerequisites
-
-1. **DevContainer CLI**: Must be installed and available in PATH
-2. **Running DevContainer**: The devcontainer must be running (start with `run_devcontainer_tests.sh`)
-3. **WebDev Tool**: Must be installed within the devcontainer
-
-## Configuration
-
-The testing framework uses `appsettings.json` for configuration:
-
-```json
-{
-  "TestSettings": {
-    "DevContainer": {
-      "WorkspaceFolder": "./devcontainer-testenv",
-      "CommandTimeoutSeconds": 30,
-      "RetryAttempts": 3,
-      "RetryDelaySeconds": 2
-    },
-    "Logging": {
-      "LogLevel": {
-        "Default": "Information",
-        "WebDev.Tool.Tests": "Debug"
-      }
-    }
-  }
-}
 ```
-
-## Writing Tests
-
-### Basic Test Structure
-
-```csharp
-public class MyWebDevTests : DevContainerTestBase
-{
-    [Fact]
-    public async Task My_Test_Method()
-    {
-        // Arrange & Act
-        var result = await ExecuteWebDevCommandSuccessfullyAsync("--version");
-
-        // Assert
-        AssertOutputContains(result, "expected text");
-        AssertErrorEmpty(result);
-    }
-}
-```
-
-### Available Assertion Methods
-
-- `AssertCommandSuccess(result)`: Verifies command executed successfully
-- `AssertCommandFailure(result, expectedExitCode)`: Verifies command failed with specific exit code
-- `AssertOutputContains(result, expectedText)`: Verifies output contains specific text
-- `AssertErrorContains(result, expectedText)`: Verifies error output contains specific text
-- `AssertOutputMatches(result, pattern)`: Verifies output matches regex pattern
-- `AssertOutputEmpty(result)`: Verifies output is empty
-- `AssertErrorEmpty(result)`: Verifies error output is empty
-
-### Helper Methods
-
-- `ExecuteWebDevCommandSuccessfullyAsync(args)`: Executes webdev command and asserts success
-- `ExecuteWebDevCommandWithFailureAsync(expectedExitCode, args)`: Executes webdev command and asserts failure
-- `VerifyDevContainerAccessibleAsync()`: Verifies devcontainer is accessible
-
-## Running Tests
-
-### Prerequisites
-
-1. Start the devcontainer:
-   ```bash
-   ./run_devcontainer_tests.sh
-   ```
-
-2. Build the test project:
-   ```bash
-   dotnet build WebDev.Tool.Tests
-   ```
-
-### Execute Tests
-
-```bash
-# Run all tests
-dotnet test WebDev.Tool.Tests
-
-# Run specific test class
-dotnet test WebDev.Tool.Tests --filter "FullyQualifiedName~DevContainerWebDevTests"
-
-# Run with verbose output
-dotnet test WebDev.Tool.Tests --verbosity normal
-
-# Run with specific logger
-dotnet test WebDev.Tool.Tests --logger "console;verbosity=detailed"
+WebDev.Tool.Tests/
+├── Base/                          # Base classes and test infrastructure
+│   └── DevContainerTestBase.cs    # Base class for devcontainer tests
+│
+├── Helpers/                       # Helper classes and utilities
+│   ├── DevContainerCommandExecutor.cs
+│   ├── TestUtilities.cs
+│   └── TestData/                  # Test data and fixtures
+│
+├── Tests/                         # All test classes organized by category
+│   ├── Basic/                     # Basic functionality tests
+│   │   └── WebDevBasicTests.cs    # Version, help, availability tests
+│   │
+│   ├── Commands/                  # Command-specific tests
+│   │   └── PhpCommandTests.cs     # PHP-related command tests
+│   │
+│   ├── Workspace/                 # Workspace and environment tests
+│   │   └── DevContainerBasicTests.cs
+│   │
+│   └── Integration/               # End-to-end and integration tests
+│
+├── Configuration/                 # Test configuration files
+│   ├── appsettings.json
+│   └── xunit.runner.json
+│
+└── Resources/                     # Test resources and assets
+    ├── TestProjects/
+    ├── ExpectedOutputs/
+    └── TestScripts/
 ```
 
 ## Test Categories
 
-### 1. Command Tests
-Test individual webdev commands and their output:
-- Version command
-- Help command
+### Basic Tests (`Tests/Basic/`)
+Fundamental functionality tests including:
+- Version command (`--version`)
+- Help command (`--help`)
+- Command availability (`which webdev`)
+- Basic command execution without arguments
 - Invalid command handling
 
-### 2. Integration Tests
-Test complete workflows and command chaining:
-- Command sequences
-- State persistence
-- Error recovery
+### Command Tests (`Tests/Commands/`)
+Specific command functionality tests:
+- **PHP Commands**: Version management, configuration updates
+- **Node Commands**: Node.js related functionality (to be added)
+- **Database Commands**: Database setup and configuration (to be added)
 
-### 3. Environment Tests
-Test behavior in different scenarios:
-- Devcontainer accessibility
-- Tool availability
-- Configuration loading
+### Workspace Tests (`Tests/Workspace/`)
+Environment and workspace setup tests:
+- DevContainer accessibility
+- Environment configuration
+- Workspace setup validation
 
-## Best Practices
+### Integration Tests (`Tests/Integration/`)
+End-to-end workflow and performance tests:
+- Complete workflow testing
+- Performance benchmarks
+- Cross-component integration
 
-1. **Test Isolation**: Each test should be independent and not rely on other tests
-2. **Clear Assertions**: Use descriptive assertion messages
-3. **Timeout Handling**: Use appropriate timeouts for long-running commands
-4. **Error Testing**: Test both success and failure scenarios
-5. **Logging**: Use the built-in logging for debugging test issues
+## Running Tests
 
-## Troubleshooting
+### Prerequisites
+- .NET 9.0 SDK
+- Access to a running devcontainer environment
 
-### Common Issues
+### Basic Test Execution
+```bash
+# Run all tests
+dotnet test
 
-1. **DevContainer Not Accessible**
-   - Ensure devcontainer is running: `docker ps`
-   - Check devcontainer CLI: `devcontainer --version`
-   - Verify workspace folder path in configuration
+# Run specific test category
+dotnet test --filter "Category=Basic"
+dotnet test --filter "Category=Commands"
+dotnet test --filter "Category=Workspace"
+dotnet test --filter "Category=Integration"
 
-2. **Command Timeouts**
-   - Increase `CommandTimeoutSeconds` in configuration
-   - Check if devcontainer is responsive
-   - Verify command syntax
-
-3. **Test Failures**
-   - Check test logs for detailed error information
-   - Verify expected output matches actual output
-   - Ensure webdev tool is properly installed in container
-
-### Debug Mode
-
-Enable debug logging in `appsettings.json`:
-
-```json
-{
-  "TestSettings": {
-    "Logging": {
-      "LogLevel": {
-        "WebDev.Tool.Tests": "Debug"
-      }
-    }
-  }
-}
+# Run specific test class
+dotnet test --filter "ClassName=WebDev.Tool.Tests.Tests.Basic.WebDevBasicTests"
 ```
 
-## Extending the Framework
+### Configuration
+Test configuration is managed through:
+- `Configuration/appsettings.json` - General test settings
+- `Configuration/xunit.runner.json` - xUnit runner configuration
 
-### Adding New Assertion Methods
+## Adding New Tests
 
-Extend `DevContainerTestBase` with new assertion methods:
+When adding new tests, follow these guidelines:
 
-```csharp
-protected void AssertOutputJson(CommandExecutionResult result, string expectedJson)
-{
-    result.Should().NotBeNull();
-    // Add JSON validation logic
-}
-```
+1. **Place tests in the appropriate category folder**:
+   - Basic functionality → `Tests/Basic/`
+   - Command-specific → `Tests/Commands/`
+   - Environment/workspace → `Tests/Workspace/`
+   - End-to-end → `Tests/Integration/`
 
-### Adding New Command Executors
+2. **Follow naming conventions**:
+   - Test classes: `{Category}{Feature}Tests.cs`
+   - Test methods: `{Feature}_{Scenario}_Should_{ExpectedResult}`
 
-Create specialized command executors for different tools:
+3. **Use existing base classes**:
+   - Inherit from `DevContainerTestBase` for devcontainer tests
+   - Use helper utilities from `Helpers/` folder
 
-```csharp
-public class DockerCommandExecutor : DevContainerCommandExecutor
-{
-    public async Task<CommandExecutionResult> ExecuteDockerCommandAsync(params string[] arguments)
-    {
-        return await ExecuteCommandAsync("docker", arguments);
-    }
-}
-```
+4. **Group related tests**:
+   - Keep related tests in the same file
+   - Use descriptive test method names
+   - Follow AAA pattern (Arrange, Act, Assert)
+
+## Test Infrastructure
+
+### Base Classes
+- `DevContainerTestBase`: Base class for all devcontainer-based tests
+  - Provides command execution utilities
+  - Includes common assertion methods
+  - Handles test setup and teardown
+
+### Helper Classes
+- `DevContainerCommandExecutor`: Executes commands in devcontainer environment
+- `TestUtilities`: Common utility methods for configuration and logging
+
+### Test Data
+- `Helpers/TestData/`: Contains test fixtures, sample projects, and configuration files
+- `Resources/`: Test assets, expected outputs, and test scripts
 
 ## Contributing
 
-When adding new tests:
+When contributing new tests:
 
-1. Follow the existing naming conventions
-2. Add appropriate documentation
-3. Include both positive and negative test cases
-4. Use descriptive test names
-5. Add configuration options if needed
+1. Follow the established folder structure
+2. Use appropriate base classes and helpers
+3. Write descriptive test names and comments
+4. Ensure tests are independent and repeatable
+5. Add appropriate error handling and assertions
+6. Update this README if adding new test categories or patterns

@@ -1,7 +1,8 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using WebDev.Tool.Tests.Helpers;
 
-namespace WebDev.Tool.Tests;
+namespace WebDev.Tool.Tests.Base;
 
 /// <summary>
 /// Base class for devcontainer-based tests

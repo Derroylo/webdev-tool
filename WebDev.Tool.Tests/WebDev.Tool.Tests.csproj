@@ -19,8 +19,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Configuration/xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Configuration/appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

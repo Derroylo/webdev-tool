@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
 
-namespace WebDev.Tool.Tests;
+namespace WebDev.Tool.Tests.Helpers;
 
 /// <summary>
 /// Utility methods for devcontainer tests

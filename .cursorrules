@@ -1,0 +1,85 @@
+# WebDev.Tool.Tests Folder Structure Rules
+
+When creating new test files for WebDev.Tool.Tests, follow this folder structure:
+
+## Test File Organization:
+- Base classes → `WebDev.Tool.Tests/Base/`
+- Helper classes → `WebDev.Tool.Tests/Helpers/`
+- Test data → `WebDev.Tool.Tests/Helpers/TestData/`
+- Configuration files → `WebDev.Tool.Tests/Configuration/`
+- Resources → `WebDev.Tool.Tests/Resources/`
+
+## Test Categories (place in `WebDev.Tool.Tests/Tests/`):
+- Basic functionality tests → `Tests/Basic/` (version, help, availability)
+- Command-specific tests → `Tests/Commands/` (PHP, Node, Database commands)
+- Workspace/environment tests → `Tests/Workspace/` (configuration, setup)
+- Integration tests → `Tests/Integration/` (end-to-end, performance)
+
+## Naming Conventions:
+- Test classes: `{Category}{Feature}Tests.cs` (e.g., `PhpCommandTests.cs`)
+- Base classes: `{Feature}TestBase.cs` (e.g., `DevContainerTestBase.cs`)
+- Helper classes: `{Feature}{Type}.cs` (e.g., `DevContainerCommandExecutor.cs`)
+
+## Complete Folder Structure:
+```
+WebDev.Tool.Tests/
+├── Base/                          # Base classes and test infrastructure
+│   ├── DevContainerTestBase.cs    # Base class for devcontainer tests
+│   └── TestBase.cs                # Generic base class for other test types
+│
+├── Helpers/                       # Helper classes and utilities
+│   ├── DevContainerCommandExecutor.cs
+│   ├── TestUtilities.cs
+│   └── TestData/                  # Test data and fixtures
+│       ├── SampleProjects/
+│       └── ConfigurationFiles/
+│
+├── Tests/                         # All test classes organized by category
+│   ├── Basic/                     # Basic functionality tests
+│   │   ├── WebDevBasicTests.cs    # Version, help, availability tests
+│   │   └── DevContainerBasicTests.cs
+│   │
+│   ├── Commands/                  # Command-specific tests
+│   │   ├── WebDevCommandTests.cs  # Core webdev command tests
+│   │   ├── PhpCommandTests.cs     # PHP-related command tests
+│   │   ├── NodeCommandTests.cs    # Node.js-related command tests
+│   │   └── DatabaseCommandTests.cs # Database-related command tests
+│   │
+│   ├── Workspace/                 # Workspace and environment tests
+│   │   ├── WorkspaceConfigurationTests.cs
+│   │   ├── EnvironmentSetupTests.cs
+│   │   └── IntegrationTests.cs
+│   │
+│   └── Integration/               # End-to-end and integration tests
+│       ├── EndToEndTests.cs
+│       └── PerformanceTests.cs
+│
+├── Configuration/                 # Test configuration files
+│   ├── appsettings.json
+│   ├── appsettings.Development.json
+│   └── xunit.runner.json
+│
+├── Resources/                     # Test resources and assets
+│   ├── TestProjects/
+│   ├── ExpectedOutputs/
+│   └── TestScripts/
+│
+├── WebDev.Tool.Tests.csproj
+└── README.md
+```
+
+## Test Organization Rules:
+1. **Basic Tests** (`Tests/Basic/`) - Fundamental functionality like version, help, availability
+2. **Command Tests** (`Tests/Commands/`) - Specific command functionality (PHP, Node, Database, etc.)
+3. **Workspace Tests** (`Tests/Workspace/`) - Environment setup, configuration, workspace management
+4. **Integration Tests** (`Tests/Integration/`) - End-to-end workflows and performance tests
+
+## Guidelines:
+- Always place new test files in the appropriate category folder
+- Follow the established naming conventions
+- Use the existing base classes and helper utilities
+- Maintain consistency with existing test patterns
+- Group related tests in the same file when they test the same feature
+- Use descriptive test method names that explain what is being tested
+
+Always place new test files in the appropriate category folder and follow the established patterns.

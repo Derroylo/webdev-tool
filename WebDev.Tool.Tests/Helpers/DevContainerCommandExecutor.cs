@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace WebDev.Tool.Tests;
+namespace WebDev.Tool.Tests.Helpers;
 
 /// <summary>
 /// Executes commands within a devcontainer and captures their output
