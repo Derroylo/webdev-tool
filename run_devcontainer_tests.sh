@@ -109,6 +109,9 @@ devcontainer exec --workspace-folder . bash -c "cd /home/webdev/webdev && unzip 
 devcontainer exec --workspace-folder . bash -c "chmod +x /home/webdev/webdev/webdev.sh"
 devcontainer exec --workspace-folder . bash -c "sudo ln -s /home/webdev/webdev/webdev.sh /usr/local/bin/webdev"
 
+# Set permissions for the devcontainer-testenv folder otherwise tests will fail because the user inside the container is not the same as the user on the host
+chmod -R 777 devcontainer-testenv/
+
 echo "Step 2 completed: Devcontainer is running and webdev-tool.zip has been copied and extracted to ~/webdev/"
 
 # Return to the original directory
@@ -117,4 +120,34 @@ cd ..
 # Delete the zip file
 echo "Deleting webdev-tool.zip..."
 rm webdev-tool.zip
+
+# Step 3: Build and run tests from WebDevTool.Tests project
+echo "Step 3: Building and running tests from WebDevTool.Tests project..."
+
+# Navigate back to the main project directory
+cd /workspaces/webdev-tool
+
+# Build the test project
+echo "Building WebDevTool.Tests project..."
+dotnet build WebDev.Tool.Tests/WebDev.Tool.Tests.csproj --configuration Release --no-restore
+
+# Check if build was successful
+if [ $? -eq 0 ]; then
+    echo "Test project build completed successfully."
+    
+    # Run the tests
+    echo "Running tests from WebDevTool.Tests project..."
+    dotnet test WebDev.Tool.Tests/WebDev.Tool.Tests.csproj --configuration Release --no-build --verbosity normal --logger "console;verbosity=detailed"
+    
+    # Check test execution result
+    if [ $? -eq 0 ]; then
+        echo "Step 3 completed: All tests passed successfully!"
+    else
+        echo "Step 3 completed: Some tests failed. Please check the test output above."
+        exit 1
+    fi
+else
+    echo "Error: Test project build failed. Please check the build output above."
+    exit 1
+fi
 

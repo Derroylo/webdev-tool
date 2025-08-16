@@ -4,14 +4,23 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
-    <Version>0.2.5</Version>
-    <InformationalVersion></InformationalVersion>
+    <Version>0.2.6</Version>
+    <InformationalVersion>-beta.1</InformationalVersion>
     <Authors>Derroylo</Authors>
     <Product>WebDev-Tool</Product>
     <Description>A little tool to help with WebDevelopment using DevContainer</Description>
     <RepositoryUrl>https://github.com/Derroylo/webdev-tool</RepositoryUrl>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>UnitTests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>WebDev.Tool.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="LibGit2Sharp" Version="0.31.0" />
@@ -28,5 +37,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="WebDev.Tool.Tests\**" />
   </ItemGroup>
 </Project>
