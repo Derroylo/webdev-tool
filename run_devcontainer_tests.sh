@@ -135,17 +135,52 @@ dotnet build WebDev.Tool.Tests/WebDev.Tool.Tests.csproj --configuration Release 
 if [ $? -eq 0 ]; then
     echo "Test project build completed successfully."
     
-    # Run the tests
-    echo "Running tests from WebDevTool.Tests project..."
-    dotnet test WebDev.Tool.Tests/WebDev.Tool.Tests.csproj --configuration Release --no-build --verbosity normal --logger "console;verbosity=detailed"
+    # Run the tests in the correct order using collections
+    echo "Running tests from WebDevTool.Tests project in order..."
     
-    # Check test execution result
-    if [ $? -eq 0 ]; then
-        echo "Step 3 completed: All tests passed successfully!"
-    else
-        echo "Step 3 completed: Some tests failed. Please check the test output above."
+    # Step 1: Run Basic Tests (version, help, availability)
+    echo "Step 3.1: Running Basic Tests..."
+    dotnet test WebDev.Tool.Tests/WebDev.Tool.Tests.csproj --configuration Release --no-build --filter "Category=Basic" --verbosity normal --logger "console;verbosity=detailed"
+    
+    if [ $? -ne 0 ]; then
+        echo "Error: Basic tests failed. Stopping execution."
         exit 1
     fi
+    
+    # Step 2: Run Workspace Tests (environment setup)
+    echo "Step 3.2: Running Workspace Tests..."
+    dotnet test WebDev.Tool.Tests/WebDev.Tool.Tests.csproj --configuration Release --no-build --filter "Category=Workspace" --verbosity normal --logger "console;verbosity=detailed"
+    
+    if [ $? -ne 0 ]; then
+        echo "Error: Workspace tests failed. Stopping execution."
+        exit 1
+    fi
+    
+    # Step 3: Run Command Tests (PHP, Node, Database commands)
+    echo "Step 3.3: Running Command Tests..."
+    dotnet test WebDev.Tool.Tests/WebDev.Tool.Tests.csproj --configuration Release --no-build --filter "Category=Commands" --verbosity normal --logger "console;verbosity=detailed"
+    
+    if [ $? -ne 0 ]; then
+        echo "Error: Command tests failed. Stopping execution."
+        exit 1
+    fi
+    
+    # Step 4: Run Integration Tests (end-to-end workflows)
+    echo "Step 3.4: Running Integration Tests..."
+    dotnet test WebDev.Tool.Tests/WebDev.Tool.Tests.csproj --configuration Release --no-build --filter "Category=Integration" --verbosity normal --logger "console;verbosity=detailed"
+    
+    if [ $? -ne 0 ]; then
+        echo "Error: Integration tests failed. Stopping execution."
+        exit 1
+    fi
+    
+    # All test collections completed successfully
+    echo "Step 3 completed: All test collections passed successfully!"
+    echo "Test execution order:"
+    echo "  ✓ Basic Tests (version, help, availability)"
+    echo "  ✓ Workspace Tests (environment setup)"
+    echo "  ✓ Command Tests (PHP, Node, Database commands)"
+    echo "  ✓ Integration Tests (end-to-end workflows)"
 else
     echo "Error: Test project build failed. Please check the build output above."
     exit 1

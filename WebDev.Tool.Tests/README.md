@@ -70,17 +70,58 @@ End-to-end workflow and performance tests:
 - .NET 9.0 SDK
 - Access to a running devcontainer environment
 
-### Basic Test Execution
+### Test Categories and Execution Order
+
+Tests are organized into categories that execute in a specific order to ensure proper test dependencies:
+
+1. **Basic Tests** (`Category=Basic`) - Fundamental functionality
+2. **Workspace Tests** (`Category=Workspace`) - Environment setup
+3. **Command Tests** (`Category=Commands`) - Command functionality
+4. **Integration Tests** (`Category=Integration`) - End-to-end workflows
+
+### Test Execution
+
+#### Run All Tests in Order (Recommended)
 ```bash
-# Run all tests
+# Run all tests in the correct order
 dotnet test
 
-# Run specific test category
-dotnet test --filter "Category=Basic"
-dotnet test --filter "Category=Commands"
-dotnet test --filter "Category=Workspace"
-dotnet test --filter "Category=Integration"
+# Or use the automated script
+./run_devcontainer_tests.sh
+```
 
+#### Run Specific Categories
+```bash
+# Run Basic Tests only
+dotnet test --filter "Category=Basic"
+
+# Run Workspace Tests only
+dotnet test --filter "Category=Workspace"
+
+# Run Command Tests only
+dotnet test --filter "Category=Commands"
+
+# Run Integration Tests only
+dotnet test --filter "Category=Integration"
+```
+
+#### Run Tests in Order Manually
+```bash
+# Step 1: Basic Tests
+dotnet test --filter "Category=Basic"
+
+# Step 2: Workspace Tests
+dotnet test --filter "Category=Workspace"
+
+# Step 3: Command Tests
+dotnet test --filter "Category=Commands"
+
+# Step 4: Integration Tests
+dotnet test --filter "Category=Integration"
+```
+
+#### Run Specific Test Classes
+```bash
 # Run specific test class
 dotnet test --filter "ClassName=WebDev.Tool.Tests.Tests.Basic.WebDevBasicTests"
 ```
@@ -100,18 +141,52 @@ When adding new tests, follow these guidelines:
    - Environment/workspace → `Tests/Workspace/`
    - End-to-end → `Tests/Integration/`
 
-2. **Follow naming conventions**:
+2. **Use test categories**:
+   - Add `[Trait("Category", "{Category}")]` to test classes
+   - Use `[TestOrder(n)]` attribute to control execution order within categories
+   - Categories execute in order: Basic → Workspace → Commands → Integration
+
+3. **Follow naming conventions**:
    - Test classes: `{Category}{Feature}Tests.cs`
    - Test methods: `{Feature}_{Scenario}_Should_{ExpectedResult}`
 
-3. **Use existing base classes**:
+4. **Use existing base classes**:
    - Inherit from `DevContainerTestBase` for devcontainer tests
    - Use helper utilities from `Helpers/` folder
 
-4. **Group related tests**:
+5. **Group related tests**:
    - Keep related tests in the same file
    - Use descriptive test method names
    - Follow AAA pattern (Arrange, Act, Assert)
+
+### Example Test Structure
+
+```csharp
+[Trait("Category", "Commands")]
+public class PhpCommandTests : DevContainerTestBase
+{
+    [Fact]
+    [TestOrder(1)]
+    public async Task Setup_Initial_PHP_Environment()
+    {
+        // Setup test environment
+    }
+
+    [Fact]
+    [TestOrder(2)]
+    public async Task WebDev_Should_Change_PHP_Version_Successfully()
+    {
+        // Main test that depends on setup
+    }
+
+    [Fact]
+    [TestOrder(3)]
+    public async Task Cleanup_PHP_Environment()
+    {
+        // Cleanup after tests
+    }
+}
+```
 
 ## Test Infrastructure
 

@@ -74,12 +74,61 @@ WebDev.Tool.Tests/
 3. **Workspace Tests** (`Tests/Workspace/`) - Environment setup, configuration, workspace management
 4. **Integration Tests** (`Tests/Integration/`) - End-to-end workflows and performance tests
 
+## Test Categories and Execution Order:
+
+### Category Mapping:
+- **Basic Tests** (`Tests/Basic/`) → `[Trait("Category", "Basic")]`
+- **Command Tests** (`Tests/Commands/`) → `[Trait("Category", "Commands")]`
+- **Workspace Tests** (`Tests/Workspace/`) → `[Trait("Category", "Workspace")]`
+- **Integration Tests** (`Tests/Integration/`) → `[Trait("Category", "Integration")]`
+
+### Execution Order:
+1. **Basic Tests** (version, help, availability) - Execute first
+2. **Workspace Tests** (environment setup) - Execute second
+3. **Command Tests** (PHP, Node, Database commands) - Execute third
+4. **Integration Tests** (end-to-end workflows) - Execute last
+
+### Test Order Within Categories:
+- Use `[TestOrder(n)]` attribute to control execution order within each category
+- Lower numbers execute first (e.g., `[TestOrder(1)]`, `[TestOrder(2)]`)
+- Use sequential numbering for dependent tests
+
 ## Guidelines:
 - Always place new test files in the appropriate category folder
+- Add the correct trait attribute based on the folder location
+- Use `[TestOrder(n)]` attribute for tests that need specific execution order
 - Follow the established naming conventions
 - Use the existing base classes and helper utilities
 - Maintain consistency with existing test patterns
 - Group related tests in the same file when they test the same feature
 - Use descriptive test method names that explain what is being tested
+- Import required namespaces: `using WebDev.Tool.Tests.Helpers;` for TestOrderAttribute
 
-Always place new test files in the appropriate category folder and follow the established patterns.
+## Example Test Structure:
+```csharp
+using FluentAssertions;
+using WebDev.Tool.Tests.Base;
+using WebDev.Tool.Tests.Helpers;
+
+namespace WebDev.Tool.Tests.Tests.Commands;
+
+[Trait("Category", "Commands")]
+public class NodeCommandTests : DevContainerTestBase
+{
+    [Fact]
+    [TestOrder(1)]
+    public async Task Setup_Node_Environment()
+    {
+        // Setup test environment
+    }
+
+    [Fact]
+    [TestOrder(2)]
+    public async Task WebDev_Should_Change_Node_Version_Successfully()
+    {
+        // Main test that depends on setup
+    }
+}
+```
+
+Always place new test files in the appropriate category folder, add the correct trait attribute, and follow the established patterns.

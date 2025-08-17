@@ -1,14 +1,17 @@
 using FluentAssertions;
 using WebDev.Tool.Tests.Base;
+using WebDev.Tool.Tests.Helpers;
 
 namespace WebDev.Tool.Tests.Tests.Basic;
 
 /// <summary>
 /// Basic functionality tests for webdev tool (version, help, availability)
 /// </summary>
+[Trait("Category", "Basic")]
 public class WebDevBasicTests : DevContainerTestBase
 {
     [Fact]
+    [TestOrder(1)]
     public async Task WebDev_Version_Command_Should_Output_Version()
     {
         // Arrange & Act
@@ -20,6 +23,7 @@ public class WebDevBasicTests : DevContainerTestBase
     }
 
     [Fact]
+    [TestOrder(2)]
     public async Task WebDev_Help_Command_Should_Show_Usage_Information()
     {
         // Arrange & Act
@@ -32,6 +36,7 @@ public class WebDevBasicTests : DevContainerTestBase
     }
 
     [Fact]
+    [TestOrder(3)]
     public async Task WebDev_Invalid_Command_Should_Fail_With_Error()
     {
         // Arrange & Act
@@ -44,6 +49,7 @@ public class WebDevBasicTests : DevContainerTestBase
     }
 
     [Fact]
+    [TestOrder(4)]
     public async Task WebDev_Command_Should_Be_Available_In_Container()
     {
         // Arrange & Act
@@ -56,6 +62,7 @@ public class WebDevBasicTests : DevContainerTestBase
     }
 
     [Fact]
+    [TestOrder(5)]
     public async Task WebDev_Command_Should_Execute_Without_Arguments()
     {
         // Arrange & Act
