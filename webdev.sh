@@ -20,7 +20,7 @@ if [ -d "$WEBDEVDIR/update" ]; then
     cd $WEBDEVDIR
 
     # Move all files from the update folder to the current one and remove it afterwards
-    rsync -a update/* .
+    rsync -a --exclude='certs/' --exclude='secrets/' update/* .
 
     # Remove the update folder
     rm -rf update

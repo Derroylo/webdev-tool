@@ -49,6 +49,7 @@ Fundamental functionality tests including:
 ### Command Tests (`Tests/Commands/`)
 Specific command functionality tests:
 - **PHP Commands**: Version management, configuration updates
+- **Workspace Commands**: Workspace initialization and management
 - **Node Commands**: Node.js related functionality (to be added)
 - **Database Commands**: Database setup and configuration (to be added)
 

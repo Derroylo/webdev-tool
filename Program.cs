@@ -42,39 +42,7 @@ namespace WebDev.Tool
 
             // Output the program name, version and info if the config file could not be read
             OutputProgramHeader(version, args.Contains("--debug"));
-
-            // If the traefik service is enabled, we need to know the path to the root cartificate
-            if (ServicesConfig.ActiveServices.Contains("traefik") && !EnvironmentHelper.IsRunningInDevContainer() && string.IsNullOrEmpty(AppSettingsHelper.AppSettings.Proxy.CaRootDirectory))
-            {
-                AnsiConsole.MarkupLine("The proxy service is enabled, but the CA Root Directory is not set. The root certificate should be stored in a folder outside the current project, so it can be used by all projects.");
-                
-                var rootCaPath = AnsiConsole.Ask("Please enter the path to the CA Root Directory: ", "");
-
-                if (string.IsNullOrEmpty(rootCaPath) || !Path.IsPathRooted(rootCaPath) || rootCaPath.Contains("~") || rootCaPath.Contains("..") || rootCaPath.Contains(" "))
-                {
-                    AnsiConsole.MarkupLine("[red]You need to enter a valid path.[/]");
-
-                    return;
-                }
-                
-                if (!Directory.Exists(rootCaPath))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(rootCaPath);
-                    }
-                    catch
-                    {
-                        AnsiConsole.MarkupLine("[red]Unable to create the directory at the given path.[/]");
-
-                        return;
-                    }    
-                }
-                
-                AppSettingsHelper.AppSettings.Proxy.CaRootDirectory = rootCaPath;
-                AppSettingsHelper.SaveAppSettings();
-            }
-            
+          
             // Load additional commands that are defined within shell scripts
             var additionalCommands = new Dictionary<string, CustomBranch>();
 

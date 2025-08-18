@@ -156,11 +156,11 @@ internal class TraefikHelper
 
         var certificateDir = Path.Combine(workspacePath, ".devcontainer", "traefik", "certs");
 
-        var rootCaDir = AppSettingsHelper.AppSettings.Proxy.CaRootDirectory;
+        var rootCaDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "certs");
 
         if (!Directory.Exists(rootCaDir))
         {
-            return false;
+            Directory.CreateDirectory(rootCaDir);
         }
         
         // Make sure the proxy settings exist in the config
