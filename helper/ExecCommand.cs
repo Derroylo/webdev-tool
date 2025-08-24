@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Spectre.Console;
+using WebDev.Tool.Helper.Secrets;
 
 namespace WebDev.Tool.Helper
 {
@@ -49,6 +50,14 @@ namespace WebDev.Tool.Helper
 
             using (System.Diagnostics.Process proc = new())
             {
+
+                SecretsLoader.LoadEnvVarSecrets(false);
+
+                foreach (var secret in SecretsLoader.EnvVarSecrets)
+                {
+                    proc.StartInfo.EnvironmentVariables[secret.Key] = secret.Value;
+                }
+
                 proc.StartInfo.FileName = "/bin/bash";
                 proc.StartInfo.Arguments = "-c" + (isInteractive ? "i" : "") + " \"" + (disableJobControl ? "set +m; " : "") + command.Replace("\"", "\\\"") + "\"";
                 proc.StartInfo.EnvironmentVariables["WEBDEV_DISABLE_HEADER"] = "true";

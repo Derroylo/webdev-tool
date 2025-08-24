@@ -414,6 +414,10 @@ namespace WebDev.Tool
                 .WithAlias("l")
                 .WithDescription(@"Reads the config file and loads the defined secrets");                    
 
+            branch.AddCommand<ExportSecretsCommand>("export")
+                .WithAlias("e")
+                .WithDescription(@"Exports the secrets to the console");
+
             if (additionalCommands.TryGetValue("secrets", out CustomBranch customBranch)) {
                 foreach (CustomCommand cmd in customBranch.Commands) {
                     branch.AddCommand<ShellFileCommand>(cmd.Command)

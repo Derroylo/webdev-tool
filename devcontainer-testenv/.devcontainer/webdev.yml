@@ -50,3 +50,23 @@ tasks:
     name: Show information about the development environment
     start:
     - WEBDEV_DISABLE_HEADER=1 webdev project-start-summary
+  secrets:
+    name: Export the secrets to the console
+    start:
+    - echo "User:"
+    - echo $DOCKER_USER
+    - echo "Password:"
+    - echo $DOCKER_PASSWORD
+secrets:
+  ComposerSecret:
+    source:
+      key: auth
+      group: composer
+    target:
+      file: secret.json
+  GitlabDockerLoginSecret:
+    source:
+      key: gitlab_docker_login
+      group: docker
+    target:
+      envVar: file

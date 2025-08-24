@@ -15,8 +15,13 @@ fi
 
 # Install webdev tool on host first
 echo "Installing webdev tool on host..."
+mkdir ~/webdev-host_backup
+cp -r ~/webdev-host/certs ~/webdev-host_backup/
+cp -r ~/webdev-host/secrets ~/webdev-host_backup/
 rm -rf ~/webdev-host
 mkdir ~/webdev-host
+cp -r ~/webdev-host_backup/certs ~/webdev-host/certs
+cp -r ~/webdev-host_backup/secrets ~/webdev-host/secrets
 unzip -o webdev-tool.zip -d ~/webdev-host/
 chmod +x ~/webdev-host/webdev.sh
 sudo ln -sf ~/webdev-host/webdev.sh /usr/local/bin/webdev
