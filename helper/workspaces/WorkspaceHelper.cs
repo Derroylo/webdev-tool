@@ -171,37 +171,40 @@ internal class WorkspaceHelper
         vHostConfig = vHostConfig.Replace("#SUBDOMAIN#", GeneralConfig.Proxy.Subdomain);
         vHostConfig = vHostConfig.Replace("#DOMAIN#", GeneralConfig.Proxy.Domain);
 
-        var configFileName = workspace.SubDomain + ".conf";
-        
-        if (!isMainWorkspace)
+        foreach (var subDomain in workspace.SubDomain)
         {
-            vHostConfig = vHostConfig.Replace("#WSSUDOMAIN#", workspace.SubDomain + ".");
-            vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", GeneralConfig.WorkspaceFolder, workspace.Folder, workspace.DocRoot));
-        }
-        else
-        {
-            if (isWwwSubdomain)
+            var configFileName = subDomain + ".conf";
+
+            if (!isMainWorkspace)
             {
-                vHostConfig    = vHostConfig.Replace("#WSSUDOMAIN#", "www.");
-                configFileName = "www_main.conf";
+                vHostConfig = vHostConfig.Replace("#WSSUDOMAIN#", subDomain + ".");
+                vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", GeneralConfig.WorkspaceFolder, workspace.Folder, workspace.DocRoot));
             }
             else
             {
-                vHostConfig    = vHostConfig.Replace("#WSSUDOMAIN#", "");
-                configFileName = "main.conf";
+                if (isWwwSubdomain)
+                {
+                    vHostConfig    = vHostConfig.Replace("#WSSUDOMAIN#", "www.");
+                    configFileName = "www_main.conf";
+                }
+                else
+                {
+                    vHostConfig    = vHostConfig.Replace("#WSSUDOMAIN#", "");
+                    configFileName = "main.conf";
+                }
+                
+                vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", workspace.DocRoot));
+            }
+
+            var workspacePath = PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer());
+
+            if (!Directory.Exists(Path.Combine(workspacePath, ".devcontainer", "vhost")))
+            {
+                Directory.CreateDirectory(Path.Combine(workspacePath, ".devcontainer", "vhost"));
             }
             
-            vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", workspace.DocRoot));
+            File.WriteAllText(Path.Combine(workspacePath, ".devcontainer", "vhost") + "/" + configFileName, vHostConfig);
         }
-
-        var workspacePath = PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer());
-
-        if (!Directory.Exists(Path.Combine(workspacePath, ".devcontainer", "vhost")))
-        {
-            Directory.CreateDirectory(Path.Combine(workspacePath, ".devcontainer", "vhost"));
-        }
-        
-        File.WriteAllText(Path.Combine(workspacePath, ".devcontainer", "vhost") + "/" + configFileName, vHostConfig);
     }
 
     public static void EnableVhostConfigurations(bool debug = false)

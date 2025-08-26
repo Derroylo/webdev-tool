@@ -70,3 +70,8 @@ secrets:
       group: docker
     target:
       envVar: file
+workspaces:
+  main:
+    subDomain:
+    - test1
+    - test2

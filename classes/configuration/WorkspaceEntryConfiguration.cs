@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace WebDev.Tool.Classes.Configuration;
@@ -26,7 +27,7 @@ internal class WorkspaceEntryConfiguration
     [DefaultValue(WorkspaceMode.Vhost)]
     public WorkspaceMode Mode { get; set; } = WorkspaceMode.Vhost;
     
-    public string SubDomain { get; set; } = "";
+    public List<string> SubDomain { get; set; } = new ();
     
     [DefaultValue(false)]
     public bool DisableWeb { get; set; } = false;

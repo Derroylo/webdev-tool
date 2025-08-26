@@ -92,9 +92,10 @@ internal class TraefikHelper
                     hosts.Add($"Host(`{globalSubDomain}.{domain}`)");
                     hosts.Add($"Host(`www.{globalSubDomain}.{domain}`)");
                 }
-                else
+
+                foreach (var subDomain in workspace.Value.SubDomain)
                 {
-                    hosts.Add($"Host(`{workspace.Value.SubDomain}.{globalSubDomain}.{domain}`)");
+                    hosts.Add($"Host(`{subDomain}.{globalSubDomain}.{domain}`)");
                 }
             }
             
