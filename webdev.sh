@@ -35,7 +35,11 @@ if [ -f "$WEBDEVDIR/.services_start" ]; then
 
     rm "$WEBDEVDIR/.services_start"
     
-    docker-compose $startCommand
+    if command -v docker-compose &> /dev/null; then
+        docker-compose $startCommand
+    else
+        docker compose $startCommand
+    fi
 fi
 
 # Check if we want to stop services
@@ -44,7 +48,11 @@ if [ -f "$WEBDEVDIR/.services_stop" ]; then
 
     rm "$WEBDEVDIR/.services_stop"
 
-    docker-compose $stopCommand
+    if command -v docker-compose &> /dev/null; then
+        docker-compose $stopCommand
+    else
+        docker compose $stopCommand
+    fi
 fi
 
 # Check if we want to change the nodejs version
