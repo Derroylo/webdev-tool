@@ -6,28 +6,6 @@
 	"service": "devcontainer",
 	"runServices": ["devcontainer"],
 
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	"features": {
-		// Install git: https://github.com/devcontainers/features/tree/main/src/git
-		"ghcr.io/devcontainers/features/git:1": {},
-		// Install nodejs, yarn and pnpm: https://github.com/devcontainers/features/tree/main/src/node
-		"ghcr.io/devcontainers/features/node:1": {},
-		// Install shopware cli: https://github.com/shyim/devcontainers-features/tree/main/src/shopware-cli
-		"ghcr.io/shyim/devcontainers-features/shopware-cli:0": {},
-		// Install symfony cli: https://github.com/shyim/devcontainers-features/tree/main/src/symfony-cli
-		"ghcr.io/shyim/devcontainers-features/symfony-cli:0": {},
-		// Install composer: https://github.com/devcontainers-contrib/features/tree/main/src/composer
-		"ghcr.io/devcontainers-extra/features/composer:1": {
-			"version": "2.2.23"
-		},
-		// Install webdev tool: https://github.com/Derroylo/webdev-tool
-		"ghcr.io/Derroylo/devcontainers/webdev-tool:latest": {}
-	},
-	// Override the default install order for features.
-	"overrideFeatureInstallOrder": [
-	    "ghcr.io/devcontainers/features/git", // Must be installed first as other tools require this
-		"ghcr.io/devcontainers-extra/features/composer"
-	],
 	// Configure tool-specific properties.
 	"customizations": {
 		// Configure properties specific to VS Code.
@@ -76,7 +54,7 @@
 	},
 	"initializeCommand": "WEBDEV_DISABLE_HEADER=1 webdev workspaces-on-init && WEBDEV_DISABLE_HEADER=1 webdev tasks init",
 	"postStartCommand": "cd /var/www/html && WEBDEV_DISABLE_HEADER=1 sudo webdev workspaces-post-start && WEBDEV_DISABLE_HEADER=1 webdev tasks start",
-	"postCreateCommand": "cd /var/www/html && WEBDEV_DISABLE_HEADER=1 webdev tasks create",
+	"postCreateCommand": "sudo ln -sf ~/webdev/webdev.sh /usr/local/bin/webdev && cd /var/www/html && WEBDEV_DISABLE_HEADER=1 webdev tasks create",
 	"remoteUser": "webdev",
 	"workspaceFolder": "/var/www/html",
 	"containerEnv": {

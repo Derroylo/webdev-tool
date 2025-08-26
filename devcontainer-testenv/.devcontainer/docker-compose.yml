@@ -5,10 +5,11 @@ services:
     labels:
       com.webdev.category: "devcontainer"
       com.webdev.proxy.port: "8080"
-    image: ghcr.io/derroylo/docker-images/devcontainer/php:v1.1
+    image: ghcr.io/derroylo/devcontainer-prebuilds/php:latest
     container_name: ${COMPOSE_PROJECT_NAME:-devcontainer}-app
     volumes:
       - ..:/var/www/html:cached
+      - ~/webdev-host:/home/webdev/webdev
       - bashhistory:/commandhistory
     command: sleep infinity
     networks:
