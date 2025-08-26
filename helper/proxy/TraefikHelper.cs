@@ -66,7 +66,7 @@ internal class TraefikHelper
             traefikLabels = new Dictionary<string, string>
             {
                 { $"traefik.enable", "true" },
-                { $"traefik.http.routers.{serviceName}.rule", $"Host(`{proxyDomain}.{globalSubDomain}.{domain}`)" },
+                { $"traefik.http.routers.{serviceName}.rule", $"Host(`{proxyDomain}.{globalSubDomain}.{domain}`) || Host(`{proxyDomain}.{domain}`)" },
                 { $"traefik.http.routers.{serviceName}.entrypoints", "https" },
                 { $"traefik.http.routers.{serviceName}.tls", "true" },
                 { $"traefik.http.routers.{serviceName}.service", $"{serviceName}@docker" },
