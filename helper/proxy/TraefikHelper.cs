@@ -43,6 +43,7 @@ internal class TraefikHelper
             {
                 AnsiConsole.MarkupLine($"[red]No services found in {composeFile}[/]");
             }
+
             return false;
         }
 
@@ -56,6 +57,11 @@ internal class TraefikHelper
            
             if (proxyDomain == "" || proxyPort == "")
             {
+                if (debug)
+                {
+                    AnsiConsole.MarkupLine($"[red]No proxy.subdomain or proxy.port found for {serviceName} in {composeFile}[/]");
+                }
+
                 traefikLabels.Add($"traefik.enable", "false");
                 
                 newServices[serviceName] = new Dictionary<string, object> { { "labels", traefikLabels } };
@@ -63,6 +69,11 @@ internal class TraefikHelper
                 continue;
             }
             
+            if (debug)
+            {
+                AnsiConsole.MarkupLine($"[green]Adding traefik labels for {serviceName} in {composeFile}[/]");
+            }
+
             traefikLabels = new Dictionary<string, string>
             {
                 { $"traefik.enable", "true" },
@@ -85,7 +96,15 @@ internal class TraefikHelper
             {
                 if (workspace.Value.Mode != WorkspaceMode.Vhost || workspace.Value.DisableWeb) continue;
 
-                traefikLabels.Add($"traefik.enable", "true");
+                if (debug)
+                {
+                    AnsiConsole.MarkupLine($"[green]Adding traefik labels for {workspace.Key} in {composeFile}[/]");
+                }
+
+                if (!traefikLabels.ContainsKey($"traefik.enable"))
+                {
+                    traefikLabels.Add($"traefik.enable", "true");
+                }
                 
                 if (workspace.Key == "main")
                 {
@@ -101,6 +120,11 @@ internal class TraefikHelper
             
             if (hosts.Count > 0)
             {
+                if (debug)
+                {
+                    AnsiConsole.MarkupLine($"[green]Adding traefik labels for devcontainer in {composeFile}[/]");
+                }
+
                 traefikLabels.Add($"traefik.http.routers.devcontainer.rule", string.Join(" || ", hosts));
                 traefikLabels.Add($"traefik.http.routers.devcontainer.entrypoints", "https" );
                 traefikLabels.Add($"traefik.http.routers.devcontainer.tls", "true");
