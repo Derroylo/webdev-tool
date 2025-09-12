@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Spectre.Console;
@@ -10,7 +11,7 @@ using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Commands.Info;
 
-internal class ShowProjectStartSummaryCommand: Command
+internal class ShowProjectInfoCommand: Command
 {
     public override int Execute(CommandContext context)
     {
@@ -51,12 +52,18 @@ internal class ShowProjectStartSummaryCommand: Command
         
         AnsiConsole.MarkupLine(panelContent);
 
-        var workspacePanelContent = $"[bold yellow]Workspaces:[/]\n";
+        var workspacePanelContent = "";
         
         // Show Workspaces
         foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
         {
-            if (string.IsNullOrEmpty(workspace.Value.Name))
+            // Skip main workspace
+            if (workspace.Key == "main")
+            {
+                continue;
+            }
+
+            if (!string.IsNullOrEmpty(workspace.Value.Name))
             {
                 workspacePanelContent += $"[bold]{workspace.Value.Name}[/]".PadRight(30);
             }
@@ -65,18 +72,25 @@ internal class ShowProjectStartSummaryCommand: Command
                 workspacePanelContent += $"[bold]{workspace.Key} Workspace[/]".PadRight(30);
             }
 
-            if (!workspace.Value.DisableWeb && workspace.Value.Name != "main")
+            if (workspace.Value.DisableWeb)
             {
-                workspacePanelContent += $"[green]https://" + workspace.Value.SubDomain + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]";
-            } else if (!workspace.Value.DisableWeb && workspace.Value.Name != "main") 
-            {
-                workspacePanelContent += $"[green]https://" + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]";
+                workspacePanelContent += "\n";
+
+                continue;
             }
-            
+
+            foreach (var subDomain in workspace.Value.SubDomain)
+            {
+                workspacePanelContent += $"[green]https://" + subDomain + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/] ";
+            }
+
             workspacePanelContent += "\n";
         }
 
-        AnsiConsole.MarkupLine(workspacePanelContent);
+        if (workspacePanelContent != "")
+        {
+            AnsiConsole.MarkupLine($"[bold yellow]Workspaces:[/]\n" + workspacePanelContent);
+        }
         
         AnsiConsole.MarkupLine($"[bold yellow]Versions[/]");
         AnsiConsole.Markup($"[bold]PHP[/]".PadRight(30));
@@ -88,11 +102,16 @@ internal class ShowProjectStartSummaryCommand: Command
         AnsiConsole.MarkupLine($"Visit [green]https://derroylo.github.io/[/] to checkout the docs.");
         
         AnsiConsole.MarkupLine($"\n[bold yellow]What´s next?[/]");
-        AnsiConsole.MarkupLine($"Open [green]https://{WorkspacesConfig.Workspaces["main"].SubDomain}.{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}[/] in your browser to access your application.");
+        AnsiConsole.MarkupLine($"Open one of the following URLs in your browser to access your application:");
+        AnsiConsole.MarkupLine($"- [green]https://" + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]");
+        foreach (var subDomain in WorkspacesConfig.Workspaces["main"].SubDomain)
+        {
+            AnsiConsole.MarkupLine($"- [green]https://" + subDomain + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]");
+        }
 
         if (!EnvironmentHelper.IsRunningInDevContainer())
         {
-            AnsiConsole.MarkupLine($"Open the project with your favorite IDE to start coding: [green]code .[/] or [green]phpstorm .[/]");
+            AnsiConsole.MarkupLine($"\nOpen the project with your favorite IDE to start coding: [green]code .[/] or [green]phpstorm .[/]");
         }
         
         AnsiConsole.MarkupLine("\n[bold green]Happy coding! :rocket:[/]");

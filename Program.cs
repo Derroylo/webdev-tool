@@ -108,8 +108,8 @@ namespace WebDev.Tool
                 config.AddCommand<SelfUpdateCommand>("update").WithDescription("Update this tool to the latest version");
 
                 // Commands that are executed for various actions, like project start, to show the user some infos and what he can do next etc.
-                config.AddCommand<ShowProjectStartSummaryCommand>("project-start-summary").IsHidden();
-                config.AddCommand<ShowWebdevInstallSummaryCommand>("webdev-install-summary").IsHidden();
+                config.AddCommand<ShowProjectInfoCommand>("info");
+                //config.AddCommand<ShowWebdevInstallSummaryCommand>("webdev-install-summary").IsHidden();
                 
                 // Prepare and run workspaces
                 config.AddCommand<OnInitWorkspacesCommand>("workspaces-on-init").IsHidden();
