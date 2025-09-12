@@ -40,6 +40,11 @@ namespace WebDev.Tool
                 PathHelper.IsMainWorkspace = false;
             }
 
+            if (args.Contains("--no-header"))
+            {
+                EnvironmentHelper.DisableProgramHeader();
+            }
+
             // Output the program name, version and info if the config file could not be read
             OutputProgramHeader(version, args.Contains("--debug"));
           
@@ -154,7 +159,7 @@ namespace WebDev.Tool
         
         private static void OutputProgramHeader(string programVersion, bool showException = false)
         {
-            if (!EnvironmentHelper.DisableProgramHeader())
+            if (!EnvironmentHelper.IsProgramHeaderDisabled())
             {
                 AnsiConsole.Write(new FigletText("WebDev"));
                 AnsiConsole.Markup("[deepskyblue3]WebDev Tool[/] - Version [green]" + programVersion + "[/]");
@@ -168,7 +173,7 @@ namespace WebDev.Tool
             // Try to load the app settings
             AppSettingsHelper.LoadAppSettings(showException);
             
-            if (EnvironmentHelper.DisableProgramHeader())
+            if (EnvironmentHelper.IsProgramHeaderDisabled())
             {
                 return;
             }

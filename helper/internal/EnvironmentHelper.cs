@@ -1,4 +1,5 @@
 using System;
+using System.Dynamic;
 
 namespace WebDev.Tool.Helper.Internal;
 
@@ -9,8 +10,20 @@ internal static class EnvironmentHelper
         return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DEVCONTAINER"));
     }
 
-    public static bool DisableProgramHeader()
+    private static bool ProgramHeaderDisabled = false;
+    
+    public static void DisableProgramHeader()
     {
-        return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBDEV_DISABLE_HEADER"));
+        ProgramHeaderDisabled = true;
+    }
+
+    public static bool IsProgramHeaderDisabled()
+    {
+        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBDEV_DISABLE_HEADER")))
+        {
+            return true;
+        }
+
+        return ProgramHeaderDisabled;
     }
 }
