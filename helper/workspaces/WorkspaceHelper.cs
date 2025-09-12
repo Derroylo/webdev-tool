@@ -168,10 +168,10 @@ internal class WorkspaceHelper
             </VirtualHost>
             """;
         
-        vHostConfig = vHostConfig.Replace("#SUBDOMAIN#", GeneralConfig.Proxy.Subdomain);
+        vHostConfig = vHostConfig.Replace("#SUBDOMAIN#", GeneralConfig.Proxy.SubDomain);
         vHostConfig = vHostConfig.Replace("#DOMAIN#", GeneralConfig.Proxy.Domain);
 
-        foreach (var subDomain in workspace.SubDomain)
+        foreach (var subDomain in workspace.SubDomains)
         {
             var configFileName = subDomain + ".conf";
 

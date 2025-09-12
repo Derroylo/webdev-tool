@@ -27,7 +27,7 @@ internal class WorkspaceEntryConfiguration
     [DefaultValue(WorkspaceMode.Vhost)]
     public WorkspaceMode Mode { get; set; } = WorkspaceMode.Vhost;
     
-    public List<string> SubDomain { get; set; } = new ();
+    public List<string> SubDomains { get; set; } = new ();
     
     [DefaultValue(false)]
     public bool DisableWeb { get; set; } = false;

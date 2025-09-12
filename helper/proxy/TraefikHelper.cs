@@ -22,7 +22,7 @@ internal class TraefikHelper
         var proxyFile = Path.Combine(workspacePath, ".devcontainer", "docker-compose.proxy.yml");
 
         var domain = GeneralConfig.Proxy.Domain;
-        var globalSubDomain = GeneralConfig.Proxy.Subdomain;
+        var globalSubDomain = GeneralConfig.Proxy.SubDomain;
 
         if (!File.Exists(composeFile))
         {
@@ -112,7 +112,7 @@ internal class TraefikHelper
                     hosts.Add($"Host(`www.{globalSubDomain}.{domain}`)");
                 }
 
-                foreach (var subDomain in workspace.Value.SubDomain)
+                foreach (var subDomain in workspace.Value.SubDomains)
                 {
                     hosts.Add($"Host(`{subDomain}.{globalSubDomain}.{domain}`)");
                 }
@@ -189,7 +189,7 @@ internal class TraefikHelper
         }
         
         // Make sure the proxy settings exist in the config
-        if (GeneralConfig.Proxy.Domain == "" || GeneralConfig.Proxy.Subdomain == "")
+        if (GeneralConfig.Proxy.Domain == "" || GeneralConfig.Proxy.SubDomain == "")
         {
             return false;
         }
@@ -200,15 +200,15 @@ internal class TraefikHelper
         }
         
         // Check if the certificates already exist
-        if (File.Exists(Path.Combine(certificateDir, $"_wildcard.{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}.pem")) &&
-            File.Exists(Path.Combine(certificateDir, $"_wildcard.{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}-key.pem")))
+        if (File.Exists(Path.Combine(certificateDir, $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}.pem")) &&
+            File.Exists(Path.Combine(certificateDir, $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}-key.pem")))
         {
             return true;
         }
         
         // Run mkcert in a container to generate certs
         var dockerCmd = $@"
-            docker run --rm -v {rootCaDir}:/root/.local/share/mkcert -v {certificateDir}:/certs -w /certs alpine/mkcert ""*.{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}""
+            docker run --rm -v {rootCaDir}:/root/.local/share/mkcert -v {certificateDir}:/certs -w /certs alpine/mkcert ""*.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}""
         ";
         
         ExecCommand.Exec(dockerCmd);
@@ -217,13 +217,13 @@ internal class TraefikHelper
         var traefikConfig = new Dictionary<string, object>();
         traefikConfig["stores"] = new Dictionary<string, object>
         {
-            { "default", new Dictionary<string, object> { { "defaultCertificate", new Dictionary<string, string> { { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}.pem") }, { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}-key.pem") } } } } }
+            { "default", new Dictionary<string, object> { { "defaultCertificate", new Dictionary<string, string> { { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}.pem") }, { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}-key.pem") } } } } }
         };
         
         traefikConfig["certificates"] = new Dictionary<string, string>
         {
-            { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}.pem") }, 
-            { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.Subdomain}.{GeneralConfig.Proxy.Domain}-key.pem") }
+            { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}.pem") }, 
+            { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}-key.pem") }
         };
         
         var serializer = new SerializerBuilder()

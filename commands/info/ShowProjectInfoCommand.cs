@@ -39,7 +39,7 @@ internal class ShowProjectInfoCommand: Command
 
                 if (IsProxyActive() && serviceConfig != null && serviceConfig.ContainsKey("proxy.subdomain"))
                 {
-                    panelContent += $"[green]https://" + serviceConfig["proxy.subdomain"] + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]";
+                    panelContent += $"[green]https://" + serviceConfig["proxy.subdomain"] + "." + GeneralConfig.Proxy.SubDomain + "." + GeneralConfig.Proxy.Domain + "[/]";
                 }
                 
                 panelContent += "\n";
@@ -79,9 +79,9 @@ internal class ShowProjectInfoCommand: Command
                 continue;
             }
 
-            foreach (var subDomain in workspace.Value.SubDomain)
+            foreach (var subDomain in workspace.Value.SubDomains)
             {
-                workspacePanelContent += $"[green]https://" + subDomain + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/] ";
+                workspacePanelContent += $"[green]https://" + subDomain + "." + GeneralConfig.Proxy.SubDomain + "." + GeneralConfig.Proxy.Domain + "[/] ";
             }
 
             workspacePanelContent += "\n";
@@ -103,10 +103,10 @@ internal class ShowProjectInfoCommand: Command
         
         AnsiConsole.MarkupLine($"\n[bold yellow]What´s next?[/]");
         AnsiConsole.MarkupLine($"Open one of the following URLs in your browser to access your application:");
-        AnsiConsole.MarkupLine($"- [green]https://" + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]");
-        foreach (var subDomain in WorkspacesConfig.Workspaces["main"].SubDomain)
+        AnsiConsole.MarkupLine($"- [green]https://" + GeneralConfig.Proxy.SubDomain + "." + GeneralConfig.Proxy.Domain + "[/]");
+        foreach (var subDomain in WorkspacesConfig.Workspaces["main"].SubDomains)
         {
-            AnsiConsole.MarkupLine($"- [green]https://" + subDomain + "." + GeneralConfig.Proxy.Subdomain + "." + GeneralConfig.Proxy.Domain + "[/]");
+            AnsiConsole.MarkupLine($"- [green]https://" + subDomain + "." + GeneralConfig.Proxy.SubDomain + "." + GeneralConfig.Proxy.Domain + "[/]");
         }
 
         if (!EnvironmentHelper.IsRunningInDevContainer())
