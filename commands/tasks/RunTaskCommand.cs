@@ -25,13 +25,8 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
         
         [CommandOption("-s|--start")]
         [Description("Run commands defined under \"start\"")]
-        [DefaultValue(true)]
-        public bool RunStartCommands { get; set; }
-        
-        [CommandOption("-p|--prebuild")]
-        [Description("Run commands defined under \"prebuild\"")]
         [DefaultValue(false)]
-        public bool RunPreBuildCommands { get; set; }
+        public bool RunStartCommands { get; set; }
     }
     
     public override int Execute(CommandContext context, Settings settings)
@@ -77,16 +72,6 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
             AnsiConsole.MarkupLine("[green]Create[/]");
             
             foreach (string cmd in task.Create)
-            {
-                ExecCommand.ExecWithDirectOutput(cmd, true, true);
-            }
-        }
-        
-        if (settings.RunPreBuildCommands && task.Prebuild.Count > 0)
-        {
-            AnsiConsole.MarkupLine("[green]PreBuild[/]");
-            
-            foreach (string cmd in task.Prebuild)
             {
                 ExecCommand.ExecWithDirectOutput(cmd, true, true);
             }
