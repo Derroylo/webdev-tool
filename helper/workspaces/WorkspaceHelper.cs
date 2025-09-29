@@ -118,6 +118,12 @@ internal class WorkspaceHelper
 
             if (workspace.Key == "main")
             {
+                // Add www subdomain to the main workspace, otherwise the vhost config will not be generated
+                if (!workspace.Value.SubDomains.Contains("www"))
+                {
+                    workspace.Value.SubDomains.Add("www");
+                }
+
                 CreateVhostWorkspace(workspace.Value, true);
                 
                 continue;

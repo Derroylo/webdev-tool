@@ -55,6 +55,12 @@ internal class TraefikHelper
             var proxyDomain = service.Value.ContainsKey("proxy.subdomain") ? service.Value["proxy.subdomain"] : "";
             var proxyPort = service.Value.ContainsKey("proxy.port") ? service.Value["proxy.port"] : "";
            
+
+            if (serviceName == "devcontainer")
+            {
+                continue;
+            }
+
             if (proxyDomain == "" || proxyPort == "")
             {
                 if (debug)
