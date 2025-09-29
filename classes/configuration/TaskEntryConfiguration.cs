@@ -21,9 +21,7 @@ internal class TaskEntryConfiguration
     public bool OnlyMain { get; set; } = true;
     
     public List<string> Init { get; set; } = new();
-    
-    public List<string> Prebuild { get; set; } = new();
-    
+       
     public List<string> Create { get; set; } = new();
     
     public List<string> Start { get; set; } = new();

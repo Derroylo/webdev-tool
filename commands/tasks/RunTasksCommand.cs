@@ -94,26 +94,7 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
                 }
                 
             }
-            
-            if (sectionName == "prebuild" && entry.Value.Prebuild.Count > 0)
-            {
-                if (!shownRunningCommands)
-                {
-                    AnsiConsole.MarkupLine("[green]Running commands for task: " + entry.Value.Name + "[/]");
-                    shownRunningCommands = true;
-                }
-                
-                foreach (string cmd in entry.Value.Prebuild)
-                {
-                    if (settings.Debug)
-                    {
-                        AnsiConsole.MarkupLine("[green]Running command:[/] " + cmd);
-                    }
-                    
-                    ExecCommand.ExecWithDirectOutput(cmd, false, true);
-                }
-            }
-            
+                      
             if (sectionName == "start" && entry.Value.Start.Count > 0)
             {
                 if (!shownRunningCommands)
