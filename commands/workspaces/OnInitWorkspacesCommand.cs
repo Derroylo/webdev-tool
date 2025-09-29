@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Helper.Proxy;
+using WebDev.Tool.Helper.Secrets;
 using WebDev.Tool.Helper.workspaces;
 
 namespace WebDev.Tool.Commands.workspaces;
@@ -38,6 +39,10 @@ internal class OnInitWorkspacesCommand: Command<OnInitWorkspacesCommand.Settings
             return 1;
         }
         
+        // Load secrets
+        SecretsLoader.LoadEnvVarSecrets();
+        SecretsLoader.LoadFileSecrets();
+
         return !WorkspaceHelper.PrepareWorkspaces(settings.Debug) ? 1 : 0;
     }
 }
