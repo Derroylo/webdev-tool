@@ -443,9 +443,9 @@ namespace WebDev.Tool
         {
             branch.SetDescription("Project commands");
                     
-            branch.AddCommand<InitProjectCommand>("init")
+            /* branch.AddCommand<InitProjectCommand>("init")
                 .WithAlias("i")
-                .WithDescription(@"Creates a new project from a given Repo and sets up the necessary devcontainer");                    
+                .WithDescription(@"Creates a new project from a given Repo and sets up the necessary devcontainer");                     */
 
             branch.AddCommand<StartProjectCommand>("start")
                 .WithAlias("s")
