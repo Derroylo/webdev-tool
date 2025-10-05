@@ -25,6 +25,7 @@ using WebDev.Tool.Commands.terminal;
 using WebDev.Tool.Commands.workspaces;
 using WebDev.Tool.Helper;
 using WebDev.Tool.Helper.Internal.Config.Sections;
+using WebDev.Tool.Commands.Mysql;
 
 namespace WebDev.Tool
 {
@@ -84,7 +85,10 @@ namespace WebDev.Tool
                     config.AddBranch("secrets", branch => AddSecretsCommandBranch(branch, additionalCommands));
                 }
                 
-                //config.AddBranch("mysql", branch => AddMysqlCommandBranch(branch, additionalCommands));
+                if (!EnvironmentHelper.IsRunningInDevContainer())
+                {
+                    config.AddBranch("mysql", branch => AddMysqlCommandBranch(branch, additionalCommands));
+                }
 
                 if (EnvironmentHelper.IsRunningInDevContainer())
                 {
@@ -345,14 +349,17 @@ namespace WebDev.Tool
 
         private static void AddMysqlCommandBranch(IConfigurator<CommandSettings> branch, Dictionary<string, CustomBranch> additionalCommands)
         {
-            branch.SetDescription("Import or Export Databases or create snapshots [red]Not implemented yet[/]");
+            branch.SetDescription("Various commands to interact with the mysql database");
 
-            branch.AddCommand<NotYetImplementedCommand>("export")
+            branch.AddCommand<MysqlPullCommand>("update")
+                .WithDescription("Pulls the latest version of the custom database image");
+
+            /* branch.AddCommand<NotYetImplementedCommand>("export")
                 .WithDescription("Exports the content of the database to a file [red]Not implemented yet[/]");
             branch.AddCommand<NotYetImplementedCommand>("import")
                 .WithDescription("Imports database content from a file [red]Not implemented yet[/]");
             branch.AddCommand<NotYetImplementedCommand>("snapshot")
-                .WithDescription("Create/Restore a snapshot of the database. Useful to make a backup before you test something and want to restore the old state fast if anything goes wrong [red]Not implemented yet[/]");
+                .WithDescription("Create/Restore a snapshot of the database. Useful to make a backup before you test something and want to restore the old state fast if anything goes wrong [red]Not implemented yet[/]"); */
 
             if (additionalCommands.TryGetValue("mysql", out CustomBranch customBranch)) {
                 foreach (CustomCommand cmd in customBranch.Commands) {

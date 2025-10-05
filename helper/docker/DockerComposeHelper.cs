@@ -77,6 +77,8 @@ namespace WebDev.Tool.Helper.Docker
                         if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.proxy.port")) {
                             serviceInfos.Add("proxy.port", dockerCompose["services"][serviceName]["labels"]["com.webdev.proxy.port"].ToString());
                         }
+
+                        serviceInfos.Add("image", dockerCompose["services"][serviceName]["image"].ToString());
                     }
 
                     if (((Dictionary<object, object>) dockerCompose["services"][serviceName]).ContainsKey("environment")) {
