@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using WebDev.Tool.Helper.Docker;
 using WebDev.Tool.Helper.Proxy;
 using WebDev.Tool.Helper.Secrets;
 using WebDev.Tool.Helper.workspaces;
@@ -43,6 +44,16 @@ internal class OnInitWorkspacesCommand: Command<OnInitWorkspacesCommand.Settings
         SecretsLoader.LoadEnvVarSecrets();
         SecretsLoader.LoadFileSecrets();
 
+        // Stop other devcontainers
+        var runningContainers = DockerHelper.GetRunningContainers("_devcontainer");
+        if (runningContainers.Count > 0)
+        {
+            foreach (var container in runningContainers)
+            {
+                DockerHelper.StopContainer(container);
+            }
+        }
+        
         return !WorkspaceHelper.PrepareWorkspaces(settings.Debug) ? 1 : 0;
     }
 }

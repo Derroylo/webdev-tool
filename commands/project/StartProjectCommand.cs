@@ -6,6 +6,7 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Helper;
 using WebDev.Tool.Helper.devcontainer;
+using WebDev.Tool.Helper.Docker;
 
 namespace WebDev.Tool.Commands.Project;
 
@@ -51,6 +52,33 @@ internal class StartProjectCommand: Command
             return 1;
         }
         
+        // Check for running devcontainers
+        var runningContainers = DockerHelper.GetRunningContainers("_devcontainer");
+        if (runningContainers.Count > 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]Warning:[/] Found running devcontainers:");
+            foreach (var container in runningContainers)
+            {
+                AnsiConsole.MarkupLine($"  - {container}");
+            }
+            
+            var stopConfirm = AnsiConsole.Confirm("Do you want to stop these containers before continuing?");
+            if (stopConfirm)
+            {
+                foreach (var container in runningContainers)
+                {
+                    DockerHelper.StopContainer(container);
+                }
+                AnsiConsole.MarkupLine("[green]Successfully stopped running devcontainers.[/]");
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[red]Cannot start new devcontainer while others are running.[/]");
+                return 1;
+            }
+        }
+
+        // Check if the folder already contains a .devcontainer/vhost directory
         var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
         
         File.WriteAllText(applicationDir + ".devcontainer_up", "devcontainer up");
