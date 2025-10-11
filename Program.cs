@@ -450,6 +450,10 @@ namespace WebDev.Tool
             branch.AddCommand<StartProjectCommand>("start")
                 .WithAlias("s")
                 .WithDescription(@"Checks if the current folder contains a devcontainer spec and starts it");
+
+            branch.AddCommand<StopProjectCommand>("stop")
+                .WithAlias("st")
+                .WithDescription(@"Checks if the current folder contains a devcontainer spec and stops it");                
             
             if (additionalCommands.TryGetValue("project", out CustomBranch customBranch)) {
                 foreach (CustomCommand cmd in customBranch.Commands) {
