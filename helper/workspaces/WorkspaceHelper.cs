@@ -37,6 +37,10 @@ internal class WorkspaceHelper
             }
             else
             {
+                if (workspace.Value.Folder == "") {
+                    workspace.Value.Folder = workspace.Key;
+                }
+
                 workspaceFolder = GeneralConfig.WorkspaceFolder + "/" + workspace.Value.Folder + "/";
             }
 
@@ -136,7 +140,7 @@ internal class WorkspaceHelper
             }
             
             var workspaceFolder = GeneralConfig.WorkspaceFolder + "/" + workspace.Value.Folder + "/";
-
+           
             if (workspace.Value.Mode == WorkspaceMode.DevContainer)
             {
                 workspaces.Add(workspaceFolder);
