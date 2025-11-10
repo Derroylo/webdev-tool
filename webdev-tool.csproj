@@ -4,8 +4,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
-    <Version>0.3.1</Version>
-    <InformationalVersion></InformationalVersion>
+    <Version>0.3.2</Version>
+    <InformationalVersion>-alpha.1</InformationalVersion>
     <Authors>Derroylo</Authors>
     <Product>WebDev-Tool</Product>
     <Description>A little tool to help with WebDevelopment using DevContainer</Description>
@@ -36,6 +36,20 @@
     <ContentWithTargetPath Include="webdev.sh">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="translations\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>translations/%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="secrets\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>secrets/%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
 

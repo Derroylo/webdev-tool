@@ -41,8 +41,15 @@ internal class OnInitWorkspacesCommand: Command<OnInitWorkspacesCommand.Settings
         }
         
         // Load secrets
-        SecretsLoader.LoadEnvVarSecrets();
-        SecretsLoader.LoadFileSecrets();
+        if (!SecretsLoader.LoadEnvVarSecrets())
+        {
+            return 1;
+        }
+
+        if (!SecretsLoader.LoadFileSecrets())
+        {
+            return 1;
+        }
 
         // Stop other devcontainers
         var runningContainers = DockerHelper.GetRunningContainers("_devcontainer");

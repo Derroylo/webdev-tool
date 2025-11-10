@@ -31,14 +31,43 @@ internal class FileHandler: SecretsHandlerInterface
         var secretDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "secrets");
         var sourcePath = Path.Combine(secretDir, secret.Source.Group);
 
+        if (!Directory.Exists(sourcePath))
+        {
+            if (showMessages) 
+            {
+                var missingMessage = secret.MissingMessage;
+
+                if (!string.IsNullOrEmpty(missingMessage))
+                {
+                    missingMessage = TranslationHelper.GetString(missingMessage);
+                }
+                else
+                {
+                    missingMessage = $"[red]Directory not found for secret {secretName}: {sourcePath}[/]";
+                }
+
+                AnsiConsole.MarkupLine($"{missingMessage}");
+            }
+
+            return null;
+        }
+
         var files = Directory.GetFiles(sourcePath, $"{secret.Source.Key}.*");
 
         if (files.Length == 0)
         {
-            if (showMessages)
+            var missingMessage = secret.MissingMessage;
+
+            if (!string.IsNullOrEmpty(missingMessage))
             {
-                AnsiConsole.MarkupLine($"[red]File not found for secret {secretName}: {sourcePath}[/]");
+                missingMessage = TranslationHelper.GetString(missingMessage);
             }
+            else
+            {
+                missingMessage = $"[red]File not found for secret {secretName}: {sourcePath}[/]";
+            }
+
+            AnsiConsole.MarkupLine($"{missingMessage}");
 
             return null;
         }

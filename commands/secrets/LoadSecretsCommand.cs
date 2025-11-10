@@ -7,8 +7,15 @@ internal class LoadSecretsCommand: Command
 {
     public override int Execute(CommandContext context)
     {
-        SecretsLoader.LoadEnvVarSecrets();
-        SecretsLoader.LoadFileSecrets();
+        if (!SecretsLoader.LoadEnvVarSecrets())
+        {
+            return 1;
+        }
+
+        if (!SecretsLoader.LoadFileSecrets())
+        {
+            return 1;
+        }
         
         return 0;
     }

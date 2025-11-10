@@ -55,7 +55,7 @@ namespace WebDev.Tool.Commands.Services
             }
 
             var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
-            var projectName = Path.GetFileName(Directory.GetCurrentDirectory()) + "_devcontainer";
+            var projectName = DockerHelper.GetProjectName();
 
             if (File.Exists(DockerComposeHelper.GetProxyFile()))
             {

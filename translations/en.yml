@@ -1,0 +1,13 @@
+Secrets:
+  Missing:
+    Composer: "No composer secret found"
+    DockerLogin:
+      Gitlab: |-
+        [red]The project is configured to use a gitlab docker login secret, but no secret was found in the secrets directory.[/]
+        Follow this steps to create the secret:
+        1. Go to your gitlab project settings
+        2. Go to the "Secrets" section
+        3. Create a new secret with the name "DOCKER_USERNAME" and the value of the username
+        4. Create a new secret with the name "DOCKER_PASSWORD" and the value of the password
+        5. Save the changes
+        6. Run the command "webdev secrets load" to load the secret into the project
