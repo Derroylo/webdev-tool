@@ -18,7 +18,7 @@ namespace WebDev.Tool.Commands.Services
 
             var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
 
-            File.WriteAllText(applicationDir + ".services_stop", "-f " + DockerComposeHelper.GetFile() + " stop");
+            File.WriteAllText(applicationDir + ".services_stop", "-f " + DockerComposeHelper.GetFile() + " -p " + DockerHelper.GetProjectName() + " stop");
 
             return 0;
         }
