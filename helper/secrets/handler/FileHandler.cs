@@ -67,7 +67,10 @@ internal class FileHandler: SecretsHandlerInterface
                 missingMessage = $"[red]File not found for secret {secretName}: {sourcePath}[/]";
             }
 
-            AnsiConsole.MarkupLine($"{missingMessage}");
+            if (showMessages)
+            {
+                AnsiConsole.MarkupLine($"{missingMessage}");
+            }
 
             return null;
         }

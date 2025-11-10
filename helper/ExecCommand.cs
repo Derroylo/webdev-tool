@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.IO;
 using Spectre.Console;
 using WebDev.Tool.Helper.Secrets;
 
@@ -44,13 +45,12 @@ namespace WebDev.Tool.Helper
             return result.TrimEnd('\n');
         }
 
-        public static string ExecWithDirectOutput(string command, bool isInteractive = false, bool disableJobControl = false)
+        public static string ExecWithDirectOutput(string command, bool isInteractive = false, bool disableJobControl = false, string workingDirectory = "")
         {
             string result = "";
 
             using (System.Diagnostics.Process proc = new())
             {
-
                 SecretsLoader.LoadEnvVarSecrets(false);
 
                 foreach (var secret in SecretsLoader.EnvVarSecrets)
@@ -59,33 +59,53 @@ namespace WebDev.Tool.Helper
                 }
 
                 proc.StartInfo.FileName = "/bin/bash";
-                proc.StartInfo.Arguments = "-c" + (isInteractive ? "i" : "") + " \"" + (disableJobControl ? "set +m; " : "") + command.Replace("\"", "\\\"") + "\"";
+                proc.StartInfo.Arguments = $"-c" + (isInteractive ? "i" : "") + " \"" + (disableJobControl ? "set +m; " : "") + command.Replace("\"", "\\\"") + " 2>&1\"";
                 proc.StartInfo.EnvironmentVariables["WEBDEV_DISABLE_HEADER"] = "true";
                 proc.StartInfo.UseShellExecute = false;
                 proc.StartInfo.RedirectStandardOutput = true;
-                proc.StartInfo.RedirectStandardError = true;
+                proc.StartInfo.RedirectStandardError = false;
                 proc.StartInfo.RedirectStandardInput = true;
-                proc.OutputDataReceived += (sendingProcess, dataLine) => {
-                    if (dataLine.Data != null) {
-                        AnsiConsole.WriteLine(dataLine.Data);
-                    }
-                };
 
-                proc.ErrorDataReceived += (sendingProcess, errorLine) => {
-                    if (errorLine.Data != null) {
-                        AnsiConsole.WriteLine(errorLine.Data);
-                    }
-                };
+                if (workingDirectory != "") {
+                    proc.StartInfo.WorkingDirectory = workingDirectory;
+                }
 
                 proc.Start();
 
-                proc.BeginOutputReadLine();
-                proc.BeginErrorReadLine();
+                // Read output character-by-character to handle progress bars with \r
+                ReadStreamWithProgressBar(proc.StandardOutput);
 
                 proc.WaitForExit();
             }
 
             return result;
+        }
+
+        private static void ReadStreamWithProgressBar(StreamReader reader)
+        {
+            char[] buffer = new char[1];
+            
+            while (reader.Read(buffer, 0, 1) > 0)
+            {
+                char c = buffer[0];
+                
+                if (c == '\r')
+                {
+                    // Carriage return - write \r to position cursor at start of line
+                    // This allows the next content to overwrite the current line
+                    AnsiConsole.Write("\r");
+                }
+                else if (c == '\n')
+                {
+                    // Newline - just write the newline (characters were already written)
+                    AnsiConsole.Write("\n");
+                }
+                else
+                {
+                    // Regular character - write immediately for real-time display
+                    AnsiConsole.Write(c);
+                }
+            }
         }
     }
 }

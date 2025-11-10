@@ -1,10 +1,11 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Threading.Tasks;
+using System.IO;
 using WebDev.Tool.Classes;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using WebDev.Tool.Helper;
 
 namespace WebDev.Tool.Commands.Shell
 {
@@ -78,41 +79,8 @@ namespace WebDev.Tool.Commands.Shell
                 {
                     workingDirectory = cmd.WorkspaceFolder;
                 }
-                
-                // Execute the shell script
-                var process = new Process();
 
-                var processStartInfo = new ProcessStartInfo()
-                {
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    FileName = $"/bin/bash",
-                    WorkingDirectory = workingDirectory,
-                    Arguments = $"-c \"" + cmd.File + (args != String.Empty ? " " + args : "") + "\"",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false
-                };
-
-                process.StartInfo = processStartInfo;
-                process.Start();
-
-                Task.WaitAll(Task.Run(() =>
-                {
-                    while (!process.StandardOutput.EndOfStream)
-                    {
-                        var line = process.StandardOutput.ReadLine();
-                        Console.WriteLine(line);
-                    }
-                }), Task.Run(() =>
-                {
-                    while (!process.StandardError.EndOfStream)
-                    {
-                        var line = process.StandardError.ReadLine();
-                        Console.WriteLine(line);
-                    }
-                }));
-
-                process.WaitForExit();
+                ExecCommand.ExecWithDirectOutput(cmd.File + (args != String.Empty ? " " + args : ""), false, false, workingDirectory);
             }
             catch(Exception ex)
             {
