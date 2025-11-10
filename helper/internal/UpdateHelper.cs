@@ -59,7 +59,7 @@ namespace WebDev.Tool.Helper.Internal
             IReadOnlyList<ReleaseAsset> assets = lastRelease.Assets;
 
             JObject tmp = new JObject(
-                new JProperty("last_check", DateTime.Now.ToString()),
+                new JProperty("last_check", DateTime.Now.ToString("o")), // ISO 8601 format (culture-invariant)
                 new JProperty("last_release", lastRelease.TagName.Replace("v", "")),
                 new JProperty("download_url", assets[0].BrowserDownloadUrl)
             );
