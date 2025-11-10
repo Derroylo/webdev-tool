@@ -27,5 +27,18 @@ namespace WebDev.Tool.Helper.Docker
         {
             ExecCommand.ExecWithDirectOutput("docker stop " + name);
         }
+
+        public static string GetProjectName()
+        {
+            var projectName = Path.GetFileName(Directory.GetCurrentDirectory()) + "_devcontainer";
+
+            // Replace invalid characters with an underscore
+            projectName = System.Text.RegularExpressions.Regex.Replace(projectName, @"[^A-Za-z0-9\-_]", "_");
+            
+            // Replace multiple consecutive underscores with a single underscore
+            projectName = System.Text.RegularExpressions.Regex.Replace(projectName, @"_+", "_");
+            
+            return projectName;
+        }
     }
 }

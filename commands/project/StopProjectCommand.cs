@@ -53,9 +53,8 @@ internal class StopProjectCommand: Command
         }
         
         var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
-        var projectName = Path.GetFileName(Directory.GetCurrentDirectory()) + "_devcontainer";
-
-        File.WriteAllText(applicationDir + ".services_stop", "-f " + DockerComposeHelper.GetFile() + " -p " + projectName + " stop");
+        
+        File.WriteAllText(applicationDir + ".services_stop", "-f " + DockerComposeHelper.GetFile() + " -p " + DockerHelper.GetProjectName() + " stop");
         
         return 0;
     }

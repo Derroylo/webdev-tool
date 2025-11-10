@@ -46,7 +46,6 @@ namespace WebDev.Tool.Commands.Mysql
             }
 
             var composeFile = DockerComposeHelper.GetFile();
-            var projectName = Path.GetFileName(Directory.GetCurrentDirectory()) + "_devcontainer";
             
             AnsiConsole.MarkupLine("Stopping MySQL container...");
             ExecCommand.ExecWithDirectOutput("docker-compose -f " + composeFile + " stop mysql", settings.Debug);
@@ -58,7 +57,7 @@ namespace WebDev.Tool.Commands.Mysql
             ExecCommand.ExecWithDirectOutput("docker-compose -f " + composeFile + " pull mysql", settings.Debug);
 
             AnsiConsole.MarkupLine("Starting MySQL container...");
-            ExecCommand.ExecWithDirectOutput("docker-compose -f " + composeFile + " -p " + projectName + " up -d mysql", settings.Debug);
+            ExecCommand.ExecWithDirectOutput("docker-compose -f " + composeFile + " -p " + DockerHelper.GetProjectName() + " up -d mysql", settings.Debug);
 
             AnsiConsole.MarkupLine("[green]MySQL container has been updated successfully![/]");
 
