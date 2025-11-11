@@ -1,0 +1,84 @@
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using WebDev.Tool.Classes;
+using Spectre.Console;
+using Spectre.Console.Cli;
+using WebDev.Tool.Classes.Configuration;
+using WebDev.Tool.Helper;
+using WebDev.Tool.Helper.Internal;
+using WebDev.Tool.Helper.Internal.Config.Sections;
+
+namespace WebDev.Tool.Commands.Shell
+{
+    internal class TestsCommand : Command
+    {
+        public override int Execute(CommandContext context)
+        {
+            TestEntryConfiguration test = (TestEntryConfiguration) context.Data;
+
+            if (test.Commands.Count == 0) {
+                AnsiConsole.MarkupLine($"[red]The Test \"{test.Name}\" has no defined commands[/]");
+
+                return 0;
+            }
+
+            if (EnvironmentHelper.IsRunningInDevContainer()) {
+                RunTestInsideDevContainer(test);
+            } else {
+                RunTestOutsideDevContainer(test);
+            }
+
+            return 0;
+        }
+
+        private static void RunTestOutsideDevContainer(TestEntryConfiguration test)
+        {
+            // Run the test commands inside a php:8.2-cli-alpine container and show their output
+
+            // Build the docker run command to execute the test commands sequentially via 'sh -c'
+            // Mount the current directory to /app for file access if needed by the test commands
+            // Use interactive tty for better output rendering
+            // Compose all test commands into a single shell script line: "cmd1 && cmd2 && ..."
+            string workDir = Directory.GetCurrentDirectory().Replace("\\", "/");
+            string dockerImage = test.Image;
+
+            if (string.IsNullOrEmpty(dockerImage)) {
+                dockerImage = "php:" + PhpConfig.PhpVersion + "-cli-alpine";
+            }
+
+            // Join the commands for sh -c execution
+            string allCommands = GetTestCommands(test);
+
+            // docker run -it --rm -v "$PWD":/app -w /app php:8.2-cli-alpine sh -c 'cmd1 && cmd2'
+            var dockerCommand = $"docker run --rm -v \"{workDir}:/app\" -w /app {dockerImage} sh -c \"{allCommands.Replace("\"", "\\\"")}\"";
+
+            ExecCommand.ExecWithDirectOutput(dockerCommand, true, true);
+        }
+
+        private static void RunTestInsideDevContainer(TestEntryConfiguration test)
+        {
+            string allCommands = GetTestCommands(test);
+
+            ExecCommand.ExecWithDirectOutput(allCommands, true, true);
+        }
+
+        private static string GetTestCommands(TestEntryConfiguration test)
+        {
+            string commands = "";
+
+            foreach (string testName in test.Tests) {
+                if (TestsConfig.Tests.TryGetValue(testName, out TestEntryConfiguration testEntry)) {
+                    commands += GetTestCommands(testEntry) + " && ";
+                }
+            }
+
+            foreach (string cmd in test.Commands) {
+                commands += cmd + " && ";
+            }
+
+            return commands.TrimEnd(' ');
+        }
+    }
+}

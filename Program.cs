@@ -119,7 +119,22 @@ namespace WebDev.Tool
                 config.AddCommand<OnInitWorkspacesCommand>("workspaces-on-init").IsHidden();
                 config.AddCommand<PostStartWorkspacesCommand>("workspaces-post-start").IsHidden();
 
-                List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task" };
+                List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task", "tests" };
+
+                // Add Tests branch
+                if (TestsConfig.Tests.Count > 0)
+                {
+                    config.AddBranch("tests", branch => 
+                    {
+                        branch.SetDescription("Run tests");
+
+                        foreach (KeyValuePair<string, TestEntryConfiguration> entry in TestsConfig.Tests) {
+                            branch.AddCommand<TestsCommand>(entry.Key)
+                                .WithData(entry.Value)
+                                .WithDescription(entry.Value.Name);
+                        }
+                    });
+                }
 
                 // Add branches that haven´t been added yet via custom commands
                 foreach (KeyValuePair<string, CustomBranch> entry in additionalCommands.Where(x => !reservedBranches.Contains(x.Key))) {

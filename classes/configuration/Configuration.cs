@@ -21,5 +21,7 @@ namespace WebDev.Tool.Classes.Configuration
         public Dictionary<string, TaskEntryConfiguration> Tasks { get; set; } = new();
         
         public Dictionary<string, WorkspaceEntryConfiguration> Workspaces { get; set; } = new();
+
+        public Dictionary<string, TestEntryConfiguration> Tests { get; set; } = new();
     }
 }

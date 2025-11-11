@@ -52,9 +52,8 @@
 			"onAutoForward": "notify"
 		}
 	},
-	"initializeCommand": "WEBDEV_DISABLE_HEADER=1 webdev workspaces-on-init && WEBDEV_DISABLE_HEADER=1 webdev tasks init",
-	"postStartCommand": "cd /var/www/html && WEBDEV_DISABLE_HEADER=1 sudo webdev workspaces-post-start && WEBDEV_DISABLE_HEADER=1 webdev tasks start",
-	"postCreateCommand": "sudo ln -sf ~/webdev/webdev.sh /usr/local/bin/webdev && cd /var/www/html && WEBDEV_DISABLE_HEADER=1 webdev tasks create",
+	"initializeCommand": "webdev workspaces-on-init --no-header && webdev tasks init --no-header",
+	"postStartCommand": "sudo ln -sf ~/webdev/webdev.sh /usr/local/bin/webdev && webdev tasks create --no-header && sudo webdev workspaces-post-start --no-header && webdev tasks start --no-header",
 	"remoteUser": "webdev",
 	"workspaceFolder": "/var/www/html",
 	"containerEnv": {

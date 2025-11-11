@@ -1,7 +1,7 @@
 config:
   allowPreReleases: true
   proxy:
-    subdomain: testenv
+    subDomain: testenv
 php:
   version: 8.1
   config:
@@ -22,6 +22,24 @@ services:
   - traefik
   - mysql
   - mailpit
+secrets:
+  ComposerSecret:
+    missingMessage: Secrets.Missing.Composer
+    source:
+      key: auth
+      group: composer
+    target:
+      file: secret.json
+  GitlabDockerLoginSecret:
+    missingMessage: Secrets.Missing.DockerLogin.Gitlab
+    source:
+      key: gitlab_docker_login
+      group: docker
+    target:
+      envVar: file
+      expectedVars:
+        - DOCKER_USERNAME
+        - DOCKER_PASSWORD
 tasks:
   fixOwner:
     name: Fixes the owner of different folders
@@ -57,21 +75,33 @@ tasks:
     - echo $DOCKER_USER
     - echo "Password:"
     - echo $DOCKER_PASSWORD
-secrets:
-  ComposerSecret:
-    source:
-      key: auth
-      group: composer
-    target:
-      file: secret.json
-  GitlabDockerLoginSecret:
-    source:
-      key: gitlab_docker_login
-      group: docker
-    target:
-      envVar: file
-workspaces:
-  main:
-    subDomain:
-    - test1
-    - test2
+tests:
+  lint:
+    name: Run php-cs-fixer and phpstan
+    tests:
+    - phpcsfixer
+    - phpstan
+  phpcsfixer:
+    name: Run php-cs-fixer
+    commands:
+    - php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php -vvv --dry-run --diff --using-cache=no
+  phpcsfixer-fix:
+    name: Run php-cs-fixer fix
+    commands:
+    - php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php -vvv --diff --using-cache=no
+  phpstan:
+    name: Run phpstan
+    commands:
+    - php -d memory_limit=1G vendor/bin/phpstan analyze -c phpstan.dist.neon
+  phpstan-baseline:
+    name: Generate phpstan baseline
+    commands:
+    - php -d memory_limit=1G vendor/bin/phpstan analyze -c phpstan.dist.neon --generate-baseline
+  phpunit:
+    name: Run phpunit
+    commands:
+    - phpunit
+  coverage:
+    name: Run phpunit with coverage
+    commands:
+    - phpunit --coverage-html coverage
