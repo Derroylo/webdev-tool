@@ -18,7 +18,7 @@ namespace WebDev.Tool.Commands.Shell
         {
             TestEntryConfiguration test = (TestEntryConfiguration) context.Data;
 
-            if (test.Commands.Count == 0) {
+            if (test.Commands.Count == 0 && test.Tests.Count == 0) {
                 AnsiConsole.MarkupLine($"[red]The Test \"{test.Name}\" has no defined commands[/]");
 
                 return 0;
@@ -51,6 +51,9 @@ namespace WebDev.Tool.Commands.Shell
             // Join the commands for sh -c execution
             string allCommands = GetTestCommands(test);
 
+            AnsiConsole.MarkupLine($"[green]Running test \"{test.Name}\" with commands:[/]");
+            AnsiConsole.MarkupLine($"[green]{allCommands}[/]");
+
             // docker run -it --rm -v "$PWD":/app -w /app php:8.2-cli-alpine sh -c 'cmd1 && cmd2'
             var dockerCommand = $"docker run --rm -v \"{workDir}:/app\" -w /app {dockerImage} sh -c \"{allCommands.Replace("\"", "\\\"")}\"";
 
@@ -78,7 +81,7 @@ namespace WebDev.Tool.Commands.Shell
                 commands += cmd + " && ";
             }
 
-            return commands.TrimEnd(' ');
+            return commands.TrimEnd(" &".ToCharArray()).Replace("\"", "\\\"");
         }
     }
 }
