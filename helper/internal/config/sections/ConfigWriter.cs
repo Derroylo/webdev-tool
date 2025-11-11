@@ -24,10 +24,11 @@ internal class ConfigWriter
             Environment = configuration.Environment,
             Secrets = configuration.Secrets,
             Tasks = configuration.Tasks,
-            Workspaces = configuration.Workspaces
+            Workspaces = configuration.Workspaces,
+            Tests = configuration.Tests
         };
         
-        if (tempConfig.Workspaces.Count == 1) 
+        if (tempConfig.Workspaces.Count == 1 && tempConfig.Workspaces.ContainsKey("main") && tempConfig.Workspaces["main"].DocRoot == "public") 
         {
             tempConfig.Workspaces = null;
         }
@@ -50,6 +51,11 @@ internal class ConfigWriter
         if (tempConfig.Secrets.Count == 0)
         {
             tempConfig.Secrets = null;
+        }
+        
+        if (tempConfig.Tests.Count == 0)
+        {
+            tempConfig.Tests = null;
         }
         
         var stringResult = serializer.Serialize(tempConfig);
