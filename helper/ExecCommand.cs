@@ -46,7 +46,7 @@ namespace WebDev.Tool.Helper
             return result.TrimEnd('\n');
         }
 
-        public static string ExecWithDirectOutput(string command, bool isInteractive = false, bool disableJobControl = false, string workingDirectory = "")
+        public static void ExecWithDirectOutput(string command, bool isInteractive = false, bool disableJobControl = false, string workingDirectory = "", bool useStreaming = false)
         {
             // Load secrets for environment variables
             SecretsLoader.LoadEnvVarSecrets(false);
@@ -58,10 +58,77 @@ namespace WebDev.Tool.Helper
                 envVars[secret.Key] = secret.Value;
             }
 
-            // Execute command using PTY to preserve all terminal formatting
-            PtyHelper.ExecWithPty(command, isInteractive, disableJobControl, workingDirectory, envVars);
+            if (useStreaming)
+            {
+                // Use stream-based method for better compatibility with Docker and other commands
+                // that don't work well with PTY
+                ExecWithStreamingOutput(command, isInteractive, disableJobControl, workingDirectory, envVars);
+            }
+            else
+            {
+                // Execute command using PTY to preserve all terminal formatting (default)
+                PtyHelper.ExecWithPty(command, isInteractive, disableJobControl, workingDirectory, envVars);
+            }
+        }
 
-            return "";
+        private static void ExecWithStreamingOutput(string command, bool isInteractive = false, bool disableJobControl = false, string workingDirectory = "", Dictionary<string, string> additionalEnvVars = null)
+        {
+            using (System.Diagnostics.Process proc = new())
+            {
+                proc.StartInfo.FileName = "/bin/bash";
+                proc.StartInfo.Arguments = "-c" + (isInteractive ? "i" : "") + " \"" + (disableJobControl ? "set +m; " : "") + command.Replace("\"", "\\\"") + " \"";
+                proc.StartInfo.EnvironmentVariables["WEBDEV_DISABLE_HEADER"] = "true";
+                proc.StartInfo.UseShellExecute = false;
+                proc.EnableRaisingEvents = true;
+                proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.RedirectStandardError = true;
+                proc.StartInfo.RedirectStandardInput = true;
+
+                // Set environment variables
+                if (additionalEnvVars != null)
+                {
+                    foreach (var envVar in additionalEnvVars)
+                    {
+                        proc.StartInfo.EnvironmentVariables[envVar.Key] = envVar.Value;
+                    }
+                }
+
+                // Set working directory if specified
+                if (!string.IsNullOrEmpty(workingDirectory))
+                {
+                    proc.StartInfo.WorkingDirectory = workingDirectory;
+                }
+
+                proc.Start();
+
+                // Stream output in real-time
+                // Write directly to console to preserve formatting and support progress bars (carriage returns)
+                proc.ErrorDataReceived += (sender, errorLine) => 
+                { 
+                    if (errorLine?.Data != null) 
+                    {
+                        // Write to stderr to preserve error stream semantics
+                        System.Console.Error.WriteLine(errorLine.Data);
+                    }
+                };
+                proc.OutputDataReceived += (sender, outputLine) => 
+                { 
+                    if (outputLine?.Data != null) 
+                    {
+                        // Write directly to stdout to preserve all formatting including progress bars
+                        // This supports carriage returns (\r) used by progress bars
+                        System.Console.Out.WriteLine(outputLine.Data);
+                    }
+                };
+
+                proc.BeginErrorReadLine();
+                proc.BeginOutputReadLine();
+
+                proc.WaitForExit();
+
+                // Add a little sleep to ensure all output is captured
+                Thread.Sleep(200);
+            }
         }
     }
 }

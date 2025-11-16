@@ -129,7 +129,7 @@ internal class InitProjectCommand : Command
         }
         
         // Apply the devcontainer template
-        AnsiConsole.WriteLine(DevContainerHelper.ApplyTemplate(targetFolder, "ghcr.io/Derroylo/devcontainer-templates/" + template + ":latest"));
+        DevContainerHelper.ApplyTemplate(targetFolder, "ghcr.io/Derroylo/devcontainer-templates/" + template + ":latest");
         
         // Update the devcontainer.json with the name and description
         DevContainerHelper.UpdateNameAndDescription(targetFolder, devContainerName);

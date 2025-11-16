@@ -45,7 +45,7 @@ namespace WebDev.Tool.Commands.Shell
             string dockerImage = test.Image;
 
             if (string.IsNullOrEmpty(dockerImage)) {
-                dockerImage = "php:" + PhpConfig.PhpVersion + "-cli-alpine";
+                dockerImage = "ghcr.io/derroylo/docker-images/php-alpine:" + PhpConfig.PhpVersion;
             }
 
             // Join the commands for sh -c execution
@@ -54,10 +54,9 @@ namespace WebDev.Tool.Commands.Shell
             AnsiConsole.MarkupLine($"[green]Running test \"{test.Name}\" with commands:[/]");
             AnsiConsole.MarkupLine($"[green]{allCommands}[/]");
 
-            // docker run -it --rm -v "$PWD":/app -w /app php:8.2-cli-alpine sh -c 'cmd1 && cmd2'
-            var dockerCommand = $"docker run --rm -v \"{workDir}:/app\" -w /app {dockerImage} sh -c \"{allCommands.Replace("\"", "\\\"")}\"";
-
-            ExecCommand.ExecWithDirectOutput(dockerCommand, true, true);
+            var dockerCommand = $"docker run --rm --user 1000:1000 -v \"{workDir}:/app\" -w /app {dockerImage} sh -c \"{allCommands.Replace("\"", "\\\"")}\"";
+            
+            ExecCommand.ExecWithDirectOutput(dockerCommand, false, true, "", useStreaming: true);
         }
 
         private static void RunTestInsideDevContainer(TestEntryConfiguration test)

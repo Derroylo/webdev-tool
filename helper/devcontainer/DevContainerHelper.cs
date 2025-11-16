@@ -99,7 +99,7 @@ public class DevContainerHelper
         return process.ExitCode == 0;
     }
     
-    public static string ApplyTemplate(string workspacePath, string templateId, string templateArgs = null, string features = null)
+    public static void ApplyTemplate(string workspacePath, string templateId, string templateArgs = null, string features = null)
     {
         var cmd = "devcontainer templates apply";
         
@@ -116,7 +116,7 @@ public class DevContainerHelper
             args += " -f '" + features + "'";
         }
 
-        return ExecCommand.ExecWithDirectOutput(cmd + args);
+        ExecCommand.ExecWithDirectOutput(cmd + args);
     }
     
     public static void UpdateNameAndDescription(string workspacePath, string name)
