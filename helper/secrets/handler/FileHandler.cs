@@ -35,18 +35,7 @@ internal class FileHandler: SecretsHandlerInterface
         {
             if (showMessages) 
             {
-                var missingMessage = secret.MissingMessage;
-
-                if (!string.IsNullOrEmpty(missingMessage))
-                {
-                    missingMessage = TranslationHelper.GetString(missingMessage);
-                }
-                else
-                {
-                    missingMessage = $"[red]Directory not found for secret {secretName}: {sourcePath}[/]";
-                }
-
-                AnsiConsole.MarkupLine($"{missingMessage}");
+                AnsiConsole.MarkupLine($"{GetMissingMessage(secretName, sourcePath, secret)}");
             }
 
             return null;
@@ -56,20 +45,9 @@ internal class FileHandler: SecretsHandlerInterface
 
         if (files.Length == 0)
         {
-            var missingMessage = secret.MissingMessage;
-
-            if (!string.IsNullOrEmpty(missingMessage))
-            {
-                missingMessage = TranslationHelper.GetString(missingMessage);
-            }
-            else
-            {
-                missingMessage = $"[red]File not found for secret {secretName}: {sourcePath}[/]";
-            }
-
             if (showMessages)
             {
-                AnsiConsole.MarkupLine($"{missingMessage}");
+                AnsiConsole.MarkupLine($"{GetMissingMessage(secretName, sourcePath, secret)}");
             }
 
             return null;
@@ -102,5 +80,42 @@ internal class FileHandler: SecretsHandlerInterface
             
             return false;
         }
+    }
+
+    private string GetMissingMessage(string secretName, string sourcePath, SecretConfiguration secret)
+    {
+        var missingMessage = secret.MissingMessage;
+
+        if (string.IsNullOrEmpty(missingMessage))
+        {
+            return $"[red]File not found for secret {secretName}: {secret.Target.File}/{secret.Source.Key}[/]";;
+        }
+
+        missingMessage = TranslationHelper.GetString(missingMessage);
+
+        missingMessage = missingMessage.Replace("#SECRET_FILE_NAME#", secret.Source.Key);
+        missingMessage = missingMessage.Replace("#SECRET_FILE_DIRECTORY#", sourcePath);
+
+        if (secret.Target.ExpectedVars.Count > 1)
+        {
+            missingMessage = missingMessage.Replace("#DOCKER_USERNAME#", secret.Target.ExpectedVars[0]);
+            missingMessage = missingMessage.Replace("#DOCKER_PASSWORD#", secret.Target.ExpectedVars[1]);
+        }
+        else 
+        {
+            missingMessage = missingMessage.Replace("#DOCKER_USERNAME#", "DOCKER_USERNAME");
+            missingMessage = missingMessage.Replace("#DOCKER_PASSWORD#", "DOCKER_PASSWORD");
+        }
+        
+        if (secret.Target.ExpectedSecrets.Count > 0)
+        {
+            missingMessage = missingMessage.Replace("#COMPOSER_AUTH_SECRETS#", "(" + string.Join(", ", secret.Target.ExpectedSecrets) + ")");
+        }
+        else
+        {
+            missingMessage = missingMessage.Replace("#COMPOSER_AUTH_SECRETS#", "");
+        }
+
+        return missingMessage;
     }
 }

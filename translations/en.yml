@@ -1,13 +1,28 @@
 Secrets:
   Missing:
-    Composer: "No composer secret found"
+    Composer: |-
+      [red]The project is configured to use a composer secret, but no secret was found in the secrets directory.[/]
+      Follow this steps to create the secret:
+      1. Create a new file with the name "#SECRET_FILE_NAME#.json" in the directory "#SECRET_FILE_DIRECTORY#"
+      2. Put into the file the content of the composer secret(s) in a valid json format. Make sure the required secrets[orange3]#COMPOSER_AUTH_SECRETS#[/] are present.
+      3. Save the file
+      4. Run the command "webdev secrets load" to check if the secret is loaded correctly.
+      5, If no more errors are shown, the secret is loaded correctly and you can start using it in your project.
     DockerLogin:
       Gitlab: |-
-        [red]The project is configured to use a gitlab docker login secret, but no secret was found in the secrets directory.[/]
+        [red]The project is configured to use a GitLab registry login secret, but no secret was found in the secrets directory.[/]
         Follow this steps to create the secret:
-        1. Go to your gitlab project settings
-        2. Go to the "Secrets" section
-        3. Create a new secret with the name "DOCKER_USERNAME" and the value of the username
-        4. Create a new secret with the name "DOCKER_PASSWORD" and the value of the password
-        5. Save the changes
-        6. Run the command "webdev secrets load" to load the secret into the project
+        1. Open your GitLab instance in the browser (for example: https://gitlab.com)
+        2. Navigate to your user settings and click on "Personal access tokens" (for example https://gitlab.com/-/user_settings/personal_access_tokens)
+        3. Click on the "Add new token" button
+        4. Enter a name for the token and optionally a description
+        5. Set the expiration date for this token. It should be set to a reasonable date in the future.
+        6. Select the "read_registry" scope, if it also needs write access, select the "write_registry" scope too.
+        7. Copy the token
+        8. Create a new file with the name "#SECRET_FILE_NAME#.txt" in the directory "#SECRET_FILE_DIRECTORY#"
+        9. The file should contain the following content (replace the placeholders with the actual values):
+        #DOCKER_USERNAME#=<your_gitlab_username>
+        #DOCKER_PASSWORD#=<your_gitlab_token>
+        10. Save the file
+        11. Run the command "webdev secrets load" to check if the secret is loaded correctly.
+        12, If no more errors are shown, the secret is loaded correctly and you can start using it in your project.

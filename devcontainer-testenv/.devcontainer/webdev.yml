@@ -30,6 +30,9 @@ secrets:
       group: composer
     target:
       file: secret.json
+      expectedSecrets:
+        - GitLab
+        - Shopware Package Repository
   GitlabDockerLoginSecret:
     missingMessage: Secrets.Missing.DockerLogin.Gitlab
     source:
