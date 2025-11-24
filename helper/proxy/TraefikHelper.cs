@@ -214,9 +214,9 @@ internal class TraefikHelper
         
         // Run mkcert in a container to generate certs
         var dockerCmd = $@"
-            docker run --rm --user 1000:1000 -v {rootCaDir}:/root/.local/share/mkcert -v {certificateDir}:/certs -w /certs alpine/mkcert ""*.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}""
+            docker run --rm --user 1000:1000 -e CAROOT=/tmp/mkcert -v {rootCaDir}:/tmp/mkcert -v {certificateDir}:/certs -w /certs alpine/mkcert ""*.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}""
         ";
-        
+
         ExecCommand.Exec(dockerCmd);
 
         // Update the traefik configuration to use the new certificates
