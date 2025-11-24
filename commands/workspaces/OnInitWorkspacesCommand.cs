@@ -29,13 +29,8 @@ internal class OnInitWorkspacesCommand: Command<OnInitWorkspacesCommand.Settings
         {
             return 1;
         }
-
-        if (!TraefikHelper.CreateServiceLabels(settings.Debug))
-        {
-            return 1;
-        }
-        
-        if (!TraefikHelper.CreateTraefikCertificates())
+       
+        if (!TraefikHelper.CreateTraefikConfig(settings.Debug))
         {
             return 1;
         }

@@ -4,6 +4,7 @@ using WebDev.Tool.Helper.Docker;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using System.Linq;
 
 namespace WebDev.Tool.Commands.Services
 {
@@ -55,15 +56,19 @@ namespace WebDev.Tool.Commands.Services
                 multiSelectPrompt.AddChoices(serviceCategories["unknown"].ToArray());
             }
 
-            if (ServicesConfig.ActiveServices.Count > 0) {
-                foreach (string item in ServicesConfig.ActiveServices) {
+            if (ServicesConfig.Services != null && ServicesConfig.Services.Count > 0 && ServicesConfig.Services.Any(s => s.Value.Active)) {
+                foreach (string item in ServicesConfig.Services.Where(s => s.Value.Active).Select(s => s.Key)) {
                     multiSelectPrompt.Select(item);
                 }
             }
 
             var selectedServices = AnsiConsole.Prompt(multiSelectPrompt);
 
-            ServicesConfig.ActiveServices = selectedServices;
+            foreach (string item in selectedServices) {
+                if (ServicesConfig.Services.ContainsKey(item)) {
+                    ServicesConfig.Services[item].Active = true;
+                }
+            }
 
             AnsiConsole.WriteLine("The following services have been marked as active and will start with the workspace");
 

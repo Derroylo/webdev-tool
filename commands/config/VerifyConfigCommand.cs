@@ -209,7 +209,7 @@ namespace WebDev.Tool.Commands.Config
                 var serviceName = item.Value.ContainsKey("name") ? item.Value["name"] : item.Key;
                 var serviceDescription = item.Value.ContainsKey("description") ? item.Value["description"] : "-";
 
-                var isActive = ServicesConfig.ActiveServices.Contains(item.Key);
+                var isActive = ServicesConfig.Services.ContainsKey(item.Key) && ServicesConfig.Services[item.Key].Active;
 
                 servicesTable.AddRow(serviceName, serviceDescription, isActive ? "[green1]Active[/]" : "[red]Inactive[/]");
             }

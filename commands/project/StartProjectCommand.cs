@@ -53,7 +53,7 @@ internal class StartProjectCommand: Command
         }
         
         // Check for running devcontainers
-        var runningContainers = DockerHelper.GetRunningContainers("_devcontainer");
+        /* var runningContainers = DockerHelper.GetRunningContainers("_devcontainer");
         if (runningContainers.Count > 0)
         {
             AnsiConsole.MarkupLine("[yellow]Warning:[/] Found running devcontainers:");
@@ -76,7 +76,7 @@ internal class StartProjectCommand: Command
                 AnsiConsole.MarkupLine("[red]Cannot start new devcontainer while others are running.[/]");
                 return 1;
             }
-        }
+        } */
 
         // Check if the folder already contains a .devcontainer/vhost directory
         var applicationDir = AppDomain.CurrentDomain.BaseDirectory;

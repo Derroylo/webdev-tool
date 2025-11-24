@@ -12,7 +12,7 @@ namespace WebDev.Tool.Classes.Configuration
 
         public NodeJsConfiguration Nodejs { get; set; } = new();
         
-        public ServiceConfiguration Services { get; set; } = new();
+        public Dictionary<string, ServiceEntryConfiguration> Services { get; set; } = new();
         
         public EnvironmentConfiguration Environment { get; set; } = new();
 

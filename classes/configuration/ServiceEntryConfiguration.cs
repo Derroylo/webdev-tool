@@ -1,0 +1,17 @@
+using System.Collections.Generic;
+using System.ComponentModel;
+
+namespace WebDev.Tool.Classes.Configuration;
+
+internal class ServiceEntryConfiguration
+{
+    public string Name { get; set; } = "";
+    
+    public string Description { get; set; } = "";
+    
+    public bool Active { get; set; } = true;
+    
+    public int Port { get; set; } = 8080;
+    
+    public string SubDomain { get; set; } = "";
+}

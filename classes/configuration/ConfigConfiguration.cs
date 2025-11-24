@@ -11,5 +11,8 @@ namespace WebDev.Tool.Classes.Configuration
         
         [DefaultValue("workspaces")]
         public string WorkspaceFolder { get; set; } = "workspaces";
+
+        [DefaultValue("docker-compose.yml")]
+        public string ComposeFileName { get; set; } = "docker-compose.yml";
     }
 }

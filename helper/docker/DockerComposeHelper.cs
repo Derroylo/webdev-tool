@@ -10,7 +10,7 @@ namespace WebDev.Tool.Helper.Docker
     {
         public static string GetFile()
         {
-            var filename = ServicesConfig.DockerComposeFile;
+            var filename = GeneralConfig.ComposeFileName;
 
             var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
 
@@ -23,7 +23,7 @@ namespace WebDev.Tool.Helper.Docker
         
         public static string GetProxyFile()
         {
-            var filename = ServicesConfig.DockerComposeFile.Replace(".yml", ".proxy.yml");
+            var filename = GeneralConfig.ComposeFileName.Replace(".yml", ".proxy.yml");
 
             var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
 

@@ -8,6 +8,7 @@ using WebDev.Tool.Helper.Internal.Config.Sections;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Helper.devcontainer;
+using System.Linq;
 
 namespace WebDev.Tool.Commands.Services
 {
@@ -31,7 +32,7 @@ namespace WebDev.Tool.Commands.Services
 
             var services = DockerComposeHelper.GetServices(DockerComposeHelper.GetFile());
 
-            if (ServicesConfig.ActiveServices.Count == 0) {
+            if (ServicesConfig.Services == null || ServicesConfig.Services.Count == 0 || ServicesConfig.Services.All(s => !s.Value.Active)) {
                 AnsiConsole.MarkupLine("[red]No active services selected[/]");
 
                 AnsiConsole.MarkupLine($"\n[bold yellow]How to select active services?[/]");
@@ -47,7 +48,7 @@ namespace WebDev.Tool.Commands.Services
             var activeServices = new List<string>();
 
             foreach (KeyValuePair<string, Dictionary<string, string>> item in services) {
-                if (!ServicesConfig.ActiveServices.Contains(item.Key)) {
+                if (!ServicesConfig.Services.ContainsKey(item.Key) || !ServicesConfig.Services[item.Key].Active) {
                     continue;
                 }
                  

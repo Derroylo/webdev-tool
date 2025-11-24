@@ -21,14 +21,12 @@ internal class ShowProjectInfoCommand: Command
         
         var panelContent = $"[bold yellow]Services:[/]\n";
         
-        if (ServicesConfig.ActiveServices != null && ServicesConfig.ActiveServices.Any())
+        if (ServicesConfig.Services != null && ServicesConfig.Services.Any())
         {
-            foreach (var service in ServicesConfig.ActiveServices)
+            foreach (var service in ServicesConfig.Services)
             {
-                services.TryGetValue(service, out var serviceConfig);
-                
-                var serviceDescription = serviceConfig != null && serviceConfig.ContainsKey("name") ? serviceConfig["name"] : service;
-                serviceDescription += serviceConfig != null && serviceConfig.ContainsKey("description") ? " - " + serviceConfig["description"] : "";
+                var serviceDescription = service.Value.Name != "" ? service.Value.Name : service.Key;
+                serviceDescription += service.Value.Description != "" ? " - " + service.Value.Description : "";
                 
                 if (serviceDescription.Length > 60)
                 {
@@ -37,9 +35,9 @@ internal class ShowProjectInfoCommand: Command
 
                 panelContent += $"[bold]{serviceDescription}[/]".PadRight(65);
 
-                if (IsProxyActive() && serviceConfig != null && serviceConfig.ContainsKey("proxy.subdomain"))
+                if (IsProxyActive() && service.Value.SubDomain != "")
                 {
-                    panelContent += $"[green]https://" + serviceConfig["proxy.subdomain"] + "." + GeneralConfig.Proxy.SubDomain + "." + GeneralConfig.Proxy.Domain + "[/]";
+                    panelContent += $"[green]https://" + service.Value.SubDomain + "." + GeneralConfig.Proxy.SubDomain + "." + GeneralConfig.Proxy.Domain + "[/]";
                 }
                 
                 panelContent += "\n";
@@ -121,6 +119,6 @@ internal class ShowProjectInfoCommand: Command
     
     private static bool IsProxyActive()
     {
-        return ServicesConfig.ActiveServices !=null && ServicesConfig.ActiveServices.Contains("traefik");
+        return ServicesConfig.Services !=null && ServicesConfig.Services.ContainsKey("traefik") && ServicesConfig.Services["traefik"].Active;
     }
 }

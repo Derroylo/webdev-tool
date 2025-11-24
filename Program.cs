@@ -119,6 +119,9 @@ namespace WebDev.Tool
                 config.AddCommand<OnInitWorkspacesCommand>("workspaces-on-init").IsHidden();
                 config.AddCommand<PostStartWorkspacesCommand>("workspaces-post-start").IsHidden();
 
+                // Add Tools branch
+                config.AddBranch("tools", branch => AddToolsCommandBranch(branch, additionalCommands));
+
                 List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task", "tests" };
 
                 // Add Tests branch
@@ -226,6 +229,23 @@ namespace WebDev.Tool
                     } catch (Exception e) {
                         AnsiConsole.WriteException(e);
                     }
+                }
+            }
+        }
+
+        private static void AddToolsCommandBranch(IConfigurator<CommandSettings> branch, Dictionary<string, CustomBranch> additionalCommands)
+        {
+            branch.SetDescription("Various commands, like updating the traefik config file");
+
+            branch.AddCommand<UpdateTraefikConfigCommand>("traefik-update")
+                .WithDescription("Updates the traefik config file")
+                .WithAlias("t");
+
+            if (additionalCommands.TryGetValue("tools", out CustomBranch customBranch)) {
+                foreach (CustomCommand cmd in customBranch.Commands) {
+                    branch.AddCommand<ShellFileCommand>(cmd.Command)
+                        .WithData(cmd)
+                        .WithDescription(cmd.Description);
                 }
             }
         }

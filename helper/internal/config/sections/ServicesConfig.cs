@@ -1,19 +1,18 @@
 using System.Collections.Generic;
+using WebDev.Tool.Classes.Configuration;
 
 namespace WebDev.Tool.Helper.Internal.Config.Sections
 {
     internal class ServicesConfig: ConfigHelper
     {
-        public static string DockerComposeFile => appConfig.Services.File;
-
-        public static List<string> ActiveServices
+        public static Dictionary<string, ServiceEntryConfiguration> Services
         {
-            get => appConfig.Services.Active;
+            get => appConfig.Services;
 
             set {
                 ConfigUpdated = true;
 
-                appConfig.Services.Active = value;
+                appConfig.Services = value;
             }
         }
     }

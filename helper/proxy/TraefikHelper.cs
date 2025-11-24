@@ -15,173 +15,92 @@ namespace WebDev.Tool.Helper.Proxy;
 
 internal class TraefikHelper
 {
-    public static bool CreateServiceLabels(bool debug = false)
+    public static bool CreateTraefikConfig(bool debug = false)
     {
         var workspacePath = PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer());
-        var composeFile = Path.Combine(workspacePath, ".devcontainer", "docker-compose.yml");
-        var proxyFile = Path.Combine(workspacePath, ".devcontainer", "docker-compose.proxy.yml");
 
-        var domain = GeneralConfig.Proxy.Domain;
-        var globalSubDomain = GeneralConfig.Proxy.SubDomain;
+        // Create the certificates and the devcontainer route config
+        var certConfig = CreateTraefikCertificates(debug);
+        var routerConfig = CreateContainerRouteConfig(debug);
 
-        if (!File.Exists(composeFile))
-        {
-            if (debug)
-            {
-                AnsiConsole.MarkupLine($"[red]docker-compose.yml not found at {composeFile}[/]");
-            }
-
-            return false;
-        }
-
-        var services = DockerComposeHelper.GetServices(composeFile);
-        var newServices = new Dictionary<string, object>();
+        // Serialize the traefik config
+        var serializer = new SerializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
+        var traefikDynamicConfig = new Dictionary<string, object> { { "tls", certConfig }, { "http", routerConfig } };
+        var outputYaml = serializer.Serialize(traefikDynamicConfig);
         
-        if (services.Count == 0)
-        {
-            if (debug)
-            {
-                AnsiConsole.MarkupLine($"[red]No services found in {composeFile}[/]");
-            }
+        File.WriteAllText(Path.Combine(workspacePath, ".devcontainer", "traefik", "config", "dynamic.yml"), outputYaml);
 
-            return false;
-        }
-
-        foreach (KeyValuePair<string, Dictionary<string, string>> service in services)
-        {
-            var traefikLabels = new Dictionary<string, string>();
-            
-            var serviceName = service.Key;
-            var proxyDomain = service.Value.ContainsKey("proxy.subdomain") ? service.Value["proxy.subdomain"] : "";
-            var proxyPort = service.Value.ContainsKey("proxy.port") ? service.Value["proxy.port"] : "";
-           
-
-            if (serviceName == "devcontainer")
-            {
-                continue;
-            }
-
-            if (proxyDomain == "" || proxyPort == "")
-            {
-                if (debug)
-                {
-                    AnsiConsole.MarkupLine($"[red]No proxy.subdomain or proxy.port found for {serviceName} in {composeFile}[/]");
-                }
-
-                traefikLabels.Add($"traefik.enable", "false");
-                
-                newServices[serviceName] = new Dictionary<string, object> { { "labels", traefikLabels } };
-                
-                continue;
-            }
-            
-            if (debug)
-            {
-                AnsiConsole.MarkupLine($"[green]Adding traefik labels for {serviceName} in {composeFile}[/]");
-            }
-
-            traefikLabels = new Dictionary<string, string>
-            {
-                { $"traefik.enable", "true" },
-                { $"traefik.http.routers.{serviceName}.rule", $"Host(`{proxyDomain}.{globalSubDomain}.{domain}`) || Host(`{proxyDomain}.{domain}`)" },
-                { $"traefik.http.routers.{serviceName}.entrypoints", "https" },
-                { $"traefik.http.routers.{serviceName}.tls", "true" },
-                { $"traefik.http.routers.{serviceName}.service", $"{serviceName}@docker" },
-                { $"traefik.http.services.{serviceName}.loadbalancer.server.port", proxyPort }
-            };
-            
-            newServices[serviceName] = new Dictionary<string, object> { { "labels", traefikLabels } };
-        }
-
-        if (WorkspacesConfig.Workspaces.Count > 0)
-        {
-            var traefikLabels = new Dictionary<string, string>();
-            var hosts = new List<string>();
-            
-            foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
-            {
-                if (workspace.Value.Mode != WorkspaceMode.Vhost || workspace.Value.DisableWeb) continue;
-
-                if (debug)
-                {
-                    AnsiConsole.MarkupLine($"[green]Adding traefik labels for {workspace.Key} in {composeFile}[/]");
-                }
-
-                if (!traefikLabels.ContainsKey($"traefik.enable"))
-                {
-                    traefikLabels.Add($"traefik.enable", "true");
-                }
-                
-                if (workspace.Key == "main")
-                {
-                    hosts.Add($"Host(`{globalSubDomain}.{domain}`)");
-                    hosts.Add($"Host(`www.{globalSubDomain}.{domain}`)");
-                }
-
-                foreach (var subDomain in workspace.Value.SubDomains)
-                {
-                    hosts.Add($"Host(`{subDomain}.{globalSubDomain}.{domain}`)");
-                }
-            }
-            
-            if (hosts.Count > 0)
-            {
-                if (debug)
-                {
-                    AnsiConsole.MarkupLine($"[green]Adding traefik labels for devcontainer in {composeFile}[/]");
-                }
-
-                traefikLabels.Add($"traefik.http.routers.devcontainer.rule", string.Join(" || ", hosts));
-                traefikLabels.Add($"traefik.http.routers.devcontainer.entrypoints", "https" );
-                traefikLabels.Add($"traefik.http.routers.devcontainer.tls", "true");
-                traefikLabels.Add($"traefik.http.routers.devcontainer.service", $"devcontainer@docker");
-                traefikLabels.Add($"traefik.http.services.devcontainer.loadbalancer.server.port", "8080");
-            }
-            
-            newServices["devcontainer"] = new Dictionary<string, object> { { "labels", traefikLabels } };
-        }
-        
-        if (newServices.Count == 0)
-        {
-            if (debug)
-            {
-                AnsiConsole.MarkupLine($"[yellow]No services with com.webdev.subdomain found.[/]");
-            }
-
-            return false;
-        }
-
-        // Write new docker-compose.proxy.yml
-        try
-        {
-            var serializer = new SerializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                .Build();
-            var proxyCompose = new Dictionary<string, object> { { "services", newServices } };
-            var outputYaml = serializer.Serialize(proxyCompose);
-            File.WriteAllText(proxyFile, outputYaml);
-            
-            if (debug)
-            {
-                AnsiConsole.MarkupLine($"[green]docker-compose.proxy.yml created with {newServices.Count} services.[/]");
-            }
-        } 
-        catch (Exception ex)
-        {
-            AnsiConsole.MarkupLine($"[red]Error writing docker-compose.proxy.yml: {ex.Message}[/]");
-            
-            if (debug) 
-            {
-                AnsiConsole.WriteException(ex);
-            }
-            
-            return false;
-        }
-        
         return true;
     }
 
-    public static bool CreateTraefikCertificates()
+    private static Dictionary<string, object> CreateContainerRouteConfig(bool debug = false)
+    {
+        var services = ServicesConfig.Services;
+        var routerConfig = new Dictionary<string, object> { { "routers", new Dictionary<string, object>() }, { "services", new Dictionary<string, object>() } };
+
+        foreach (KeyValuePair<string, ServiceEntryConfiguration> service in services)
+        {
+            if (!service.Value.Active)
+            {
+                if (debug)
+                {
+                    AnsiConsole.MarkupLine($"[yellow]Service {service.Value.Name} is not active[/]");
+                }
+
+                continue;
+            }
+
+            CreateServiceRouteConfig(ref routerConfig, service, debug);
+        }
+
+        return routerConfig;
+    }
+
+    private static bool CreateServiceRouteConfig(ref Dictionary<string, object> routerConfig, KeyValuePair<string, ServiceEntryConfiguration> service, bool debug = false)
+    {
+        var domain = GeneralConfig.Proxy.Domain;
+        var globalSubDomain = GeneralConfig.Proxy.SubDomain;
+        var serviceName = service.Key;
+        var subDomain = service.Value.SubDomain;
+        var port = service.Value.Port;
+        
+        if (subDomain == "" || port == 0)
+        {
+            if (debug)
+            {
+                AnsiConsole.MarkupLine($"[red]No subdomain or port defined for {serviceName}[/]");
+            }
+
+            return true;
+        }
+        
+        if (debug)
+        {
+            AnsiConsole.MarkupLine($"[green]Adding traefik config for {serviceName}[/]");
+        }
+
+        routerConfig["routers"][serviceName] = new Dictionary<string, object>
+        {
+            { "rule", $"Host(`{subDomain}.{globalSubDomain}.{domain}`) || Host(`{subDomain}.{domain}`)" },
+            { "entrypoints", "https" },
+            { "tls", true },
+            { "service", $"{serviceName}@docker" }
+        };
+
+        routerConfig["services"][serviceName] = new Dictionary<string, object>
+        {
+            { "rule", $"Host(`{subDomain}.{globalSubDomain}.{domain}`) || Host(`{subDomain}.{domain}`)" },
+            { "entrypoints", "https" },
+            { "tls", true },
+            { "service", $"{serviceName}@docker" }
+        };
+
+        return true;
+    }
+
+    private static Dictionary<string, object> CreateTraefikCertificates(bool debug = false)
     {
         var workspacePath = PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer());
 
@@ -197,7 +116,12 @@ internal class TraefikHelper
         // Make sure the proxy settings exist in the config
         if (GeneralConfig.Proxy.Domain == "" || GeneralConfig.Proxy.SubDomain == "")
         {
-            return false;
+            if (debug)
+            {
+                AnsiConsole.MarkupLine($"[red]No domain or subdomain defined in the config[/]");
+            }
+
+            return new Dictionary<string, object>();
         }
         
         if (!Directory.Exists(certificateDir))
@@ -206,21 +130,32 @@ internal class TraefikHelper
         }
         
         // Check if the certificates already exist
-        if (File.Exists(Path.Combine(certificateDir, $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}.pem")) &&
-            File.Exists(Path.Combine(certificateDir, $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}-key.pem")))
+        if (!File.Exists(Path.Combine(certificateDir, $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}.pem")) ||
+            !File.Exists(Path.Combine(certificateDir, $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}-key.pem")))
         {
-            return true;
+            // Run mkcert in a container to generate certs
+            var dockerCmd = $@"
+                docker run --rm --user 1000:1000 -v {rootCaDir}:/root/.local/share/mkcert -v {certificateDir}:/certs -w /certs alpine/mkcert ""*.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}""
+            ";
+            
+            ExecCommand.Exec(dockerCmd);
+
+            if (debug)
+            {
+                AnsiConsole.MarkupLine($"[green]Certificates created[/]");
+            }
         }
-        
-        // Run mkcert in a container to generate certs
-        var dockerCmd = $@"
-            docker run --rm --user 1000:1000 -v {rootCaDir}:/root/.local/share/mkcert -v {certificateDir}:/certs -w /certs alpine/mkcert ""*.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}""
-        ";
-        
-        ExecCommand.Exec(dockerCmd);
+        else
+        {
+            if (debug)
+            {
+                AnsiConsole.MarkupLine($"[yellow]Certificates already exist[/]");
+            }
+        }      
+
+        var traefikConfig = new Dictionary<string, object>();
 
         // Update the traefik configuration to use the new certificates
-        var traefikConfig = new Dictionary<string, object>();
         traefikConfig["stores"] = new Dictionary<string, object>
         {
             { "default", new Dictionary<string, object> { { "defaultCertificate", new Dictionary<string, string> { { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}.pem") }, { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}-key.pem") } } } } }
@@ -230,16 +165,13 @@ internal class TraefikHelper
         {
             { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}.pem") }, 
             { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}-key.pem") }
-        };
-        
-        var serializer = new SerializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .Build();
-        var traefikDynamicConfig = new Dictionary<string, object> { { "tls", traefikConfig } };
-        var outputYaml = serializer.Serialize(traefikDynamicConfig);
-        
-        File.WriteAllText(Path.Combine(workspacePath, ".devcontainer", "traefik", "config", "dynamic.yml"), outputYaml);
+        };      
 
-        return true;
+        if (debug)
+        {
+            AnsiConsole.MarkupLine($"[green]Traefik config for certificates updated[/]");
+        }
+
+        return traefikConfig;
     }
 }

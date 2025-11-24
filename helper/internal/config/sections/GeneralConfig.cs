@@ -17,5 +17,15 @@ namespace WebDev.Tool.Helper.Internal.Config.Sections
                 appConfig.Config.WorkspaceFolder = value;
             }
         }
+
+        public static string ComposeFileName
+        {
+            get => appConfig.Config.ComposeFileName;
+            set
+            {
+                ConfigUpdated = true;
+                appConfig.Config.ComposeFileName = value;
+            }
+        }
     }
 }

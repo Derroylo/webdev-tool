@@ -41,7 +41,7 @@ namespace WebDev.Tool.Commands.Services
                 var serviceName = item.Value.ContainsKey("name") ? item.Value["name"] : item.Key;
                 var serviceDescription = item.Value.ContainsKey("description") ? item.Value["description"] : "-";
 
-                bool isActive = ServicesConfig.ActiveServices.Contains(item.Key);
+                bool isActive = ServicesConfig.Services.ContainsKey(item.Key) && ServicesConfig.Services[item.Key].Active;
                 bool isRunning = DockerComposeHelper.IsServiceStarted(serviceAlias);
 
                 servicesTable.AddRow(serviceName, serviceDescription, isRunning ? "[green1]Running[/]" : "[red]Not started[/]", isActive ? "[green1]Active[/]" : "[red]Inactive[/]");

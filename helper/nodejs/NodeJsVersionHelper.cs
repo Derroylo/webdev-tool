@@ -54,12 +54,13 @@ namespace WebDev.Tool.Helper.NodeJs
 
         public static void SetNewNodeJSVersion(string newVersion, bool isDebug)
         {
+            
             AnsiConsole.Status()
                 .Start("Changing to NodeJS " + newVersion + ", this can take a few mins.", ctx => 
                 {
                     var currentVersion = GetCurrentNodeJSVersion();
 
-                    if (currentVersion == newVersion)                 {
+                    if (currentVersion == newVersion) {
                         AnsiConsole.WriteLine("NodeJS " + newVersion + " is already the current active one.");
 
                         return;
@@ -82,7 +83,7 @@ namespace WebDev.Tool.Helper.NodeJs
 
                     // Fetch the packages installed in the new version
                     // We have to set the version again, otherwise it will just show the old nodejs output
-                    var listPackagesOutput = ExecCommand.Exec(". ~/.nvm/nvm.sh && nvm use " + newVersion + " && nvm alias default " + newVersion + " && npm list -g --depth=0");
+                    var listPackagesOutput = ExecCommand.Exec(". ~/.nvm/nvm.sh && nvm use " + newVersion + " --save && nvm alias default " + newVersion + " && npm list -g --depth=0");
                     var installedPackagesNew = NodeJsPackageHelper.GetCurrentInstalledNodeJSPackages(listPackagesOutput);
 
                     var missingPackages = installedPackages.Where(p => !installedPackagesNew.Contains(p)).ToList();
@@ -90,7 +91,7 @@ namespace WebDev.Tool.Helper.NodeJs
                     if (missingPackages.Count > 0) {
                         ctx.Status("Installing packages that are missing in the new version...");
 
-                        ExecCommand.Exec(". ~/.nvm/nvm.sh && nvm use " + newVersion + " && nvm alias default " + newVersion + " && npm install -g " + string.Join(" ", missingPackages));
+                        ExecCommand.Exec(". ~/.nvm/nvm.sh && nvm use " + newVersion + " --save && nvm alias default " + newVersion + " && npm install -g " + string.Join(" ", missingPackages));
                     }
 
                     // In some older versions of npm it could have happened that the folder rights were set incorrect
