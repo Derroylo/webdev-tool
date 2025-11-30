@@ -5,6 +5,8 @@ using WebDev.Tool.Helper.Internal.Config.Sections;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System.Linq;
+using WebDev.Tool.Classes.Configuration;
+using WebDev.Tool.Helper.Internal.Config;
 
 namespace WebDev.Tool.Commands.Services
 {
@@ -20,21 +22,27 @@ namespace WebDev.Tool.Commands.Services
 
             var services = DockerComposeHelper.GetServices(DockerComposeHelper.GetFile());
             Dictionary<string, List<string>> serviceCategories = new() {{"unknown", new List<string>()}};
+        
+            foreach (KeyValuePair<string, Dictionary<string, string>> item in services) {      
+                var serviceEntry = ServicesConfig.Services.FirstOrDefault(s => s.Key == item.Key);
 
-            foreach (KeyValuePair<string, Dictionary<string, string>> item in services) {               
-                if (!item.Value.ContainsKey("category")) {
+                if (serviceEntry.Value == null) {
+                    continue;
+                }
+
+                if (serviceEntry.Value.Category == "") {
                     serviceCategories["unknown"].Add(item.Key);
                 } else {
-                    if (!serviceCategories.ContainsKey(item.Value["category"])) {
-                        serviceCategories.Add(item.Value["category"], new List<string>());
+                    if (!serviceCategories.ContainsKey(serviceEntry.Value.Category)) {
+                        serviceCategories.Add(serviceEntry.Value.Category, new List<string>());
                     }
 
-                    serviceCategories[item.Value["category"]].Add(item.Key);
+                    serviceCategories[serviceEntry.Value.Category].Add(item.Key);
                 }
             }
 
             var multiSelectPrompt = new MultiSelectionPrompt<string>()
-                    .PageSize(10)
+                    .PageSize(20)
                     .Title("[bold yellow]Which service(s) should be started with your workspace?[/]")
                     .InstructionsText("[grey](Press [blue]space[/] to toggle a service, [green]enter[/] to accept)[/]");
 
@@ -64,11 +72,17 @@ namespace WebDev.Tool.Commands.Services
 
             var selectedServices = AnsiConsole.Prompt(multiSelectPrompt);
 
-            foreach (string item in selectedServices) {
-                if (ServicesConfig.Services.ContainsKey(item)) {
-                    ServicesConfig.Services[item].Active = true;
+            foreach (KeyValuePair<string, Dictionary<string, string>> item in services) {
+                var serviceEntry = ServicesConfig.Services.FirstOrDefault(s => s.Key == item.Key);
+
+                if (serviceEntry.Value == null) {
+                    continue;
                 }
+
+                serviceEntry.Value.Active = selectedServices.Contains(item.Key);
             }
+
+            ConfigHelper.ConfigUpdated = true;
 
             AnsiConsole.WriteLine("The following services have been marked as active and will start with the workspace");
 

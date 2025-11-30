@@ -11,7 +11,8 @@ internal class ServiceEntryConfiguration
 
     public string Category { get; set; } = "";
     
-    public bool Active { get; set; } = true;
+    [DefaultValue(false)]
+    public bool Active { get; set; } = false;
     
     public int Port { get; set; } = 8080;
     
