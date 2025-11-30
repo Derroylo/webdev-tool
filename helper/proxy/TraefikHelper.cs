@@ -38,7 +38,7 @@ internal class TraefikHelper
     private static Dictionary<string, object> CreateContainerRouteConfig(bool debug = false)
     {
         var services = ServicesConfig.Services;
-        var routerConfig = new Dictionary<string, object> { { "routers", new Dictionary<string, object>() }, { "services", new Dictionary<string, object>() } };
+        var routerConfig = new Dictionary<string, object> { { "routers", new Dictionary<string, dynamic>() }, { "services", new Dictionary<string, dynamic>() } };
 
         foreach (KeyValuePair<string, ServiceEntryConfiguration> service in services)
         {
@@ -52,13 +52,26 @@ internal class TraefikHelper
                 continue;
             }
 
-            CreateServiceRouteConfig(ref routerConfig, service, debug);
+            CreateServiceRouteConfig(ref routerConfig, service, false, debug);
         }
+
+        // Add the devcontainer route config
+        var devcontainerService = new ServiceEntryConfiguration
+        {
+            Name = "devcontainer",
+            Description = "Devcontainer for the development environment",
+            Category = "devcontainer",
+            Active = true,
+            Port = 8080,
+            SubDomain = GeneralConfig.Proxy.SubDomain
+        };
+
+        CreateServiceRouteConfig(ref routerConfig, new KeyValuePair<string, ServiceEntryConfiguration>("devcontainer", devcontainerService), true, debug);
 
         return routerConfig;
     }
 
-    private static bool CreateServiceRouteConfig(ref Dictionary<string, object> routerConfig, KeyValuePair<string, ServiceEntryConfiguration> service, bool debug = false)
+    private static bool CreateServiceRouteConfig(ref Dictionary<string, dynamic> routerConfig, KeyValuePair<string, ServiceEntryConfiguration> service, bool isDevContainer = false, bool debug = false)
     {
         var domain = GeneralConfig.Proxy.Domain;
         var globalSubDomain = GeneralConfig.Proxy.SubDomain;
@@ -83,7 +96,7 @@ internal class TraefikHelper
 
         routerConfig["routers"][serviceName] = new Dictionary<string, object>
         {
-            { "rule", $"Host(`{subDomain}.{globalSubDomain}.{domain}`) || Host(`{subDomain}.{domain}`)" },
+            { "rule", !isDevContainer ? $"Host(`{subDomain}.{globalSubDomain}.{domain}`) || Host(`{subDomain}.{domain}`)" : $"Host(`{globalSubDomain}.{domain}`) || Host(`www.{globalSubDomain}.{domain}`) || Host(`devcontainer.dev.localhost`) || Host(`www.devcontainer.dev.localhost`)" },
             { "entrypoints", "https" },
             { "tls", true },
             { "service", $"{serviceName}@docker" }
@@ -91,10 +104,7 @@ internal class TraefikHelper
 
         routerConfig["services"][serviceName] = new Dictionary<string, object>
         {
-            { "rule", $"Host(`{subDomain}.{globalSubDomain}.{domain}`) || Host(`{subDomain}.{domain}`)" },
-            { "entrypoints", "https" },
-            { "tls", true },
-            { "service", $"{serviceName}@docker" }
+            { "loadBalancer", new Dictionary<string, object> { { "servers", new Dictionary<string, object> { { "url", $"http://{serviceName}:{port}" } } } } },
         };
 
         return true;
@@ -135,7 +145,7 @@ internal class TraefikHelper
         {
             // Run mkcert in a container to generate certs
             var dockerCmd = $@"
-                docker run --rm --user 1000:1000 -v {rootCaDir}:/root/.local/share/mkcert -v {certificateDir}:/certs -w /certs alpine/mkcert ""*.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}""
+                docker run --rm --user 1000:1000 -e CAROOT=/tmp/mkcert -v {rootCaDir}:/tmp/mkcert -v {certificateDir}:/certs -w /certs alpine/mkcert ""*.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}""
             ";
             
             ExecCommand.Exec(dockerCmd);
