@@ -31,10 +31,15 @@ namespace WebDev.Tool
 {
     internal class Program
     {
+        public static List<string> ProgramArgs { get; private set; } = [];
+
         static void Main(string[] args)
         {
             var app     = new CommandApp();
             var version = UpdateHelper.CurrentVersion;
+
+            // Save the program args for later use
+            ProgramArgs = [.. args];
 
             if (args.Contains("--not-main") || args.Contains("-n"))
             {
@@ -240,6 +245,22 @@ namespace WebDev.Tool
             branch.AddCommand<UpdateTraefikConfigCommand>("traefik-update")
                 .WithDescription("Updates the traefik config file")
                 .WithAlias("t");
+
+            branch.AddCommand<NotYetImplementedCommand>("domains")
+                .WithDescription("List all domains configured in the traefik config file")
+                .WithAlias("d");  
+
+            branch.AddCommand<NotYetImplementedCommand>("update-certs")
+                .WithDescription("Updates the certificates")
+                .WithAlias("u");  
+
+            branch.AddCommand<NotYetImplementedCommand>("install-certs")
+                .WithDescription("Installs the root CA certificates")
+                .WithAlias("i");
+            
+            branch.AddCommand<NotYetImplementedCommand>("autocompletion")
+                .WithDescription("Generates the autocompletion script")
+                .WithAlias("a");
 
             if (additionalCommands.TryGetValue("tools", out CustomBranch customBranch)) {
                 foreach (CustomCommand cmd in customBranch.Commands) {

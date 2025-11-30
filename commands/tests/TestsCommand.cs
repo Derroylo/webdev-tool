@@ -9,6 +9,7 @@ using WebDev.Tool.Classes.Configuration;
 using WebDev.Tool.Helper;
 using WebDev.Tool.Helper.Internal;
 using WebDev.Tool.Helper.Internal.Config.Sections;
+using System.Linq;
 
 namespace WebDev.Tool.Commands.Shell
 {
@@ -69,6 +70,11 @@ namespace WebDev.Tool.Commands.Shell
         private static string GetTestCommands(TestEntryConfiguration test)
         {
             string commands = "";
+            string arguments = "";
+
+            if (Program.ProgramArgs.Count > 2) {
+                arguments = string.Join(" ", Program.ProgramArgs.Skip(2));
+            }
 
             foreach (string testName in test.Tests) {
                 if (TestsConfig.Tests.TryGetValue(testName, out TestEntryConfiguration testEntry)) {
@@ -77,7 +83,7 @@ namespace WebDev.Tool.Commands.Shell
             }
 
             foreach (string cmd in test.Commands) {
-                commands += cmd + " && ";
+                commands += cmd + (arguments != "" ? " " + arguments : "") + " && ";
             }
 
             return commands.TrimEnd(" &".ToCharArray()).Replace("\"", "\\\"");
