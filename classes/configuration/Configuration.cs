@@ -1,9 +1,13 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace WebDev.Tool.Classes.Configuration
 {
     internal class Configuration
     {
+        [DefaultValue(3)]
+        public int SchemaVersion { get; set; } = 3;
+        
         public ConfigConfiguration Config { get; set; } = new();
 
         public ShellScriptsConfiguration ShellScripts { get; set; } = new();

@@ -99,12 +99,12 @@ internal class TraefikHelper
             { "rule", !isDevContainer ? $"Host(`{subDomain}.{globalSubDomain}.{domain}`) || Host(`{subDomain}.{domain}`)" : $"Host(`{globalSubDomain}.{domain}`) || Host(`www.{globalSubDomain}.{domain}`) || Host(`devcontainer.dev.localhost`) || Host(`www.devcontainer.dev.localhost`)" },
             { "entrypoints", "https" },
             { "tls", true },
-            { "service", $"{serviceName}@docker" }
+            { "service", $"{serviceName}" }
         };
 
         routerConfig["services"][serviceName] = new Dictionary<string, object>
         {
-            { "loadBalancer", new Dictionary<string, object> { { "servers", new Dictionary<string, object> { { "url", $"http://{serviceName}:{port}" } } } } },
+            { "loadBalancer", new Dictionary<string, object> { { "servers", new Dictionary<string, object> { { "- url", $"http://{serviceName}:{port}" } } } } },
         };
 
         return true;
