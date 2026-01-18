@@ -26,6 +26,7 @@ using WebDev.Tool.Commands.workspaces;
 using WebDev.Tool.Helper;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 using WebDev.Tool.Commands.Mysql;
+using WebDev.Tool.Commands.Admin;
 
 namespace WebDev.Tool
 {
@@ -76,6 +77,11 @@ namespace WebDev.Tool
                 config.SetApplicationVersion(version);
 
                 // Add Branches and their commands
+                if (!EnvironmentHelper.IsRunningInDevContainer())
+                {
+                    config.AddBranch("admin", branch => AddAdminCommandBranch(branch, additionalCommands));
+                }
+
                 if (EnvironmentHelper.IsRunningInDevContainer())
                 {
                     config.AddBranch("apache", branch => AddApacheCommandBranch(branch, additionalCommands));
@@ -127,7 +133,7 @@ namespace WebDev.Tool
                 // Add Tools branch
                 config.AddBranch("tools", branch => AddToolsCommandBranch(branch, additionalCommands));
 
-                List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task", "tests" };
+                List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task", "tests", "admin" };
 
                 // Add Tests branch
                 if (TestsConfig.Tests.Count > 0)
@@ -234,6 +240,24 @@ namespace WebDev.Tool
                     } catch (Exception e) {
                         AnsiConsole.WriteException(e);
                     }
+                }
+            }
+        }
+
+        private static void AddAdminCommandBranch(IConfigurator<CommandSettings> branch, Dictionary<string, CustomBranch> additionalCommands)
+        {
+            branch.SetDescription("Commands for the admin interface");
+
+            branch.AddCommand<AdminStartCommand>("start")
+                .WithDescription("Starts the admin interface");
+            branch.AddCommand<AdminStopCommand>("stop")
+                .WithDescription("Stops the admin interface");
+
+            if (additionalCommands.TryGetValue("admin", out CustomBranch customBranch)) {
+                foreach (CustomCommand cmd in customBranch.Commands) {
+                    branch.AddCommand<ShellFileCommand>(cmd.Command)
+                        .WithData(cmd)
+                        .WithDescription(cmd.Description);
                 }
             }
         }
