@@ -75,56 +75,70 @@ namespace WebDev.Tool
             {
                 config.SetApplicationName("webdev");
                 config.SetApplicationVersion(version);
+                
+                // Register custom help provider for a better help output
+                config.SetHelpProvider(new CustomHelpProvider(config.Settings));
 
                 // Add Branches and their commands
-                if (!EnvironmentHelper.IsRunningInDevContainer())
-                {
-                    config.AddBranch("admin", branch => AddAdminCommandBranch(branch, additionalCommands));
-                }
+                config.AddBranch("admin", branch => AddAdminCommandBranch(branch, additionalCommands))
+                    .RunOnlyOnHost()
+                    .ShowAllCommandsDirectly()
+                    .ShowInCommonCommands();
 
-                if (EnvironmentHelper.IsRunningInDevContainer())
-                {
-                    config.AddBranch("apache", branch => AddApacheCommandBranch(branch, additionalCommands));
-                }
+                config.AddBranch("apache", branch => AddApacheCommandBranch(branch, additionalCommands))
+                    .RunOnlyInDevcontainer();
                 
-                config.AddBranch("services", branch => AddServicesCommandBranch(branch, additionalCommands));
+                config.AddBranch("services", branch => AddServicesCommandBranch(branch, additionalCommands))
+                    .RunOnlyOnHost()
+                    .ShowAllCommandsDirectly()
+                    .ShowInCommonCommands();
+
                 config.AddBranch("config", branch => AddConfigCommandBranch(branch, additionalCommands));
                 
-                if (!EnvironmentHelper.IsRunningInDevContainer())
-                {
-                    config.AddBranch("project", branch => AddProjectCommandBranch(branch, additionalCommands));
-                    config.AddBranch("secrets", branch => AddSecretsCommandBranch(branch, additionalCommands));
-                }
-                
-                if (!EnvironmentHelper.IsRunningInDevContainer())
-                {
-                    config.AddBranch("mysql", branch => AddMysqlCommandBranch(branch, additionalCommands));
-                }
+                config.AddBranch("project", branch => AddProjectCommandBranch(branch, additionalCommands))
+                    .RunOnlyOnHost()
+                    .ShowAllCommandsDirectly()
+                    .ShowInCommonCommands();
 
-                if (EnvironmentHelper.IsRunningInDevContainer())
-                {
-                    config.AddBranch("nodejs", branch => AddNodeJsCommandBranch(branch, additionalCommands));
-                    config.AddBranch("php", branch => AddPhpCommandBranch(branch, additionalCommands));
-                    config.AddBranch("restore", branch => AddRestoreCommandBranch(branch, additionalCommands));
-                }
+                config.AddBranch("secrets", branch => AddSecretsCommandBranch(branch, additionalCommands))
+                    .RunOnlyOnHost();
+                
+                config.AddBranch("mysql", branch => AddMysqlCommandBranch(branch, additionalCommands))
+                    .RunOnlyOnHost();
+
+                config.AddBranch("nodejs", branch => AddNodeJsCommandBranch(branch, additionalCommands))
+                    .RunOnlyInDevcontainer()
+                    .ShowInCommonCommands()
+                    .ShowAllCommandsDirectly();
+
+                config.AddBranch("php", branch => AddPhpCommandBranch(branch, additionalCommands))
+                    .RunOnlyInDevcontainer()
+                    .ShowInCommonCommands()
+                    .ShowAllCommandsDirectly();
+
+                config.AddBranch("restore", branch => AddRestoreCommandBranch(branch, additionalCommands))
+                    .RunOnlyInDevcontainer();
                 
                 if (TasksConfig.Tasks.Count > 0)
                 {
-                    config.AddBranch("task", branch => AddTaskCommandBranch(branch, TasksConfig.Tasks));
+                    config.AddBranch("task", branch => AddTaskCommandBranch(branch, TasksConfig.Tasks))
+                        .RunOnlyOnHost();
                 }
                 
-                config.AddBranch("tasks", branch => AddTasksCommandBranch(branch, additionalCommands));
+                config.AddBranch("tasks", branch => AddTasksCommandBranch(branch, additionalCommands))
+                    .RunOnlyOnHost();
 
-                if (!EnvironmentHelper.IsRunningInDevContainer())
-                {
-                    config.AddCommand<OpenDevcontainerTerminalCommand>("terminal").WithDescription("Open a terminal to the running devcontainer");
-                }
+                config.AddCommand<OpenDevcontainerTerminalCommand>("terminal")
+                    .RunOnlyOnHost()
+                    .ShowInCommonCommands()
+                    .WithDescription("Open a terminal to the running devcontainer");
 
-                config.AddCommand<SelfUpdateCommand>("update").WithDescription("Update this tool to the latest version");
+                config.AddCommand<SelfUpdateCommand>("update")
+                    .WithDescription("Update this tool to the latest version");
 
-                // Commands that are executed for various actions, like project start, to show the user some infos and what he can do next etc.
-                config.AddCommand<ShowProjectInfoCommand>("info");
-                //config.AddCommand<ShowWebdevInstallSummaryCommand>("webdev-install-summary").IsHidden();
+                config.AddCommand<ShowProjectInfoCommand>("info")
+                    .ShowInCommonCommands()
+                    .WithDescription("Shows information about the current project");
                 
                 // Prepare and run workspaces
                 config.AddCommand<OnInitWorkspacesCommand>("workspaces-on-init").IsHidden();
@@ -145,9 +159,11 @@ namespace WebDev.Tool
                         foreach (KeyValuePair<string, TestEntryConfiguration> entry in TestsConfig.Tests) {
                             branch.AddCommand<TestsCommand>(entry.Key)
                                 .WithData(entry.Value)
-                                .WithDescription(entry.Value.Name);
+                                .WithDescription(entry.Value.Name)
+                                .ShowInCommonCommands();
                         }
-                    });
+                    })
+                    .ShowInCommonCommands();
                 }
 
                 // Add branches that haven´t been added yet via custom commands
@@ -195,7 +211,7 @@ namespace WebDev.Tool
             if (!EnvironmentHelper.IsProgramHeaderDisabled())
             {
                 AnsiConsole.Write(new FigletText("WebDev"));
-                AnsiConsole.Markup("[deepskyblue3]WebDev Tool[/] - Version [green]" + programVersion + "[/]");
+                AnsiConsole.Markup("[deepskyblue3]WebDev[/] - Version [green]" + programVersion + "[/]");
 
                 AnsiConsole.Write(EnvironmentHelper.IsRunningInDevContainer() ? " - DevContainer Mode" : " - Local Mode");
             }
@@ -242,6 +258,8 @@ namespace WebDev.Tool
                     }
                 }
             }
+
+            AnsiConsole.MarkupLine("WebDev CLI is a tool to manage your local web development environment. Visit [link]https://derroylo.github.io/[/] for more information.");
         }
 
         private static void AddAdminCommandBranch(IConfigurator<CommandSettings> branch, Dictionary<string, CustomBranch> additionalCommands)
@@ -457,9 +475,11 @@ namespace WebDev.Tool
             branch.AddCommand<ListServicesCommand>("list")
                 .WithDescription("List available the services");
             branch.AddCommand<StartServicesCommand>("start")
-                .WithDescription("Start the services that are marked as active");
+                .WithDescription("Start the services that are marked as active")
+                .ShowInCommonCommands();
             branch.AddCommand<StopServicesCommand>("stop")
-                .WithDescription("Stops running services");
+                .WithDescription("Stops running services")
+                .ShowInCommonCommands();
             branch.AddCommand<SelectServicesCommand>("select")
                 .WithDescription("Select which services should be active");
 

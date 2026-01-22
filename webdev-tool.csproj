@@ -5,7 +5,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
     <Version>0.4.0</Version>
-    <InformationalVersion>-alpha.2</InformationalVersion>
+    <InformationalVersion>-beta.1</InformationalVersion>
     <Authors>Derroylo</Authors>
     <Product>WebDev-Tool</Product>
     <Description>A little tool to help with WebDevelopment using DevContainer</Description>
