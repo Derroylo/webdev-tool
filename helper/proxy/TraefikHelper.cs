@@ -104,7 +104,7 @@ internal class TraefikHelper
 
         routerConfig["services"][serviceName] = new Dictionary<string, object>
         {
-            { "loadBalancer", new Dictionary<string, object> { { "servers", new Dictionary<string, object> { { "- url", $"http://{serviceName}:{port}" } } } } },
+            { "loadBalancer", new Dictionary<string, object> { { "servers", new List<object> { new Dictionary<string, object> { { "url", $"http://{serviceName}:{port}" } } } } } },
         };
 
         return true;
