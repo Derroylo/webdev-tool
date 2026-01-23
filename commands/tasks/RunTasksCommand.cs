@@ -129,7 +129,16 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
             
         foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
         {
-            commands.Add("cd " + Path.Combine("./", GeneralConfig.WorkspaceFolder, workspace.Value.Folder) + " && WEBDEV_DISABLE_HEADER=1 webdev tasks " + sectionName + " --not-main");
+            if (workspace.Key == "main") continue;
+            
+            if (sectionName == "init")
+            {
+                // Make sure we process the secrets for each workspace
+                commands.Add("(cd " + Path.Combine("./", GeneralConfig.WorkspaceFolder, workspace.Value.Folder) + " && " + Program.ApplicationName + " secrets load --no-header)");
+            }
+            
+            // Run the tasks for the workspace
+            commands.Add("(cd " + Path.Combine("./", GeneralConfig.WorkspaceFolder, workspace.Value.Folder) + " && " + Program.ApplicationName + " tasks " + sectionName + " --not-main --no-header)");
         }
             
         var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
