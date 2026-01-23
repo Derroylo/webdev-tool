@@ -34,6 +34,8 @@ namespace WebDev.Tool
     {
         public static List<string> ProgramArgs { get; private set; } = [];
 
+        public static string ApplicationName { get; private set; } = "webdev";
+
         static void Main(string[] args)
         {
             var app     = new CommandApp();
@@ -50,6 +52,13 @@ namespace WebDev.Tool
             if (args.Contains("--no-header"))
             {
                 EnvironmentHelper.DisableProgramHeader();
+            }
+
+            // Set the application name
+            // This is usually webdev, but when it is put into a prerelease folder, it is webdev-prerelease
+            if (Environment.GetCommandLineArgs()[0].Contains("prerelease"))
+            {
+                ApplicationName = "webdev-prerelease";
             }
 
             // Output the program name, version and info if the config file could not be read
