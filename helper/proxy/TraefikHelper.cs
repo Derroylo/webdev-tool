@@ -67,7 +67,7 @@ internal class TraefikHelper
         };
 
         CreateServiceRouteConfig(ref routerConfig, new KeyValuePair<string, ServiceEntryConfiguration>("devcontainer", devcontainerService), true, debug);
-
+        
         return routerConfig;
     }
 
@@ -94,9 +94,35 @@ internal class TraefikHelper
             AnsiConsole.MarkupLine($"[green]Adding traefik config for {serviceName}[/]");
         }
 
-        routerConfig["routers"][serviceName] = new Dictionary<string, object>
+        string rule;
+        
+        if (!isDevContainer)
         {
-            { "rule", !isDevContainer ? $"Host(`{subDomain}.{globalSubDomain}.{domain}`) || Host(`{subDomain}.{domain}`)" : $"Host(`{globalSubDomain}.{domain}`) || Host(`www.{globalSubDomain}.{domain}`) || Host(`devcontainer.dev.localhost`) || Host(`www.devcontainer.dev.localhost`)" },
+            rule = $"Host(`{subDomain}.{globalSubDomain}.{domain}`) || Host(`{subDomain}.{domain}`)";
+        }
+        else
+        {
+            // Add the global subdomain and the www subdomain
+            rule = $"Host(`{globalSubDomain}.{domain}`) || Host(`www.{globalSubDomain}.{domain}`) || Host(`devcontainer.dev.localhost`) || Host(`www.devcontainer.dev.localhost`)";
+
+            // Add the workspaces subdomains
+            if (WorkspacesConfig.Workspaces.Count > 0)
+            {
+                foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
+                {
+                    if (workspace.Value.SubDomains.Count == 0) continue;
+                    
+                    foreach (string wsubDomain in workspace.Value.SubDomains)
+                    {
+                        rule += $" || Host(`{wsubDomain}.{globalSubDomain}.{domain}`)";
+                    }
+                }
+            }
+        }
+        
+        routerConfig["routers"][serviceName] = new Dictionary<string, dynamic>
+        {
+            { "rule", rule },
             { "entrypoints", "https" },
             { "tls", true },
             { "service", $"{serviceName}" }
