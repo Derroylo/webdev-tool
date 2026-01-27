@@ -9,7 +9,12 @@ using WebDev.Tool.Helper.Secrets.Handler;
 
 namespace WebDev.Tool.Helper.Secrets;
 
-internal class SecretsLoader
+public class SecretsLoader(
+    IDebugOutputHelper _debugOutputHelper,
+    SecretsConfig _secretsConfig,
+    IPathHelper _pathHelper,
+    ITranslationHelper _translationHelper
+) : ISecretsLoader
 {
     private static Dictionary<string, string> _envVarSecrets = new Dictionary<string, string>();
 
@@ -17,9 +22,9 @@ internal class SecretsLoader
 
     private static bool _loadedEnvVarSecrets = false;
     
-    public static bool LoadFileSecrets(bool showMessages = true)
+    public bool LoadFileSecrets(bool showMessages = true)
     {
-        if (SecretsConfig.Secrets.Count == 0)
+        if (_secretsConfig.Secrets.Count == 0)
         {
             return true;
         }
@@ -36,7 +41,7 @@ internal class SecretsLoader
             return false;
         }
 
-        var fileSecrets = SecretsConfig.Secrets
+        var fileSecrets = _secretsConfig.Secrets
                 .Where(s => !string.IsNullOrEmpty(s.Value.Target.File))
                 .ToDictionary(s => s.Key, s => s.Value);
 
@@ -65,7 +70,7 @@ internal class SecretsLoader
         return true;
     }
 
-    public static bool LoadEnvVarSecrets(bool showMessages = true)
+    public bool LoadEnvVarSecrets(bool showMessages = true)
     {
         if (_loadedEnvVarSecrets)
         {
@@ -74,7 +79,7 @@ internal class SecretsLoader
 
         _loadedEnvVarSecrets = true;
 
-        if (SecretsConfig.Secrets.Count == 0)
+        if (_secretsConfig.Secrets.Count == 0)
         {
             return true;
         }
@@ -83,15 +88,12 @@ internal class SecretsLoader
         
         if (secretsHandlers.Count == 0)
         {
-            if (showMessages)
-            {
-                AnsiConsole.MarkupLine($"[red]No secrets handlers configured[/]");
-            }
+            _debugOutputHelper.WriteErrorOutput("No secrets handlers configured", this);
             
             return false;
         }
 
-        var envVarSecrets = SecretsConfig.Secrets
+        var envVarSecrets = _secretsConfig.Secrets
                 .Where(s => !string.IsNullOrEmpty(s.Value.Target.EnvVar))
                 .ToDictionary(s => s.Key, s => s.Value);
 
@@ -102,10 +104,7 @@ internal class SecretsLoader
 
         foreach (KeyValuePair<string, SecretConfiguration> secret in envVarSecrets)
         {
-            if (showMessages)
-            {
-                AnsiConsole.MarkupLine($"[green]Loading envvar secret: {secret.Key}[/]");
-            }
+            _debugOutputHelper.WriteInfoOutput("Loading envvar secret: " + secret.Key, this);
 
             var secretContent = secretsHandlers.FirstOrDefault(h => h.SupportsFileLoad())?.HandleLoadSecret(secret.Key, secret.Value, showMessages);
 
@@ -126,10 +125,7 @@ internal class SecretsLoader
             {
                 if (!secretDict.ContainsKey(expectedVar))
                 {
-                    if (showMessages)
-                    {
-                        AnsiConsole.MarkupLine($"[red]Expected environment variable {expectedVar} not found in secret {secret.Key}[/]");
-                    }
+                    _debugOutputHelper.WriteErrorOutput("Expected environment variable " + expectedVar + " not found in secret " + secret.Key, this);
 
                     return false;
                 }
@@ -144,21 +140,18 @@ internal class SecretsLoader
             {
                 Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
 
-                if (showMessages)
-                {
-                    AnsiConsole.MarkupLine($"[green]Set environment variable: {kvp.Key}[/]");
-                }
+                _debugOutputHelper.WriteInfoOutput("Set environment variable: " + kvp.Key, this);
             }
         }
 
         return true;
     }
     
-    private static List<SecretsHandlerInterface> GetSecretsHandler()
+    private List<SecretsHandlerInterface> GetSecretsHandler()
     {
         var secretsHandler = new List<SecretsHandlerInterface>
         {
-            new FileHandler()
+            new FileHandler(_pathHelper, _translationHelper)
         };
         
         return secretsHandler;

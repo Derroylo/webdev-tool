@@ -1,8 +1,8 @@
 namespace WebDev.Tool.Helper.Internal.Config.Sections
 {
-    internal class NodeJsConfig: ConfigHelper
+    public class NodeJsConfig(IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper): ConfigHelper(_pathHelper, _environmentHelper)
     {
-        public static string NodeJsVersion
+        public string NodeJsVersion
         {
             get => appConfig.Nodejs.Version;
 

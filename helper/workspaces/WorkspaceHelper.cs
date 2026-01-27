@@ -4,30 +4,35 @@ using System.IO;
 using Spectre.Console;
 using WebDev.Tool.Classes.Configuration;
 using WebDev.Tool.Helper.apache;
-using WebDev.Tool.Helper.Docker;
 using WebDev.Tool.Helper.git;
 using WebDev.Tool.Helper.Internal;
+using WebDev.Tool.Helper;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 
-namespace WebDev.Tool.Helper.workspaces;
+namespace WebDev.Tool.Helper.Workspaces;
 
-internal class WorkspaceHelper
+public class WorkspaceHelper(WorkspacesConfig _workspacesConfig, GeneralConfig _generalConfig, IDebugOutputHelper _debugOutputHelper, IGitHelper _gitHelper, IApacheHelper _apacheHelper, IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper) : IWorkspaceHelper
 {
-    public static bool ValidateWorkspaces(bool debug = false)
+    public bool ValidateWorkspaces()
     {
-        if (WorkspacesConfig.Workspaces.Count == 0)
+        if (_workspacesConfig.Workspaces.Count == 0)
         {
             AnsiConsole.MarkupLine($"[red]At least one workspace needs to be defined in the config.[/]");
 
             return false;
         }
 
-        foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
+        _debugOutputHelper.WriteInfoOutput("Validating workspaces", this);
+
+        foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in _workspacesConfig.Workspaces)
         {
             if (workspace.Key == "main")
             {
+                _debugOutputHelper.WriteInfoOutput("Skipping main workspace", this);
                 continue;
             }
+            
+            _debugOutputHelper.WriteInfoOutput("Validating workspace: " + workspace.Key, this);
             
             var workspaceFolder = "";
 
@@ -41,8 +46,10 @@ internal class WorkspaceHelper
                     workspace.Value.Folder = workspace.Key;
                 }
 
-                workspaceFolder = GeneralConfig.WorkspaceFolder + "/" + workspace.Value.Folder + "/";
+                workspaceFolder = _generalConfig.WorkspaceFolder + "/" + workspace.Value.Folder + "/";
             }
+
+            _debugOutputHelper.WriteInfoOutput("Workspace folder: " + workspaceFolder, this);
 
             if (!Directory.Exists(workspaceFolder) && workspace.Value.Repository == "")
             {
@@ -56,7 +63,7 @@ internal class WorkspaceHelper
             {
                 AnsiConsole.MarkupLine("Cloning repository {0} into {1}", workspace.Value.Repository, workspaceFolder);
                 
-                if (!GitHelper.CloneRepository(workspace.Value.Repository, workspaceFolder))
+                if (!_gitHelper.CloneRepository(workspace.Value.Repository, workspaceFolder))
                 {
                     AnsiConsole.MarkupLine($"[red]Failed to clone repository:[/] {workspace.Value.Repository}");
                     
@@ -67,7 +74,7 @@ internal class WorkspaceHelper
 
                 if (!string.IsNullOrEmpty(workspace.Value.Branch))
                 {
-                    if (!GitHelper.CheckoutBranch(workspaceFolder, workspace.Value.Branch))
+                    if (!_gitHelper.CheckoutBranch(workspaceFolder, workspace.Value.Branch))
                     {
                         AnsiConsole.MarkupLine($"[red]Failed to check out branch:[/] {workspace.Value.Branch}");
                         
@@ -92,31 +99,32 @@ internal class WorkspaceHelper
                 return false;
             }
             
-            if (debug)
-            {
-                AnsiConsole.MarkupLine("Workspace: [bold yellow]{0}[/] is [green]valid[/]", workspace.Key);
-            }
+            _debugOutputHelper.WriteInfoOutput("Workspace: " + workspace.Key + " is valid", this);
         }
 
         return true;
     }
     
-    public static bool PrepareWorkspaces(bool debug = false)
+    public bool PrepareWorkspaces()
     {
         var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
         var workspaces = new List<string>();
        
-        if (WorkspacesConfig.Workspaces.Count == 0)
+        if (_workspacesConfig.Workspaces.Count == 0)
         {
             AnsiConsole.MarkupLine($"[red]No workspaces defined in the config.[/]");
 
             return false;
         }
         
-        foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
+        foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in _workspacesConfig.Workspaces)
         {
+            _debugOutputHelper.WriteInfoOutput("Preparing workspace: " + workspace.Key, this);
+            
             if (workspace.Value.DisableWeb)
             {
+                _debugOutputHelper.WriteInfoOutput("Workspace: " + workspace.Key + " is disabled", this);
+                
                 continue;
             }
 
@@ -128,6 +136,8 @@ internal class WorkspaceHelper
                     workspace.Value.SubDomains.Add("www");
                 }
 
+                _debugOutputHelper.WriteInfoOutput("Creating vhost workspace for main workspace", this);
+
                 CreateVhostWorkspace(workspace.Value, true);
                 
                 continue;
@@ -136,30 +146,38 @@ internal class WorkspaceHelper
             if (workspace.Value.Folder != "" &&
                 (workspace.Value.Folder.StartsWith("./") || workspace.Value.Folder.StartsWith("../")))
             {
+                // Not supported yet
+                _debugOutputHelper.WriteWarningOutput("Using relative folder path for workspace: " + workspace.Key + " is not supported yet", this);
                 // TODO: Create a symlink from the given folder to the workspace folder, otherwise the source code will not be available in the container
             }
             
-            var workspaceFolder = GeneralConfig.WorkspaceFolder + "/" + workspace.Value.Folder + "/";
+            var workspaceFolder = _generalConfig.WorkspaceFolder + "/" + workspace.Value.Folder + "/";
            
             if (workspace.Value.Mode == WorkspaceMode.DevContainer)
             {
+                _debugOutputHelper.WriteInfoOutput("Adding workspace: " + workspace.Key + " to the list of workspaces to start", this);
+                
                 workspaces.Add(workspaceFolder);
             }
             else
             {
+                _debugOutputHelper.WriteInfoOutput("Creating vhost workspace for workspace: " + workspace.Key, this);
+                
                 CreateVhostWorkspace(workspace.Value);
             }
         }
 
         if (workspaces.Count > 0)
         {
+            _debugOutputHelper.WriteInfoOutput("Writing workspaces to start to file: " + applicationDir + ".workspaces_start: " + string.Join(", ", workspaces), this);
+            
             File.WriteAllLines(applicationDir + ".workspaces_start", workspaces);            
         }
         
         return true;
     }
 
-    private static void CreateVhostWorkspace(WorkspaceEntryConfiguration workspace, bool isMainWorkspace = false, bool isWwwSubdomain = false)
+    private void CreateVhostWorkspace(WorkspaceEntryConfiguration workspace, bool isMainWorkspace = false, bool isWwwSubdomain = false)
     {
         var vHostConfig = """
             <VirtualHost *:8080>
@@ -178,8 +196,8 @@ internal class WorkspaceHelper
             </VirtualHost>
             """;
         
-        vHostConfig = vHostConfig.Replace("#SUBDOMAIN#", GeneralConfig.Proxy.SubDomain);
-        vHostConfig = vHostConfig.Replace("#DOMAIN#", GeneralConfig.Proxy.Domain);
+        vHostConfig = vHostConfig.Replace("#SUBDOMAIN#", _generalConfig.Proxy.SubDomain);
+        vHostConfig = vHostConfig.Replace("#DOMAIN#", _generalConfig.Proxy.Domain);
 
         foreach (var subDomain in workspace.SubDomains)
         {
@@ -188,7 +206,7 @@ internal class WorkspaceHelper
             if (!isMainWorkspace)
             {
                 vHostConfig = vHostConfig.Replace("#WSSUDOMAIN#", subDomain + ".");
-                vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", GeneralConfig.WorkspaceFolder, workspace.Folder, workspace.DocRoot));
+                vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", _generalConfig.WorkspaceFolder, workspace.Folder, workspace.DocRoot));
             }
             else
             {
@@ -206,29 +224,30 @@ internal class WorkspaceHelper
                 vHostConfig = vHostConfig.Replace("#DOCROOT#", Path.Combine("/var/www/html/", workspace.DocRoot));
             }
 
-            var workspacePath = PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer());
+            var workspacePath = _pathHelper.GetWorkspacePath(_environmentHelper.IsRunningInDevContainer());
 
             if (!Directory.Exists(Path.Combine(workspacePath, ".devcontainer", "vhost")))
             {
+                _debugOutputHelper.WriteInfoOutput("Creating vhost directory: " + Path.Combine(workspacePath, ".devcontainer", "vhost"), this);
+                
                 Directory.CreateDirectory(Path.Combine(workspacePath, ".devcontainer", "vhost"));
             }
+            
+            _debugOutputHelper.WriteInfoOutput("Writing vhost config file: " + Path.Combine(workspacePath, ".devcontainer", "vhost") + "/" + configFileName + ": " + vHostConfig, this);
             
             File.WriteAllText(Path.Combine(workspacePath, ".devcontainer", "vhost") + "/" + configFileName, vHostConfig);
         }
     }
 
-    public static void EnableVhostConfigurations(bool debug = false)
+    public void EnableVhostConfigurations()
     {
         // Create symlinks for each entry in the vhost directory(.devcontainer/vhost) to the Apache configuration directory
-        var workspacePath = PathHelper.GetWorkspacePath();
+        var workspacePath = _pathHelper.GetWorkspacePath();
         var vhostDir = Path.Combine(workspacePath, ".devcontainer", "vhost");
         
         if (!Directory.Exists(vhostDir))
         {
-            if (debug)
-            {
-                AnsiConsole.MarkupLine($"[red]Vhost directory does not exist: {vhostDir}[/]");
-            }
+            _debugOutputHelper.WriteErrorOutput("Vhost directory does not exist: " + vhostDir, this);
 
             return;
         }
@@ -241,10 +260,7 @@ internal class WorkspaceHelper
 
             if (File.Exists(symlinkPath))
             {
-                if (debug)
-                {
-                    AnsiConsole.MarkupLine($"[yellow]Symlink {fileName} already exists. Skipping...[/]");
-                }
+                _debugOutputHelper.WriteWarningOutput("Symlink " + fileName + " already exists. Skipping...", this);
 
                 continue;
             }
@@ -253,10 +269,7 @@ internal class WorkspaceHelper
             {
                 File.CreateSymbolicLink(symlinkPath, file);
 
-                if (debug)
-                {
-                    AnsiConsole.MarkupLine($"[yellow]Creating symlink: {symlinkPath} -> {file}[/]");
-                }
+                _debugOutputHelper.WriteInfoOutput("Creating symlink: " + symlinkPath + " -> " + file, this);
             }
             catch (Exception ex)
             {
@@ -264,7 +277,7 @@ internal class WorkspaceHelper
             }
 
             // Enable the site configuration
-            ApacheHelper.EnableVhost(Path.GetFileNameWithoutExtension(file), debug);
+            _apacheHelper.EnableVhost(Path.GetFileNameWithoutExtension(file));
         }
 
         // Make sure the following line is in the Apache configuration file:
@@ -272,6 +285,7 @@ internal class WorkspaceHelper
         if (!File.Exists(apacheConfigFile))
         {
             AnsiConsole.MarkupLine($"[red]Apache configuration file does not exist: {apacheConfigFile}[/]");
+            
             return;
         }
         
@@ -281,17 +295,14 @@ internal class WorkspaceHelper
             configContent += "\nIncludeOptional /etc/apache2/sites-enabled/*.conf\n";
             File.WriteAllText(apacheConfigFile, configContent);
 
-            if (debug)
-            {
-                AnsiConsole.MarkupLine($"[green]Added IncludeOptional directive to {apacheConfigFile}[/]");
-            }
+            _debugOutputHelper.WriteInfoOutput("Added IncludeOptional directive to " + apacheConfigFile, this);
         }
-        else if (debug)
+        else
         {
-            AnsiConsole.MarkupLine($"[yellow]IncludeOptional directive already exists in {apacheConfigFile}[/]");
+            _debugOutputHelper.WriteWarningOutput("IncludeOptional directive already exists in " + apacheConfigFile, this);
         }
         
         // Make sure that the default config is disabled
-        ApacheHelper.DisableVhost("000-default", debug);
+        _apacheHelper.DisableVhost("000-default");
     }
 }

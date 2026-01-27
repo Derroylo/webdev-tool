@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace WebDev.Tool.Classes.Configuration
 {
-    internal class EnvironmentSettingConfiguration
+    public class EnvironmentSettingConfiguration
     {
         public string Name { get; set; } = "";
         

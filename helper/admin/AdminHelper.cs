@@ -4,9 +4,9 @@ using Spectre.Console;
 
 namespace WebDev.Tool.Helper.Admin;
 
-internal class AdminHelper
+public class AdminHelper(ExecCommand _execCommand) : IAdminHelper
 {
-    public static bool StartAdmin(int port = 8000, bool runAsDaemon = true)
+    public bool StartAdmin(int port = 8000, bool runAsDaemon = true)
     {
         if (!TestRequirements())
         {
@@ -21,7 +21,7 @@ internal class AdminHelper
 
         var webDevAdminDir = AppDomain.CurrentDomain.BaseDirectory + "admin";
       
-        var result = ExecCommand.Exec($"symfony server:start --port={port} --directory={webDevAdminDir} {(runAsDaemon ? "--daemon" : "")}");
+        var result = _execCommand.Exec($"symfony server:start --port={port} --directory={webDevAdminDir} {(runAsDaemon ? "--daemon" : "")}");
 
         if (result.Contains("Web server listening"))
         {
@@ -45,7 +45,7 @@ internal class AdminHelper
         return true;
     }
 
-    public static bool StopAdmin(bool debug = false)
+    public bool StopAdmin(bool debug = false)
     {
         if (!TestRequirements())
         {
@@ -54,7 +54,7 @@ internal class AdminHelper
 
         var webDevAdminDir = AppDomain.CurrentDomain.BaseDirectory + "admin";
 
-        var result = ExecCommand.Exec($"symfony server:stop --directory={webDevAdminDir}");
+        var result = _execCommand.Exec($"symfony server:stop --directory={webDevAdminDir}");
 
         if (result.Contains("[OK]"))
         {
@@ -71,14 +71,14 @@ internal class AdminHelper
         return true;
     }
 
-    public static bool IsSymfonyCliInstalled(bool debug = false)
+    public bool IsSymfonyCliInstalled(bool debug = false)
     {
-        var result = ExecCommand.Exec("symfony version");
+        var result = _execCommand.Exec("symfony version");
 
         return result.Contains("Symfony CLI");
     }
 
-    private static bool TestRequirements(bool debug = false)
+    private bool TestRequirements(bool debug = false)
     {
         if (!IsSymfonyCliInstalled())
         {

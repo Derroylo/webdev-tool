@@ -13,11 +13,11 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace WebDev.Tool.Helper.Proxy;
 
-internal class TraefikHelper
+public class TraefikHelper(IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper, GeneralConfig _generalConfig, WorkspacesConfig _workspacesConfig, ServicesConfig _servicesConfig, ExecCommand _execCommand) : ITraefikHelper
 {
-    public static bool CreateTraefikConfig(bool debug = false)
+    public bool CreateTraefikConfig(bool debug = false)
     {
-        var workspacePath = PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer());
+        var workspacePath = _pathHelper.GetWorkspacePath(_environmentHelper.IsRunningInDevContainer());
 
         // Create the certificates and the devcontainer route config
         var certConfig = CreateTraefikCertificates(debug);
@@ -35,9 +35,9 @@ internal class TraefikHelper
         return true;
     }
 
-    private static Dictionary<string, object> CreateContainerRouteConfig(bool debug = false)
+    private Dictionary<string, object> CreateContainerRouteConfig(bool debug = false)
     {
-        var services = ServicesConfig.Services;
+        var services = _servicesConfig.Services;
         var routerConfig = new Dictionary<string, object> { { "routers", new Dictionary<string, dynamic>() }, { "services", new Dictionary<string, dynamic>() } };
 
         foreach (KeyValuePair<string, ServiceEntryConfiguration> service in services)
@@ -63,7 +63,7 @@ internal class TraefikHelper
             Category = "devcontainer",
             Active = true,
             Port = 8080,
-            SubDomain = GeneralConfig.Proxy.SubDomain
+            SubDomain = _generalConfig.Proxy.SubDomain
         };
 
         CreateServiceRouteConfig(ref routerConfig, new KeyValuePair<string, ServiceEntryConfiguration>("devcontainer", devcontainerService), true, debug);
@@ -71,10 +71,10 @@ internal class TraefikHelper
         return routerConfig;
     }
 
-    private static bool CreateServiceRouteConfig(ref Dictionary<string, dynamic> routerConfig, KeyValuePair<string, ServiceEntryConfiguration> service, bool isDevContainer = false, bool debug = false)
+    private bool CreateServiceRouteConfig(ref Dictionary<string, dynamic> routerConfig, KeyValuePair<string, ServiceEntryConfiguration> service, bool isDevContainer = false, bool debug = false)
     {
-        var domain = GeneralConfig.Proxy.Domain;
-        var globalSubDomain = GeneralConfig.Proxy.SubDomain;
+        var domain = _generalConfig.Proxy.Domain;
+        var globalSubDomain = _generalConfig.Proxy.SubDomain;
         var serviceName = service.Key;
         var subDomain = service.Value.SubDomain;
         var port = service.Value.Port;
@@ -106,9 +106,9 @@ internal class TraefikHelper
             rule = $"Host(`{globalSubDomain}.{domain}`) || Host(`www.{globalSubDomain}.{domain}`) || Host(`devcontainer.dev.localhost`) || Host(`www.devcontainer.dev.localhost`)";
 
             // Add the workspaces subdomains
-            if (WorkspacesConfig.Workspaces.Count > 0)
+            if (_workspacesConfig.Workspaces.Count > 0)
             {
-                foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
+                foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in _workspacesConfig.Workspaces)
                 {
                     if (workspace.Value.SubDomains.Count == 0) continue;
                     
@@ -136,9 +136,9 @@ internal class TraefikHelper
         return true;
     }
 
-    private static Dictionary<string, object> CreateTraefikCertificates(bool debug = false)
+    private Dictionary<string, object> CreateTraefikCertificates(bool debug = false)
     {
-        var workspacePath = PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer());
+        var workspacePath = _pathHelper.GetWorkspacePath(_environmentHelper.IsRunningInDevContainer());
 
         var certificateDir = Path.Combine(workspacePath, ".devcontainer", "traefik", "certs");
 
@@ -150,7 +150,7 @@ internal class TraefikHelper
         }
         
         // Make sure the proxy settings exist in the config
-        if (GeneralConfig.Proxy.Domain == "" || GeneralConfig.Proxy.SubDomain == "")
+        if (_generalConfig.Proxy.Domain == "" || _generalConfig.Proxy.SubDomain == "")
         {
             if (debug)
             {
@@ -166,15 +166,15 @@ internal class TraefikHelper
         }
         
         // Check if the certificates already exist
-        if (!File.Exists(Path.Combine(certificateDir, $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}.pem")) ||
-            !File.Exists(Path.Combine(certificateDir, $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}-key.pem")))
+        if (!File.Exists(Path.Combine(certificateDir, $"_wildcard.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}.pem")) ||
+            !File.Exists(Path.Combine(certificateDir, $"_wildcard.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}-key.pem")))
         {
             // Run mkcert in a container to generate certs
             var dockerCmd = $@"
-                docker run --rm --user 1000:1000 -e CAROOT=/tmp/mkcert -v {rootCaDir}:/tmp/mkcert -v {certificateDir}:/certs -w /certs alpine/mkcert ""*.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}""
+                docker run --rm --user 1000:1000 -e CAROOT=/tmp/mkcert -v {rootCaDir}:/tmp/mkcert -v {certificateDir}:/certs -w /certs alpine/mkcert ""*.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}""
             ";
             
-            ExecCommand.Exec(dockerCmd);
+            _execCommand.Exec(dockerCmd);
 
             if (debug)
             {
@@ -194,13 +194,13 @@ internal class TraefikHelper
         // Update the traefik configuration to use the new certificates
         traefikConfig["stores"] = new Dictionary<string, object>
         {
-            { "default", new Dictionary<string, object> { { "defaultCertificate", new Dictionary<string, string> { { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}.pem") }, { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}-key.pem") } } } } }
+            { "default", new Dictionary<string, object> { { "defaultCertificate", new Dictionary<string, string> { { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}.pem") }, { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}-key.pem") } } } } }
         };
         
         traefikConfig["certificates"] = new Dictionary<string, string>
         {
-            { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}.pem") }, 
-            { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{GeneralConfig.Proxy.SubDomain}.{GeneralConfig.Proxy.Domain}-key.pem") }
+            { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}.pem") }, 
+            { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}-key.pem") }
         };      
 
         if (debug)

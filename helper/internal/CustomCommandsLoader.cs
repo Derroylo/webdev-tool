@@ -7,36 +7,36 @@ using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Helper.Internal
 {
-    internal class CustomCommandsLoader
+    public class CustomCommandsLoader(ShellScriptConfig _shellScriptConfig, WorkspacesConfig _workspacesConfig, GeneralConfig _generalConfig, IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper)
     {
-        public static Dictionary<string, CustomBranch> Load()
+        public Dictionary<string, CustomBranch> Load()
         {           
             var scripts = SearchForShellScripts(".devcontainer/scripts");
 
-            if (ShellScriptConfig.AdditionalDirectories.Count > 0) {
-                foreach (string folder in ShellScriptConfig.AdditionalDirectories) {
+            if (_shellScriptConfig.AdditionalDirectories.Count > 0) {
+                foreach (string folder in _shellScriptConfig.AdditionalDirectories) {
                     scripts = SearchForShellScripts(folder, scripts);
                 }
             }
             
             // Load additional commands from other workspaces
-            if (WorkspacesConfig.Workspaces.Count > 0) {
-                var workspacePath = PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer());
+            if (_workspacesConfig.Workspaces.Count > 0) {
+                var workspacePath = _pathHelper.GetWorkspacePath(_environmentHelper.IsRunningInDevContainer());
                 
-                foreach (var workspace in WorkspacesConfig.Workspaces) {
-                    if (!Directory.Exists(Path.Combine(workspacePath, GeneralConfig.WorkspaceFolder, workspace.Value.Folder, ".devcontainer", "scripts")))
+                foreach (var workspace in _workspacesConfig.Workspaces) {
+                    if (!Directory.Exists(Path.Combine(workspacePath, _generalConfig.WorkspaceFolder, workspace.Value.Folder, ".devcontainer", "scripts")))
                     {
                         continue;
                     }
                     
-                    scripts = SearchForShellScripts(Path.Combine(workspacePath, GeneralConfig.WorkspaceFolder, workspace.Value.Folder, ".devcontainer", "scripts"), scripts, Path.Combine(workspacePath, GeneralConfig.WorkspaceFolder, workspace.Value.Folder));
+                    scripts = SearchForShellScripts(Path.Combine(workspacePath, _generalConfig.WorkspaceFolder, workspace.Value.Folder, ".devcontainer", "scripts"), scripts, Path.Combine(workspacePath, _generalConfig.WorkspaceFolder, workspace.Value.Folder));
                 }
             }
             
             return scripts;
         }
 
-        private static Dictionary<string, CustomBranch> SearchForShellScripts(string folder, Dictionary<string, CustomBranch> commands = null, string workspaceFolder = null)
+        private Dictionary<string, CustomBranch> SearchForShellScripts(string folder, Dictionary<string, CustomBranch> commands = null, string workspaceFolder = null)
         {
             if (commands == null) {
                 var defaultBranch = new CustomBranch("default");
@@ -84,7 +84,7 @@ namespace WebDev.Tool.Helper.Internal
             return commands;
         }
 
-        private static ShellScriptSettings ProcessShellScript(string fileWithPath)
+        private ShellScriptSettings ProcessShellScript(string fileWithPath)
         {
             string[] lines = File.ReadAllLines(fileWithPath);
 

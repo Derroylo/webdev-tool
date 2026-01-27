@@ -6,12 +6,13 @@ using WebDev.Tool.Classes;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Helper;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Shell
 {
-    internal class ShellFileCommand : Command<ShellFileCommand.Settings>
+    internal class ShellFileCommand(IDebugOutputHelper _debugOutputHelper, ExecCommand _execCommand) : Command<ShellFileCommand.Settings>
     {
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
             [CommandArgument(0, "[args]")]
             public string[] Arguments { get; set; }
@@ -39,6 +40,8 @@ namespace WebDev.Tool.Commands.Shell
 
         public override int Execute(CommandContext context, Settings settings)
         {
+            _debugOutputHelper.WriteInfoOutput("Executing ShellFileCommand", this);
+            
             CustomCommand cmd = (CustomCommand) context.Data;
 
             if (settings.ShowArguments) {
@@ -80,7 +83,7 @@ namespace WebDev.Tool.Commands.Shell
                     workingDirectory = cmd.WorkspaceFolder;
                 }
 
-                ExecCommand.ExecWithDirectOutput(cmd.File + (args != String.Empty ? " " + args : ""), false, false, workingDirectory);
+                _execCommand.ExecWithDirectOutput(cmd.File + (args != String.Empty ? " " + args : ""), false, false, workingDirectory);
             }
             catch(Exception ex)
             {

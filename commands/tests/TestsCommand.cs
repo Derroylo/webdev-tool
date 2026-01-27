@@ -13,11 +13,19 @@ using System.Linq;
 
 namespace WebDev.Tool.Commands.Shell
 {
-    internal class TestsCommand : Command
+    public class TestsCommand(IDebugOutputHelper _debugOutputHelper, IEnvironmentHelper _environmentHelper, PhpConfig _phpConfig, TestsConfig _testsConfig, ExecCommand _execCommand) : Command<TestsCommand.Settings>
     {
-        public override int Execute(CommandContext context)
+        public class Settings : LogCommandSettings
         {
+        }
+
+        public override int Execute(CommandContext context, Settings settings)
+        {
+            _debugOutputHelper.WriteInfoOutput("Executing TestsCommand", this);
+            
             TestEntryConfiguration test = (TestEntryConfiguration) context.Data;
+            
+            _debugOutputHelper.WriteInfoOutput("Running test: " + test.Name, this);
 
             if (test.Commands.Count == 0 && test.Tests.Count == 0) {
                 AnsiConsole.MarkupLine($"[red]The Test \"{test.Name}\" has no defined commands[/]");
@@ -25,7 +33,7 @@ namespace WebDev.Tool.Commands.Shell
                 return 0;
             }
 
-            if (EnvironmentHelper.IsRunningInDevContainer()) {
+            if (_environmentHelper.IsRunningInDevContainer()) {
                 RunTestInsideDevContainer(test);
             } else {
                 RunTestOutsideDevContainer(test);
@@ -34,7 +42,7 @@ namespace WebDev.Tool.Commands.Shell
             return 0;
         }
 
-        private static void RunTestOutsideDevContainer(TestEntryConfiguration test)
+        private void RunTestOutsideDevContainer(TestEntryConfiguration test)
         {
             // Run the test commands inside a php:8.2-cli-alpine container and show their output
 
@@ -46,7 +54,7 @@ namespace WebDev.Tool.Commands.Shell
             string dockerImage = test.Image;
 
             if (string.IsNullOrEmpty(dockerImage)) {
-                dockerImage = "ghcr.io/derroylo/docker-images/php-alpine:" + PhpConfig.PhpVersion;
+                dockerImage = "ghcr.io/derroylo/docker-images/php-alpine:" + _phpConfig.PhpVersion;
             }
 
             // Join the commands for sh -c execution
@@ -57,17 +65,17 @@ namespace WebDev.Tool.Commands.Shell
 
             var dockerCommand = $"docker run --rm --user 1000:1000 -v \"{workDir}:/app\" -w /app {dockerImage} sh -c \"{allCommands.Replace("\"", "\\\"")}\"";
             
-            ExecCommand.ExecWithDirectOutput(dockerCommand, false, true, "", useStreaming: true);
+            _execCommand.ExecWithDirectOutput(dockerCommand, false, true, "", useStreaming: true);
         }
 
-        private static void RunTestInsideDevContainer(TestEntryConfiguration test)
+        private void RunTestInsideDevContainer(TestEntryConfiguration test)
         {
             string allCommands = GetTestCommands(test);
 
-            ExecCommand.ExecWithDirectOutput(allCommands, true, true);
+            _execCommand.ExecWithDirectOutput(allCommands, true, true);
         }
 
-        private static string GetTestCommands(TestEntryConfiguration test)
+        private string GetTestCommands(TestEntryConfiguration test)
         {
             string commands = "";
             string arguments = "";
@@ -77,7 +85,7 @@ namespace WebDev.Tool.Commands.Shell
             }
 
             foreach (string testName in test.Tests) {
-                if (TestsConfig.Tests.TryGetValue(testName, out TestEntryConfiguration testEntry)) {
+                if (_testsConfig.Tests.TryGetValue(testName, out TestEntryConfiguration testEntry)) {
                     commands += GetTestCommands(testEntry) + " && ";
                 }
             }

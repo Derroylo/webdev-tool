@@ -11,19 +11,25 @@ using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Commands.Info;
 
-internal class ShowProjectInfoCommand: Command
+internal class ShowProjectInfoCommand(IDebugOutputHelper _debugOutputHelper, IDockerComposeHelper _dockerComposeHelper, IEnvironmentHelper _environmentHelper, ServicesConfig _servicesConfig, GeneralConfig _generalConfig, PhpConfig _phpConfig, NodeJsConfig _nodeJsConfig, WorkspacesConfig _workspacesConfig): Command<ShowProjectInfoCommand.Settings>
 {
-    public override int Execute(CommandContext context)
+    public class Settings : LogCommandSettings
     {
+    }
+
+    public override int Execute(CommandContext context, Settings settings)
+    {
+        _debugOutputHelper.WriteInfoOutput("Executing ShowProjectInfoCommand", this);
+        
         AnsiConsole.WriteLine("\n");
         
-        var services = DockerComposeHelper.GetServices(DockerComposeHelper.GetFile());
+        var services = _dockerComposeHelper.GetServices(_dockerComposeHelper.GetFile());
         
         var panelContent = $"[bold yellow]Services:[/]\n";
         
-        if (ServicesConfig.Services != null && ServicesConfig.Services.Any())
+        if (_servicesConfig.Services != null && _servicesConfig.Services.Any())
         {
-            foreach (var service in ServicesConfig.Services)
+            foreach (var service in _servicesConfig.Services)
             {
                 var serviceDescription = service.Value.Name != "" ? service.Value.Name : service.Key;
                 serviceDescription += service.Value.Description != "" ? " - " + service.Value.Description : "";
@@ -37,7 +43,7 @@ internal class ShowProjectInfoCommand: Command
 
                 if (IsProxyActive() && service.Value.SubDomain != "")
                 {
-                    panelContent += $"[green]https://" + service.Value.SubDomain + "." + GeneralConfig.Proxy.SubDomain + "." + GeneralConfig.Proxy.Domain + "[/]";
+                    panelContent += $"[green]https://" + service.Value.SubDomain + "." + _generalConfig.Proxy.SubDomain + "." + _generalConfig.Proxy.Domain + "[/]";
                 }
                 
                 panelContent += "\n";
@@ -53,7 +59,7 @@ internal class ShowProjectInfoCommand: Command
         var workspacePanelContent = "";
         
         // Show Workspaces
-        foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
+        foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in _workspacesConfig.Workspaces)
         {
             // Skip main workspace
             if (workspace.Key == "main")
@@ -79,7 +85,7 @@ internal class ShowProjectInfoCommand: Command
 
             foreach (var subDomain in workspace.Value.SubDomains)
             {
-                workspacePanelContent += $"[green]https://" + subDomain + "." + GeneralConfig.Proxy.SubDomain + "." + GeneralConfig.Proxy.Domain + "[/] ";
+                workspacePanelContent += $"[green]https://" + subDomain + "." + _generalConfig.Proxy.SubDomain + "." + _generalConfig.Proxy.Domain + "[/] ";
             }
 
             workspacePanelContent += "\n";
@@ -92,22 +98,22 @@ internal class ShowProjectInfoCommand: Command
         
         AnsiConsole.MarkupLine($"[bold yellow]Versions[/]");
         AnsiConsole.Markup($"[bold]PHP[/]".PadRight(30));
-        AnsiConsole.Markup($"[green]{PhpConfig.PhpVersion}[/]\n");
+        AnsiConsole.Markup($"[green]{_phpConfig.PhpVersion}[/]\n");
         AnsiConsole.Markup($"[bold]Node.js[/]".PadRight(30));
-        AnsiConsole.Markup($"[green]{NodeJsConfig.NodeJsVersion}[/]");
+        AnsiConsole.Markup($"[green]{_nodeJsConfig.NodeJsVersion}[/]");
         
         AnsiConsole.MarkupLine($"\n\n[bold yellow]Need help?[/]");
         AnsiConsole.MarkupLine($"Visit [green]https://derroylo.github.io/[/] to checkout the docs.");
         
         AnsiConsole.MarkupLine($"\n[bold yellow]What´s next?[/]");
         AnsiConsole.MarkupLine($"Open one of the following URLs in your browser to access your application:");
-        AnsiConsole.MarkupLine($"- [green]https://" + GeneralConfig.Proxy.SubDomain + "." + GeneralConfig.Proxy.Domain + "[/]");
-        foreach (var subDomain in WorkspacesConfig.Workspaces["main"].SubDomains)
+        AnsiConsole.MarkupLine($"- [green]https://" + _generalConfig.Proxy.SubDomain + "." + _generalConfig.Proxy.Domain + "[/]");
+        foreach (var subDomain in _workspacesConfig.Workspaces["main"].SubDomains)
         {
-            AnsiConsole.MarkupLine($"- [green]https://" + subDomain + "." + GeneralConfig.Proxy.SubDomain + "." + GeneralConfig.Proxy.Domain + "[/]");
+            AnsiConsole.MarkupLine($"- [green]https://" + subDomain + "." + _generalConfig.Proxy.SubDomain + "." + _generalConfig.Proxy.Domain + "[/]");
         }
 
-        if (!EnvironmentHelper.IsRunningInDevContainer())
+        if (!_environmentHelper.IsRunningInDevContainer())
         {
             AnsiConsole.MarkupLine($"\nOpen the project with your favorite IDE to start coding: [green]code .[/] or [green]phpstorm .[/]");
         }
@@ -117,8 +123,8 @@ internal class ShowProjectInfoCommand: Command
         return 0;
     }
     
-    private static bool IsProxyActive()
+    private bool IsProxyActive()
     {
-        return ServicesConfig.Services !=null && ServicesConfig.Services.ContainsKey("traefik") && ServicesConfig.Services["traefik"].Active;
+        return _servicesConfig.Services !=null && _servicesConfig.Services.ContainsKey("traefik") && _servicesConfig.Services["traefik"].Active;
     }
 }

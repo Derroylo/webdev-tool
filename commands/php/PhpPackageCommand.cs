@@ -5,23 +5,22 @@ using WebDev.Tool.Helper;
 using WebDev.Tool.Helper.Php;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Php
 {
-    internal class PhpPackageCommand : Command<PhpPackageCommand.Settings>
+    internal class PhpPackageCommand(IDebugOutputHelper _debugOutputHelper, IPhpPackagesHelper _phpPackagesHelper, IPhpVersionHelper _phpVersionHelper, ExecCommand _execCommand) : Command<PhpPackageCommand.Settings>
     {
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
-            [CommandOption("-d|--debug")]
-            [Description("Outputs debug information")]
-            [DefaultValue(false)]
-            public bool Debug { get; set; }
         }
 
         public override int Execute(CommandContext context, Settings settings)
         {
+            _debugOutputHelper.WriteInfoOutput("Executing PhpPackageCommand", this);
+            
             // Read currently installed packages
-            var installedPackages = ExecCommand.Exec("apt list --installed");
+            var installedPackages = _execCommand.Exec("apt list --installed");
 
             var packagesList = installedPackages.Split("\n");
 
@@ -49,7 +48,7 @@ namespace WebDev.Tool.Commands.Php
                 return 0;
             }
 
-            var currentPhpVersion = PhpVersionHelper.GetCurrentPhpVersion();
+            var currentPhpVersion = _phpVersionHelper.GetCurrentPhpVersion();
 
             var recommendedPackages = new List<string> {
                 "php-bcmath",
@@ -93,7 +92,7 @@ namespace WebDev.Tool.Commands.Php
                 if (selections.Count > 0) {
                     AnsiConsole.WriteLine("Installing the selected packages");
 
-                    PhpPackagesHelper.InstallPackages(selections.ToArray(), currentPhpVersion, settings.Debug);
+                    _phpPackagesHelper.InstallPackages(selections.ToArray(), currentPhpVersion);
                 }
             }
 
@@ -111,7 +110,7 @@ namespace WebDev.Tool.Commands.Php
                 return 0;
             }
 
-            PhpPackagesHelper.InstallPackages(newPackages.Split(" "), currentPhpVersion, settings.Debug);
+            _phpPackagesHelper.InstallPackages(newPackages.Split(" "), currentPhpVersion);
 
             return 0;
         }

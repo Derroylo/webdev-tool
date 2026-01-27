@@ -3,21 +3,21 @@ using System.Dynamic;
 
 namespace WebDev.Tool.Helper.Internal;
 
-internal static class EnvironmentHelper
+public class EnvironmentHelper : IEnvironmentHelper
 {
-    public static bool IsRunningInDevContainer()
+    private bool ProgramHeaderDisabled = false;
+    
+    public bool IsRunningInDevContainer()
     {
         return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DEVCONTAINER"));
     }
-
-    private static bool ProgramHeaderDisabled = false;
     
-    public static void DisableProgramHeader()
+    public void DisableProgramHeader()
     {
         ProgramHeaderDisabled = true;
     }
 
-    public static bool IsProgramHeaderDisabled()
+    public bool IsProgramHeaderDisabled()
     {
         if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBDEV_DISABLE_HEADER")))
         {

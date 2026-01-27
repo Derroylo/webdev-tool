@@ -5,14 +5,14 @@ using Spectre.Console;
 
 namespace WebDev.Tool.Helper.NodeJs
 {
-    internal partial class NodeJsPackageHelper
+    public partial class NodeJsPackageHelper(ExecCommand _execCommand)
     {  
         [GeneratedRegex(@"([a-z0-9\-]+)@([0-9.]+)")]
         private static partial Regex NodeJsPackageMatchRegex();
 
-        public static List<string> GetCurrentInstalledNodeJSPackages(string packageListOutput = null)
+        public List<string> GetCurrentInstalledNodeJSPackages(string packageListOutput = null)
         {
-            packageListOutput ??= ExecCommand.Exec("npm list -g --depth=0");
+            packageListOutput ??= _execCommand.Exec("npm list -g --depth=0");
 
             List<string> packages = packageListOutput.Split("\n").ToList();
 
@@ -29,11 +29,11 @@ namespace WebDev.Tool.Helper.NodeJs
             return filteredPackages;
         }
 
-        public static void InstallPackages(string[] newPackages, bool debug = false)
+        public void InstallPackages(string[] newPackages, bool debug = false)
         {
             string packages = string.Join(" ", newPackages);
 
-            var installRes = ExecCommand.Exec("npm install -g " + packages);
+            var installRes = _execCommand.Exec("npm install -g " + packages);
             AnsiConsole.MarkupLine("Installing packages...[green1]Done[/]");
             
             if (debug) {

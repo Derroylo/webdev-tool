@@ -2,14 +2,15 @@ using System.ComponentModel;
 using WebDev.Tool.Helper.Php;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Php
 {
-    internal class PhpIniCommand : Command<PhpIniCommand.Settings>
+    internal class PhpIniCommand(IDebugOutputHelper _debugOutputHelper, IPhpIniHelper _phpIniHelper) : Command<PhpIniCommand.Settings>
     {
         private Settings settings;
 
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
             [CommandArgument(0, "[settings]")]
             [Description("Define one or multiple settings")]
@@ -24,22 +25,19 @@ namespace WebDev.Tool.Commands.Php
             [Description("Applies the given settings for CLI")]
             [DefaultValue(false)]
             public bool SetForCLI { get; set; }
-
-            [CommandOption("-d|--debug")]
-            [Description("Outputs debug information")]
-            [DefaultValue(false)]
-            public bool Debug { get; set; }
         }
         
         public override int Execute(CommandContext context, Settings settings)
         {
+            _debugOutputHelper.WriteInfoOutput("Executing PhpIniCommand", this);
+            
             this.settings = settings;
 
             if (settings.PhpSettings != null && settings.PhpSettings.Length > 0) {
                 return ApplySettingsViaOption(settings.PhpSettings, settings.SetForWeb, settings.SetForCLI);
             }
 
-            AnsiConsole.WriteLine(PhpIniHelper.GetPhpIniPath());
+            AnsiConsole.WriteLine(_phpIniHelper.GetPhpIniPath());
 
             if (!AnsiConsole.Confirm("Do you want to change a php setting?", false)) {
                 return 0;
@@ -93,7 +91,7 @@ namespace WebDev.Tool.Commands.Php
                     )
                 );
 
-                PhpIniHelper.AddSettingToPhpIni(settingName, settingValue, scope == "Web", scope == "CLI", this.settings.Debug);
+                _phpIniHelper.AddSettingToPhpIni(settingName, settingValue, scope == "Web", scope == "CLI");
 
                 if (!AnsiConsole.Confirm("Do you want to change more php settings?", false)) {
                     canceled = true;
@@ -114,7 +112,7 @@ namespace WebDev.Tool.Commands.Php
                     return 1;
                 }
 
-                PhpIniHelper.AddSettingToPhpIni(splittedSetting[0], splittedSetting[1], setForWeb, setForCLI, settings.Debug);
+                _phpIniHelper.AddSettingToPhpIni(splittedSetting[0], splittedSetting[1], setForWeb, setForCLI);
             }
 
             return 0;

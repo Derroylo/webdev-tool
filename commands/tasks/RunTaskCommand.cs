@@ -9,9 +9,9 @@ using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Commands.tasks;
 
-internal class RunTaskCommand: Command<RunTaskCommand.Settings>
+internal class RunTaskCommand(IDebugOutputHelper _debugOutputHelper, IEnvironmentHelper _environmentHelper, TasksConfig _tasksConfig, ExecCommand _execCommand) : Command<RunTaskCommand.Settings>
 {
-    public class Settings : CommandSettings
+    public class Settings : LogCommandSettings
     {
         [CommandOption("-i|--init")]
         [Description("Run commands defined under \"init\"")]
@@ -31,6 +31,8 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
     
     public override int Execute(CommandContext context, Settings settings)
     {
+        _debugOutputHelper.WriteInfoOutput("Executing RunTaskCommand", this);
+        
         string taskName = context.Data?.ToString();
         
         if (string.IsNullOrEmpty(taskName))
@@ -40,14 +42,14 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
             return 0;
         }
         
-        if (!TasksConfig.Tasks.TryGetValue(taskName, out TaskEntryConfiguration task))
+        if (!_tasksConfig.Tasks.TryGetValue(taskName, out TaskEntryConfiguration task))
         {
             AnsiConsole.MarkupLine("[red]Unable to find the task \"" + taskName + "\" in the config file.[/]");
 
             return 0;
         }
 
-        if (task.Mode != TaskMode.All && ((EnvironmentHelper.IsRunningInDevContainer() && task.Mode != TaskMode.DevContainer) || (!EnvironmentHelper.IsRunningInDevContainer() && task.Mode != TaskMode.Local)))
+        if (task.Mode != TaskMode.All && ((_environmentHelper.IsRunningInDevContainer() && task.Mode != TaskMode.DevContainer) || (!_environmentHelper.IsRunningInDevContainer() && task.Mode != TaskMode.Local)))
         {
             AnsiConsole.MarkupLine("[red]This task is not available in the current environment.[/]");
 
@@ -63,7 +65,7 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
             
             foreach (string cmd in task.Init)
             {
-                ExecCommand.ExecWithDirectOutput(cmd, true, true);
+                _execCommand.ExecWithDirectOutput(cmd, true, true);
             }
         }
         
@@ -73,7 +75,7 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
             
             foreach (string cmd in task.Create)
             {
-                ExecCommand.ExecWithDirectOutput(cmd, true, true);
+                _execCommand.ExecWithDirectOutput(cmd, true, true);
             }
         }
 
@@ -83,7 +85,7 @@ internal class RunTaskCommand: Command<RunTaskCommand.Settings>
             
             foreach (string cmd in task.Start)
             {
-                ExecCommand.ExecWithDirectOutput(cmd, true, true);
+                _execCommand.ExecWithDirectOutput(cmd, true, true);
             }
         }
         

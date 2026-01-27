@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace WebDev.Tool.Classes.Configuration
 {
-    internal class Configuration
+    public class Configuration
     {
         [DefaultValue(3)]
         public int SchemaVersion { get; set; } = 3;

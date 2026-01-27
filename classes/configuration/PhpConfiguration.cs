@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace WebDev.Tool.Classes.Configuration
 {
-    internal class PhpConfiguration
+    public class PhpConfiguration
     {
         [DefaultValue("8.3")]
         public string Version { get; set; } = "8.3";

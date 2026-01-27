@@ -1,22 +1,21 @@
 using System.ComponentModel;
 using WebDev.Tool.Helper;
 using Spectre.Console.Cli;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Restore
 {
-    internal class RestoreEnvCommand : Command<RestoreEnvCommand.Settings>
+    internal class RestoreEnvCommand(IDebugOutputHelper _debugOutputHelper, IRestoreHelper _restoreHelper) : Command<RestoreEnvCommand.Settings>
     {
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
-            [CommandOption("-d|--debug")]
-            [Description("Outputs debug information")]
-            [DefaultValue(false)]
-            public bool Debug { get; set; }
         }
 
         public override int Execute(CommandContext context, Settings settings)
         {
-            RestoreHelper.RestoreEnvVariables(settings.Debug);
+            _debugOutputHelper.WriteInfoOutput("Executing RestoreEnvCommand", this);
+            
+            _restoreHelper.RestoreEnvVariables();
             
             return 0;
         }

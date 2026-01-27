@@ -3,13 +3,13 @@ using System.ComponentModel;
 
 namespace WebDev.Tool.Classes.Configuration;
 
-internal enum WorkspaceMode
+public enum WorkspaceMode
 {
     Vhost,
     DevContainer
 }
 
-internal class WorkspaceEntryConfiguration
+public class WorkspaceEntryConfiguration
 {
     public string Name { get; set; } = "";
     
@@ -31,4 +31,8 @@ internal class WorkspaceEntryConfiguration
     
     [DefaultValue(false)]
     public bool DisableWeb { get; set; } = false;
+
+    public string SymLinkSource { get; set; } = "";
+
+    public string SymLinkTarget { get; set; } = "";
 }

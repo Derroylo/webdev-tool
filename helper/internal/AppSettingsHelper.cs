@@ -7,11 +7,11 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace WebDev.Tool.Helper.Internal;
 
-internal class AppSettingsHelper
+public class AppSettingsHelper : IAppSettingsHelper
 {
-    public static AppSettings AppSettings { get; private set; } =  new AppSettings();
+    public AppSettings AppSettings { get; private set; } = new AppSettings();
     
-    public static void LoadAppSettings(bool rethrowParseException = false)
+    public void LoadAppSettings(bool rethrowParseException = false)
     {
         var appDir= AppDomain.CurrentDomain.BaseDirectory;
 
@@ -37,7 +37,7 @@ internal class AppSettingsHelper
         }
     }
 
-    public static void SaveAppSettings()
+    public void SaveAppSettings()
     {
         var appDir= AppDomain.CurrentDomain.BaseDirectory;
         

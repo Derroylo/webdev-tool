@@ -5,12 +5,12 @@ using System.Diagnostics;
 
 namespace WebDev.Tool.Helper
 {
-    internal static class PtyHelper
+    public class PtyHelper : IPtyHelper
     {
         /// <summary>
         /// Executes a command in a pseudo-terminal using the 'script' command, preserving all terminal formatting including colors and progress bars.
         /// </summary>
-        public static void ExecWithPty(string command, bool isInteractive = false, bool disableJobControl = false, string workingDirectory = "", System.Collections.Generic.Dictionary<string, string> additionalEnvVars = null)
+        public void ExecWithPty(string command, bool isInteractive = false, bool disableJobControl = false, string workingDirectory = "", System.Collections.Generic.Dictionary<string, string> additionalEnvVars = null)
         {
             using (Process proc = new Process())
             {

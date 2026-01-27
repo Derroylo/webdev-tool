@@ -8,14 +8,14 @@ using Spectre.Console;
 
 namespace WebDev.Tool.Helper.NodeJs
 {
-    internal partial class NodeJsVersionHelper
+    public partial class NodeJsVersionHelper(INodeJsPackageHelper _nodeJsPackageHelper, NodeJsConfig _nodeJsConfig, ExecCommand _execCommand)
     {  
-        public static string GetCurrentNodeJSVersionOutput()
+        public string GetCurrentNodeJSVersionOutput()
         {
-            return ExecCommand.Exec("node -v");
+            return _execCommand.Exec("node -v");
         }
 
-        public static string GetCurrentNodeJSVersion()
+        public string GetCurrentNodeJSVersion()
         {
             string output = GetCurrentNodeJSVersionOutput();
 
@@ -29,14 +29,14 @@ namespace WebDev.Tool.Helper.NodeJs
         }
 
         [GeneratedRegex(@"v([0-9]+).([0-9]+).([0-9]+)")]
-        private static partial Regex NodeJsVersionMatchRegex();
+        private partial Regex NodeJsVersionMatchRegex();
 
-        public static List<string> GetAvailableNodeJSVersions()
+        public List<string> GetAvailableNodeJSVersions()
         {
             var availableNodeJSVersions = new List<string>();
 
             string pattern = @"v(([0-9]+).([0-9]+).([0-9]+))";
-            string input = ExecCommand.Exec("nvm ls-remote");
+            string input = _execCommand.Exec("nvm ls-remote");
 
             RegexOptions options = RegexOptions.Multiline;
         
@@ -52,7 +52,7 @@ namespace WebDev.Tool.Helper.NodeJs
             return availableNodeJSVersions;
         }
 
-        public static void SetNewNodeJSVersion(string newVersion, bool isDebug)
+        public void SetNewNodeJSVersion(string newVersion)
         {
             
             AnsiConsole.Status()
@@ -69,11 +69,11 @@ namespace WebDev.Tool.Helper.NodeJs
                     ctx.Status("Loading installed packages...");
 
                     // Get the installed packages for the current nodejs version
-                    var installedPackages = NodeJsPackageHelper.GetCurrentInstalledNodeJSPackages();
+                    var installedPackages = _nodeJsPackageHelper.GetCurrentInstalledNodeJSPackages();
 
                     ctx.Status("Switching to new nodejs version...");
 
-                    ExecCommand.Exec("nvm install " + newVersion);
+                    _execCommand.Exec("nvm install " + newVersion);
 
                     // Write the selected version to a file, so we can change the active nodejs version via the webdev.sh script
                     var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -83,24 +83,24 @@ namespace WebDev.Tool.Helper.NodeJs
 
                     // Fetch the packages installed in the new version
                     // We have to set the version again, otherwise it will just show the old nodejs output
-                    var listPackagesOutput = ExecCommand.Exec(". ~/.nvm/nvm.sh && nvm use " + newVersion + " --save && nvm alias default " + newVersion + " && npm list -g --depth=0");
-                    var installedPackagesNew = NodeJsPackageHelper.GetCurrentInstalledNodeJSPackages(listPackagesOutput);
+                    var listPackagesOutput = _execCommand.Exec(". ~/.nvm/nvm.sh && nvm use " + newVersion + " --save && nvm alias default " + newVersion + " && npm list -g --depth=0");
+                    var installedPackagesNew = _nodeJsPackageHelper.GetCurrentInstalledNodeJSPackages(listPackagesOutput);
 
                     var missingPackages = installedPackages.Where(p => !installedPackagesNew.Contains(p)).ToList();
 
                     if (missingPackages.Count > 0) {
                         ctx.Status("Installing packages that are missing in the new version...");
 
-                        ExecCommand.Exec(". ~/.nvm/nvm.sh && nvm use " + newVersion + " --save && nvm alias default " + newVersion + " && npm install -g " + string.Join(" ", missingPackages));
+                        _execCommand.Exec(". ~/.nvm/nvm.sh && nvm use " + newVersion + " --save && nvm alias default " + newVersion + " && npm install -g " + string.Join(" ", missingPackages));
                     }
 
                     // In some older versions of npm it could have happened that the folder rights were set incorrect
-                    ExecCommand.Exec("sudo chown -R webdev:webdev /home/webdev/.npm");
+                    _execCommand.Exec("sudo chown -R webdev:webdev /home/webdev/.npm");
 
                     ctx.Status("Saving the new active version so it can be restored...");
 
                     try {
-                        NodeJsConfig.NodeJsVersion = newVersion;
+                        _nodeJsConfig.NodeJsVersion = newVersion;
 
                         AnsiConsole.MarkupLine("Saving the new active version so it can be restored...[green1]Done[/]");
                     } catch {

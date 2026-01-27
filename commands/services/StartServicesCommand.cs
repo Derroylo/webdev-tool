@@ -7,14 +7,15 @@ using WebDev.Tool.Helper.Docker;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using WebDev.Tool.Helper.devcontainer;
+using WebDev.Tool.Helper.DevContainer;
 using System.Linq;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Services
 {
-    internal class StartServicesCommand : Command<StartServicesCommand.Settings>
+    internal class StartServicesCommand(IDebugOutputHelper _debugOutputHelper, IDockerComposeHelper _dockerComposeHelper, IDockerHelper _dockerHelper, ServicesConfig _servicesConfig) : Command<StartServicesCommand.Settings>
     {
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
             [CommandOption("-d|--detached")]
             [Description("Start the services in detached mode")]
@@ -24,15 +25,17 @@ namespace WebDev.Tool.Commands.Services
 
         public override int Execute(CommandContext context, Settings settings)
         {
-            if (!File.Exists(DockerComposeHelper.GetFile())) {
-                AnsiConsole.MarkupLine($"[red]{DockerComposeHelper.GetFile()} not found[/]");
+            _debugOutputHelper.WriteInfoOutput("Executing StartServicesCommand", this);
+            
+            if (!File.Exists(_dockerComposeHelper.GetFile())) {
+                _debugOutputHelper.WriteErrorOutput(_dockerComposeHelper.GetFile() + " not found", this);
 
                 return 0;
             }
 
-            var services = DockerComposeHelper.GetServices(DockerComposeHelper.GetFile());
+            var services = _dockerComposeHelper.GetServices(_dockerComposeHelper.GetFile());
 
-            if (ServicesConfig.Services == null || ServicesConfig.Services.Count == 0 || ServicesConfig.Services.All(s => !s.Value.Active)) {
+            if (_servicesConfig.Services == null || _servicesConfig.Services.Count == 0 || _servicesConfig.Services.All(s => !s.Value.Active)) {
                 AnsiConsole.MarkupLine("[red]No active services selected[/]");
 
                 AnsiConsole.MarkupLine($"\n[bold yellow]How to select active services?[/]");
@@ -48,7 +51,7 @@ namespace WebDev.Tool.Commands.Services
             var activeServices = new List<string>();
 
             foreach (KeyValuePair<string, Dictionary<string, string>> item in services) {
-                if (!ServicesConfig.Services.ContainsKey(item.Key) || !ServicesConfig.Services[item.Key].Active) {
+                if (!_servicesConfig.Services.ContainsKey(item.Key) || !_servicesConfig.Services[item.Key].Active) {
                     continue;
                 }
                  
@@ -56,15 +59,15 @@ namespace WebDev.Tool.Commands.Services
             }
 
             var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
-            var projectName = DockerHelper.GetProjectName();
+            var projectName = _dockerHelper.GetProjectName();
 
-            if (File.Exists(DockerComposeHelper.GetProxyFile()))
+            if (File.Exists(_dockerComposeHelper.GetProxyFile()))
             {
-                File.WriteAllText(applicationDir + ".services_start", "-f " + DockerComposeHelper.GetFile() + " -f" + DockerComposeHelper.GetProxyFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") +  string.Join(' ', activeServices));
+                File.WriteAllText(applicationDir + ".services_start", "-f " + _dockerComposeHelper.GetFile() + " -f" + _dockerComposeHelper.GetProxyFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") +  string.Join(' ', activeServices));
             }
             else
             {
-                File.WriteAllText(applicationDir + ".services_start", "-f " + DockerComposeHelper.GetFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") +  string.Join(' ', activeServices));
+                File.WriteAllText(applicationDir + ".services_start", "-f " + _dockerComposeHelper.GetFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") +  string.Join(' ', activeServices));
             }
 
             return 0;

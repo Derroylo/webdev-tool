@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace WebDev.Tool.Classes.Configuration;
 
-internal class SecretTargetConfiguration
+public class SecretTargetConfiguration
 {
     public string File { get; set; } = "";
     

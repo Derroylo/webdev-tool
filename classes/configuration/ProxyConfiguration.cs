@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace WebDev.Tool.Classes.Configuration;
 
-internal class ProxyConfiguration
+public class ProxyConfiguration
 {
     [DefaultValue("dev.localhost")]
     public string Domain { get; set; } = "dev.localhost";

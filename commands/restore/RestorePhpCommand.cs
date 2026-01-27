@@ -1,23 +1,22 @@
 using System.ComponentModel;
 using WebDev.Tool.Helper;
 using Spectre.Console.Cli;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Restore
 {
-    internal class RestorePhpCommand : Command<RestorePhpCommand.Settings>
+    internal class RestorePhpCommand(IDebugOutputHelper _debugOutputHelper, IRestoreHelper _restoreHelper) : Command<RestorePhpCommand.Settings>
     {
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
-            [CommandOption("-d|--debug")]
-            [Description("Outputs debug information")]
-            [DefaultValue(false)]
-            public bool Debug { get; set; }
         }
 
         public override int Execute(CommandContext context, Settings settings)
         {
-            RestoreHelper.RestorePhpVersion(settings.Debug);
-            RestoreHelper.RestorePhpIni(settings.Debug);
+            _debugOutputHelper.WriteInfoOutput("Executing RestorePhpCommand", this);
+            
+            _restoreHelper.RestorePhpVersion();
+            _restoreHelper.RestorePhpIni();
             
             return 0;
         }

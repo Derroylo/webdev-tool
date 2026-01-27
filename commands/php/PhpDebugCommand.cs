@@ -2,22 +2,21 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
 using WebDev.Tool.Helper.Php;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Php
 {
-    internal class PhpDebugCommand : Command<PhpDebugCommand.Settings>
+    internal class PhpDebugCommand(IDebugOutputHelper _debugOutputHelper, IPhpDebugHelper _phpDebugHelper, IPhpIniHelper _phpIniHelper) : Command<PhpDebugCommand.Settings>
     {
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
-            [CommandOption("-d|--debug")]
-            [Description("Outputs debug information")]
-            [DefaultValue(false)]
-            public bool Debug { get; set; }
         }
 
         public override int Execute(CommandContext context, Settings settings)
         {
-            var currentSettings = PhpDebugHelper.GetCurrentSettings();
+            _debugOutputHelper.WriteInfoOutput("Executing PhpDebugCommand", this);
+            
+            var currentSettings = _phpDebugHelper.GetCurrentSettings();
 
             var availableXdebugSettings = new [] { 
                 "off - xdebug is fully disabled", 
@@ -67,7 +66,7 @@ namespace WebDev.Tool.Commands.Php
                         .AddChoices(availableXdebugSettings)
                 );
 
-                PhpIniHelper.AddSettingToPhpIni("xdebug.mode", xdebugSettingWeb.Split(" - ")[0], true, false);
+                _phpIniHelper.AddSettingToPhpIni("xdebug.mode", xdebugSettingWeb.Split(" - ")[0], true, false);
             }
 
             if (currentCliSetting != string.Empty && currentCliSetting.ToLower() == "Not installed/inactive".ToLower() || currentCliSetting.ToLower() == "unknown".ToLower()) {
@@ -80,7 +79,7 @@ namespace WebDev.Tool.Commands.Php
                         .AddChoices(availableXdebugSettings)
                 );
 
-                PhpIniHelper.AddSettingToPhpIni("xdebug.mode", xdebugSettingCli.Split(" - ")[0], false, true);
+                _phpIniHelper.AddSettingToPhpIni("xdebug.mode", xdebugSettingCli.Split(" - ")[0], false, true);
             }
 
             return 0;

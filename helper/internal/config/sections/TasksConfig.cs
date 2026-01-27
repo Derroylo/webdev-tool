@@ -3,9 +3,9 @@ using WebDev.Tool.Classes.Configuration;
 
 namespace WebDev.Tool.Helper.Internal.Config.Sections;
 
-internal class TasksConfig: ConfigHelper
+public class TasksConfig(IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper): ConfigHelper(_pathHelper, _environmentHelper)
 {
-    public static Dictionary<string, TaskEntryConfiguration> Tasks
+    public Dictionary<string, TaskEntryConfiguration> Tasks
     {
         get => appConfig.Tasks;
 

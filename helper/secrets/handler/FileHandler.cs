@@ -6,7 +6,7 @@ using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Helper.Secrets.Handler;
 
-internal class FileHandler: SecretsHandlerInterface
+internal class FileHandler(IPathHelper _pathHelper, ITranslationHelper _translationHelper): SecretsHandlerInterface
 {
     public bool IsCorrectlyConfigured()
     {
@@ -58,7 +58,7 @@ internal class FileHandler: SecretsHandlerInterface
 
     public bool HandleWriteSecret(string secretName, string secretContent, SecretConfiguration secret, bool showMessages)
     {
-        var targetPath = Path.Combine(PathHelper.GetWorkspacePath(false), secret.Target.File);
+        var targetPath = Path.Combine(_pathHelper.GetWorkspacePath(false), secret.Target.File);
         
         try
         {
@@ -91,7 +91,7 @@ internal class FileHandler: SecretsHandlerInterface
             return $"[red]File not found for secret {secretName}: {secret.Target.File}/{secret.Source.Key}[/]";;
         }
 
-        missingMessage = TranslationHelper.GetString(missingMessage);
+        missingMessage = _translationHelper.GetString(missingMessage);
 
         missingMessage = missingMessage.Replace("#SECRET_FILE_NAME#", secret.Source.Key);
         missingMessage = missingMessage.Replace("#SECRET_FILE_DIRECTORY#", sourcePath);

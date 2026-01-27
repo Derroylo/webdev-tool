@@ -1,46 +1,43 @@
 using WebDev.Tool.Helper.Internal.Config.Sections;
 using Spectre.Console;
 using WebDev.Tool.Helper.Internal.Config;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Helper.Php
 {
-    internal class PhpPackagesHelper
+    public class PhpPackagesHelper(IDebugOutputHelper _debugOutputHelper, IConfigHelper _configHelper, ExecCommand _execCommand, PhpConfig _phpConfig) : IPhpPackagesHelper
     {
-        public static void InstallPackages(string[] newPackages, string phpVersion, bool debug = false)
+        public void InstallPackages(string[] newPackages, string phpVersion)
         {
             // Update the pecl channel to the latest protocol
-            ExecCommand.Exec("sudo pecl channel-update pecl.php.net");
+            _execCommand.Exec("sudo pecl channel-update pecl.php.net");
 
-            var updateRes = ExecCommand.Exec("sudo apt-get update");
+            var updateRes = _execCommand.Exec("sudo apt-get update");
             AnsiConsole.MarkupLine("Updating package manager list...[green1]Done[/]");
 
-            if (debug) {
-                AnsiConsole.WriteLine(updateRes);
-            }
+            _debugOutputHelper.WriteInfoOutput("Update result: " + updateRes, this);
 
             string packages = string.Join(" ", newPackages).Replace("php-", "php" + phpVersion + "-");
 
-            var installRes = ExecCommand.Exec("sudo apt-get install -y " + packages);
+            var installRes = _execCommand.Exec("sudo apt-get install -y " + packages);
             AnsiConsole.MarkupLine("Installing packages...[green1]Done[/]");
             
-            if (debug) {
-                AnsiConsole.WriteLine(installRes);
-            }
+            _debugOutputHelper.WriteInfoOutput("Install result: " + installRes, this);
 
-            ExecCommand.Exec("apachectl stop");
-            ExecCommand.Exec("apachectl start");
+            _execCommand.Exec("apachectl stop");
+            _execCommand.Exec("apachectl start");
             AnsiConsole.MarkupLine("Restarting apache...[green1]Success[/]");
             
             SavePackagesInConfig(newPackages);
         }
 
-        private static void SavePackagesInConfig(string[] packages)
+        private void SavePackagesInConfig(string[] packages)
         {
             foreach (string package in packages) {
-                if (!PhpConfig.Packages.Contains(package)) {
-                    PhpConfig.Packages.Add(package);
+                if (!_phpConfig.Packages.Contains(package)) {
+                    _phpConfig.Packages.Add(package);
                     
-                    ConfigHelper.ConfigUpdated = true;
+                    _configHelper.ConfigUpdated = true;
                 }
             }    
         }

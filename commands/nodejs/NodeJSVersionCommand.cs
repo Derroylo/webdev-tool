@@ -3,43 +3,41 @@ using Spectre.Console.Cli;
 using System.Linq;
 using System.ComponentModel;
 using WebDev.Tool.Helper.NodeJs;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.ModeJS
 {
-    internal class NodeJSVersionCommand : Command<NodeJSVersionCommand.Settings>
+    internal class NodeJSVersionCommand(IDebugOutputHelper _debugOutputHelper, INodeJsVersionHelper _nodeJsVersionHelper) : Command<NodeJSVersionCommand.Settings>
     {
         private Settings settings;
 
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
             [CommandArgument(0, "[Version]")]
             [Description("Set this parameter to change the active nodejs version. Leave this parameter empty to show the current version.")]
             public string Version { get; set; }
-
-            [CommandOption("-d|--debug")]
-            [Description("Outputs debug information")]
-            [DefaultValue(false)]
-            public bool Debug { get; set; }
         }
 
         public override int Execute(CommandContext context, Settings settings)
         {
+            _debugOutputHelper.WriteInfoOutput("Executing NodeJSVersionCommand", this);
+            
             this.settings = settings;
 
             if (this.settings.Version != null) {
-                NodeJsVersionHelper.SetNewNodeJSVersion(this.settings.Version, this.settings.Debug);
+                _nodeJsVersionHelper.SetNewNodeJSVersion(this.settings.Version);
 
                 return 0;
             }
 
-            string result = NodeJsVersionHelper.GetCurrentNodeJSVersion();
+            string result = _nodeJsVersionHelper.GetCurrentNodeJSVersion();
             AnsiConsole.WriteLine(result);
 
             if (!AnsiConsole.Confirm("Do you want to change the active nodejs version?", false)) {
                 return 0;
             }
 
-            var availableNodeJSVersions = NodeJsVersionHelper.GetAvailableNodeJSVersions();
+            var availableNodeJSVersions = _nodeJsVersionHelper.GetAvailableNodeJSVersions();
 
             var newVersion = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
@@ -48,7 +46,7 @@ namespace WebDev.Tool.Commands.ModeJS
                     .AddChoices(availableNodeJSVersions.ToArray<string>())
             );
 
-            NodeJsVersionHelper.SetNewNodeJSVersion(newVersion, this.settings.Debug);
+            _nodeJsVersionHelper.SetNewNodeJSVersion(newVersion);
 
             return 0;
         }        

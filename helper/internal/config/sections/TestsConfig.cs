@@ -3,9 +3,9 @@ using WebDev.Tool.Classes.Configuration;
 
 namespace WebDev.Tool.Helper.Internal.Config.Sections;
 
-internal class TestsConfig: ConfigHelper
+public class TestsConfig(IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper): ConfigHelper(_pathHelper, _environmentHelper)
 {
-    public static Dictionary<string, TestEntryConfiguration> Tests
+    public Dictionary<string, TestEntryConfiguration> Tests
     {
         get => appConfig.Tests;
 

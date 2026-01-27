@@ -2,9 +2,9 @@ using Spectre.Console;
 
 namespace WebDev.Tool.Helper.apache;
 
-internal class ApacheHelper
+public class ApacheHelper : IApacheHelper
 {
-    public static bool DisableVhost(string siteName, bool debug = false)
+    public bool DisableVhost(string siteName, bool debug = false)
     {
         var enableSiteCommand = $"a2dissite {siteName}";
         var process = new System.Diagnostics.Process
@@ -40,7 +40,7 @@ internal class ApacheHelper
         return true;
     }
     
-    public static bool EnableVhost(string siteName, bool debug = false)
+    public bool EnableVhost(string siteName, bool debug = false)
     {
         var enableSiteCommand = $"a2ensite {siteName}";
         var process = new System.Diagnostics.Process
@@ -76,7 +76,7 @@ internal class ApacheHelper
         return true;
     }
 
-    public static bool ReloadApache(bool debug = false)
+    public bool ReloadApache(bool debug = false)
     {
         var reloadCommand = "apachectl restart";
         var reloadProcess = new System.Diagnostics.Process

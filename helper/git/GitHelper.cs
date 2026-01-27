@@ -8,9 +8,9 @@ using WebDev.Tool.Helper;
 
 namespace WebDev.Tool.Helper.git;
 
-internal class GitHelper
+public class GitHelper : IGitHelper
 {
-    private static (string username, string password) GetCredentialsFromGitHelper(string repoUrl)
+    private (string username, string password) GetCredentialsFromGitHelper(string repoUrl)
     {
         try
         {
@@ -77,7 +77,7 @@ internal class GitHelper
         return (string.Empty, string.Empty);
     }
 
-    public static bool CloneRepository(string repoUrl, string targetFolder)
+    public bool CloneRepository(string repoUrl, string targetFolder)
     {
         try
         {
@@ -150,7 +150,7 @@ internal class GitHelper
         return true;
     }
 
-    public static bool CheckoutBranch(string repoPath, string branchName)
+    public bool CheckoutBranch(string repoPath, string branchName)
     {
         try
         {

@@ -21,12 +21,16 @@ using WebDev.Tool.Commands.Project;
 using WebDev.Tool.Commands.Restore;
 using WebDev.Tool.Commands.Secrets;
 using WebDev.Tool.Commands.tasks;
-using WebDev.Tool.Commands.terminal;
-using WebDev.Tool.Commands.workspaces;
+using WebDev.Tool.Commands.Terminal;
+using WebDev.Tool.Commands.Workspaces;
 using WebDev.Tool.Helper;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 using WebDev.Tool.Commands.Mysql;
 using WebDev.Tool.Commands.Admin;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+using NetCore.AutoRegisterDi;
+using WebDev.Tool.Helper.Secrets;
 
 namespace WebDev.Tool
 {
@@ -38,20 +42,54 @@ namespace WebDev.Tool
 
         static void Main(string[] args)
         {
-            var app     = new CommandApp();
-            var version = UpdateHelper.CurrentVersion;
+            // Auto register all classes that end with Helper for DI
+            var services = new ServiceCollection();
+
+            services.RegisterAssemblyPublicNonGenericClasses()
+                .Where(c => c.Name.EndsWith("Helper"))
+                .AsPublicImplementedInterfaces();
+
+            // Register config section classes
+            services.AddSingleton<GeneralConfig>();
+            services.AddSingleton<TasksConfig>();
+            services.AddSingleton<TestsConfig>();
+            services.AddSingleton<PhpConfig>();
+            services.AddSingleton<NodeJsConfig>();
+            services.AddSingleton<SecretsConfig>();
+            services.AddSingleton<ServicesConfig>();
+            services.AddSingleton<ShellScriptConfig>();
+            services.AddSingleton<WorkspacesConfig>();
+
+            services.AddSingleton<CustomCommandsLoader>();
+            services.AddSingleton<ExecCommand>();
+            services.AddSingleton<ISecretsLoader, SecretsLoader>();
+
+            var serviceProvider = services.BuildServiceProvider();
+            var app     = new CommandApp(new TypeRegistrar(services));
+            
+            // Get helpers from DI for use in Program.cs
+            var updateHelper = serviceProvider.GetRequiredService<IUpdateHelper>();
+            var pathHelper = serviceProvider.GetRequiredService<IPathHelper>();
+            var environmentHelper = serviceProvider.GetRequiredService<IEnvironmentHelper>();
+            var appSettingsHelper = serviceProvider.GetRequiredService<IAppSettingsHelper>();
+            var customCommandsLoader = serviceProvider.GetRequiredService<CustomCommandsLoader>();
+            var debugOutputHelper = serviceProvider.GetRequiredService<IDebugOutputHelper>();
+            var tasksConfig = serviceProvider.GetRequiredService<TasksConfig>();
+            var testsConfig = serviceProvider.GetRequiredService<TestsConfig>();
+            var configHelper = serviceProvider.GetRequiredService<IConfigHelper>();
+            var version = updateHelper.CurrentVersion;
 
             // Save the program args for later use
             ProgramArgs = [.. args];
 
             if (args.Contains("--not-main") || args.Contains("-n"))
             {
-                PathHelper.IsMainWorkspace = false;
+                pathHelper.IsMainWorkspace = false;
             }
 
             if (args.Contains("--no-header"))
             {
-                EnvironmentHelper.DisableProgramHeader();
+                environmentHelper.DisableProgramHeader();
             }
 
             // Set the application name
@@ -62,13 +100,13 @@ namespace WebDev.Tool
             }
 
             // Output the program name, version and info if the config file could not be read
-            OutputProgramHeader(version, args.Contains("--debug"));
+            OutputProgramHeader(version, environmentHelper, appSettingsHelper, updateHelper, configHelper, args.Contains("--debug"));
           
             // Load additional commands that are defined within shell scripts
             var additionalCommands = new Dictionary<string, CustomBranch>();
 
             try {
-                additionalCommands = CustomCommandsLoader.Load();
+                additionalCommands = customCommandsLoader.Load();
             } catch (Exception e) {
                 AnsiConsole.MarkupLine("[red]Unable to load the custom commands[/] - [orange3]Append '--debug' to show more details[/]");
 
@@ -85,8 +123,11 @@ namespace WebDev.Tool
                 config.SetApplicationName("webdev");
                 config.SetApplicationVersion(version);
                 
+                // Set up the interceptor to configure logging before command execution
+                config.SetInterceptor(new CommandInterceptor(debugOutputHelper, environmentHelper));
+
                 // Register custom help provider for a better help output
-                config.SetHelpProvider(new CustomHelpProvider(config.Settings));
+                config.SetHelpProvider(new CustomHelpProvider(environmentHelper, config.Settings));
 
                 // Add Branches and their commands
                 config.AddBranch("admin", branch => AddAdminCommandBranch(branch, additionalCommands))
@@ -128,14 +169,12 @@ namespace WebDev.Tool
                 config.AddBranch("restore", branch => AddRestoreCommandBranch(branch, additionalCommands))
                     .RunOnlyInDevcontainer();
                 
-                if (TasksConfig.Tasks.Count > 0)
+                if (tasksConfig.Tasks.Count > 0)
                 {
-                    config.AddBranch("task", branch => AddTaskCommandBranch(branch, TasksConfig.Tasks))
-                        .RunOnlyOnHost();
+                    config.AddBranch("task", branch => AddTaskCommandBranch(branch, tasksConfig.Tasks));
                 }
                 
-                config.AddBranch("tasks", branch => AddTasksCommandBranch(branch, additionalCommands))
-                    .RunOnlyOnHost();
+                config.AddBranch("tasks", branch => AddTasksCommandBranch(branch, additionalCommands));
 
                 config.AddCommand<OpenDevcontainerTerminalCommand>("terminal")
                     .RunOnlyOnHost()
@@ -159,13 +198,13 @@ namespace WebDev.Tool
                 List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task", "tests", "admin" };
 
                 // Add Tests branch
-                if (TestsConfig.Tests.Count > 0)
+                if (testsConfig.Tests.Count > 0)
                 {
                     config.AddBranch("tests", branch => 
                     {
                         branch.SetDescription("Run tests");
 
-                        foreach (KeyValuePair<string, TestEntryConfiguration> entry in TestsConfig.Tests) {
+                        foreach (KeyValuePair<string, TestEntryConfiguration> entry in testsConfig.Tests) {
                             branch.AddCommand<TestsCommand>(entry.Key)
                                 .WithData(entry.Value)
                                 .WithDescription(entry.Value.Name)
@@ -201,10 +240,10 @@ namespace WebDev.Tool
 
             app.Run(args);
             
-            if (ConfigHelper.ConfigFileExists && ConfigHelper.IsConfigFileValid && ConfigHelper.ConfigUpdated) {
+            if (configHelper.ConfigFileExists && configHelper.IsConfigFileValid && configHelper.ConfigUpdated) {
                 try {
                     // Save config file
-                    ConfigHelper.SaveConfigFile();
+                    configHelper.SaveConfigFile();
                 } catch (Exception e) {
                     AnsiConsole.WriteLine("[red]Saving the config file failed[/] - [orange3]Append '--debug' to show more details[/]");
 
@@ -215,31 +254,31 @@ namespace WebDev.Tool
             }
         }
         
-        private static void OutputProgramHeader(string programVersion, bool showException = false)
-        {
-            if (!EnvironmentHelper.IsProgramHeaderDisabled())
+        private static void OutputProgramHeader(string programVersion, IEnvironmentHelper environmentHelper, IAppSettingsHelper appSettingsHelper, IUpdateHelper updateHelper, IConfigHelper configHelper, bool showException = false)
+        {           
+            if (!environmentHelper.IsProgramHeaderDisabled())
             {
                 AnsiConsole.Write(new FigletText("WebDev"));
                 AnsiConsole.Markup("[deepskyblue3]WebDev[/] - Version [green]" + programVersion + "[/]");
 
-                AnsiConsole.Write(EnvironmentHelper.IsRunningInDevContainer() ? " - DevContainer Mode" : " - Local Mode");
+                AnsiConsole.Write(environmentHelper.IsRunningInDevContainer() ? " - DevContainer Mode" : " - Local Mode");
             }
 
             // Try to load the config file
-            ConfigHelper.ReadConfigFile();
+            configHelper.ReadConfigFile();
 
             // Try to load the app settings
-            AppSettingsHelper.LoadAppSettings(showException);
+            appSettingsHelper.LoadAppSettings(showException);
             
-            if (EnvironmentHelper.IsProgramHeaderDisabled())
+            if (environmentHelper.IsProgramHeaderDisabled())
             {
                 return;
             }
             
             try {
                 // Check for updates
-                var latestVersion = UpdateHelper.GetLatestVersion().Result;
-                var isUpdateAvailable = UpdateHelper.IsUpdateAvailable();
+                var latestVersion = updateHelper.GetLatestVersion().Result;
+                var isUpdateAvailable = updateHelper.IsUpdateAvailable();
 
                 if (isUpdateAvailable) {
                     AnsiConsole.MarkupLine(" - [orange3]Latest Version is " + latestVersion + ". Use 'webdev update' to update.[/]");
@@ -254,14 +293,14 @@ namespace WebDev.Tool
                 }
             }
             
-            if (!ConfigHelper.ConfigFileExists) {
+            if (!configHelper.ConfigFileExists) {
                 AnsiConsole.MarkupLine("[orange3]No config file found - falling back to default settings[/]");
-            } else if(!ConfigHelper.IsConfigFileValid) {
+            } else if(!configHelper.IsConfigFileValid) {
                 AnsiConsole.MarkupLine("[red]Config file is invalid - falling back to default settings[/] - [orange3]Append '--debug' to show more details[/]");
 
                 if (showException) {
                     try {
-                        ConfigHelper.ReadConfigFile(true);
+                        configHelper.ReadConfigFile(true);
                     } catch (Exception e) {
                         AnsiConsole.WriteException(e);
                     }
@@ -352,24 +391,22 @@ namespace WebDev.Tool
         
         private static void AddTasksCommandBranch(IConfigurator<CommandSettings> branch, Dictionary<string, CustomBranch> additionalCommands)
         {
-            branch.SetDescription("Run a specific section of all tasks defined in the config file");
-
-            branch.AddCommand<RunTasksCommand>("prebuild")
-                .WithData("prebuild")
-                .WithAlias("p")
-                .WithDescription(@"Runs prebuild sections of all tasks");                    
+            branch.SetDescription("Run a specific section of all tasks defined in the config file");         
 
             branch.AddCommand<RunTasksCommand>("create")
+                .RunOnlyInDevcontainer("tasks")
                 .WithData("create")
                 .WithAlias("c")
                 .WithDescription(@"Runs create sections of all tasks");
             
             branch.AddCommand<RunTasksCommand>("start")
+                .RunOnlyInDevcontainer("tasks")
                 .WithData("start")
                 .WithAlias("s")
                 .WithDescription(@"Runs start sections of all tasks");
             
             branch.AddCommand<RunTasksCommand>("init")
+                .RunOnlyOnHost("tasks")
                 .WithData("init")
                 .WithAlias("i")
                 .WithDescription(@"Runs init sections of all tasks");

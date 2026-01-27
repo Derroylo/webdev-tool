@@ -1,27 +1,22 @@
-using System.ComponentModel;
 using Spectre.Console.Cli;
-using WebDev.Tool.Helper.workspaces;
+using WebDev.Tool.Helper.Workspaces;
 
-namespace WebDev.Tool.Commands.workspaces;
+namespace WebDev.Tool.Commands.Workspaces;
 
-public class PostStartWorkspacesCommand: Command<PostStartWorkspacesCommand.Settings>
+internal class PostStartWorkspacesCommand(IWorkspaceHelper _workspaceHelper): Command<PostStartWorkspacesCommand.Settings>
 {
-    public class Settings : CommandSettings
+    public class Settings : LogCommandSettings
     {
-        [CommandOption("--debug")]
-        [Description("Outputs debug information")]
-        [DefaultValue(false)]
-        public bool Debug { get; set; }
     }
     
     public override int Execute(CommandContext context, Settings settings)
     {
-        if (!WorkspaceHelper.ValidateWorkspaces(settings.Debug))
+        if (!_workspaceHelper.ValidateWorkspaces())
         {
             return 1;
         }
         
-        WorkspaceHelper.EnableVhostConfigurations(settings.Debug);
+        _workspaceHelper.EnableVhostConfigurations();
         
         return 0;
     }

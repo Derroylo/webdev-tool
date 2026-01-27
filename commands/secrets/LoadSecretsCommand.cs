@@ -1,18 +1,25 @@
 using Spectre.Console.Cli;
 using WebDev.Tool.Helper.Secrets;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Secrets;
 
-internal class LoadSecretsCommand: Command
+internal class LoadSecretsCommand(IDebugOutputHelper _debugOutputHelper, ISecretsLoader _secretsLoader) : Command<LoadSecretsCommand.Settings>
 {
-    public override int Execute(CommandContext context)
+    public class Settings : LogCommandSettings
     {
-        if (!SecretsLoader.LoadEnvVarSecrets())
+    }
+
+    public override int Execute(CommandContext context, Settings settings)
+    {
+        _debugOutputHelper.WriteInfoOutput("Executing LoadSecretsCommand", this);
+        
+        if (!_secretsLoader.LoadEnvVarSecrets())
         {
             return 1;
         }
 
-        if (!SecretsLoader.LoadFileSecrets())
+        if (!_secretsLoader.LoadFileSecrets())
         {
             return 1;
         }

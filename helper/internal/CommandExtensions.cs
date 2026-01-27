@@ -79,20 +79,13 @@ namespace WebDev.Tool.Helper.Internal
 #endregion
 
 #region Commands Setter
-        public static ICommandConfigurator RunOnlyInDevcontainer(this ICommandConfigurator configurator, string commandName)
-        {
-            _runOnlyInDevcontainerCommands.Add(commandName);
-
-            return configurator;
-        }
-
-        public static ICommandConfigurator RunOnlyOnHost(this ICommandConfigurator configurator)
+        public static ICommandConfigurator RunOnlyInDevcontainer(this ICommandConfigurator configurator, string parentBranchName = null)
         {
             var commandName = GetCommandName(configurator);
 
             if (!string.IsNullOrEmpty(commandName))
             {
-                _runOnlyOnHostCommands.Add(commandName);
+                _runOnlyInDevcontainerCommands.Add(parentBranchName != null ? parentBranchName + ":" + commandName : commandName);
             } else {
                 AnsiConsole.MarkupLine($"[red]Failed to get the command name[/]");
             }
@@ -100,13 +93,27 @@ namespace WebDev.Tool.Helper.Internal
             return configurator;
         }
 
-        public static ICommandConfigurator ShowInCommonCommands(this ICommandConfigurator configurator)
+        public static ICommandConfigurator RunOnlyOnHost(this ICommandConfigurator configurator, string parentBranchName = null)
         {
             var commandName = GetCommandName(configurator);
 
             if (!string.IsNullOrEmpty(commandName))
             {
-                _commonCommands.Add(commandName);
+                _runOnlyOnHostCommands.Add(parentBranchName != null ? parentBranchName + ":" + commandName : commandName);
+            } else {
+                AnsiConsole.MarkupLine($"[red]Failed to get the command name[/]");
+            }
+
+            return configurator;
+        }
+
+        public static ICommandConfigurator ShowInCommonCommands(this ICommandConfigurator configurator, string parentBranchName = null)
+        {
+            var commandName = GetCommandName(configurator);
+
+            if (!string.IsNullOrEmpty(commandName))
+            {
+                _commonCommands.Add(parentBranchName != null ? parentBranchName + ":" + commandName : commandName);
             }
             else {
                 AnsiConsole.MarkupLine($"[red]Failed to get the command name[/]");

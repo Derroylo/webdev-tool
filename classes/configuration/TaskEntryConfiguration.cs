@@ -3,14 +3,14 @@ using System.ComponentModel;
 
 namespace WebDev.Tool.Classes.Configuration;
 
-internal enum TaskMode
+public enum TaskMode
 {
     All,
     Local,
     DevContainer
 }
 
-internal class TaskEntryConfiguration
+public class TaskEntryConfiguration
 {
     public string Name { get; set; } = "";
     

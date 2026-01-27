@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace WebDev.Tool.Classes.Settings;
 
-internal class SecretsLoaderSetting
+public class SecretsLoaderSetting
 {
     public string Type { get; set; } = null;
     

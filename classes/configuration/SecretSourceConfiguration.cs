@@ -1,6 +1,6 @@
 namespace WebDev.Tool.Classes.Configuration;
 
-internal class SecretSourceConfiguration
+public class SecretSourceConfiguration
 {
     public string Key { get; set; } = "";
     

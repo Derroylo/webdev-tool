@@ -3,9 +3,9 @@ using WebDev.Tool.Classes.Configuration;
 
 namespace WebDev.Tool.Helper.Internal.Config.Sections;
 
-internal class WorkspacesConfig: ConfigHelper
+public class WorkspacesConfig(IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper): ConfigHelper(_pathHelper, _environmentHelper)
 {
-    public static Dictionary<string, WorkspaceEntryConfiguration> Workspaces
+    public Dictionary<string, WorkspaceEntryConfiguration> Workspaces
     {
         get => appConfig.Workspaces;
 

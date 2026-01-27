@@ -8,13 +8,13 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace WebDev.Tool.Helper.Docker
 {
-    internal class DockerHelper
+    public class DockerHelper(ExecCommand _execCommand) : IDockerHelper
     {
-        public static List<string> GetRunningContainers(string name)
+        public List<string> GetRunningContainers(string name)
         {
             var containers = new List<string>();
 
-            var result = ExecCommand.Exec("docker ps -q -f status=running -f name=" + name);
+            var result = _execCommand.Exec("docker ps -q -f status=running -f name=" + name);
 
             if (result.Trim().Length > 0) {
                 containers = result.Trim().Split('\n').ToList();
@@ -23,12 +23,12 @@ namespace WebDev.Tool.Helper.Docker
             return containers;
         }
 
-        public static void StopContainer(string name)
+        public void StopContainer(string name)
         {
-            ExecCommand.ExecWithDirectOutput("docker stop " + name);
+            _execCommand.ExecWithDirectOutput("docker stop " + name);
         }
 
-        public static string GetProjectName()
+        public string GetProjectName()
         {
             var projectName = Path.GetFileName(Directory.GetCurrentDirectory()) + "_devcontainer";
 

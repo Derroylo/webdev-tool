@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace WebDev.Tool.Classes
 {
-    internal class CustomCommand
+    public class CustomCommand
     {
         public string Command { get; } = string.Empty;
 

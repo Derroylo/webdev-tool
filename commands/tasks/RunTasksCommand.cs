@@ -11,15 +11,18 @@ using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Commands.tasks;
 
-internal class RunTasksCommand: Command<RunTasksCommand.Settings>
+internal class RunTasksCommand(
+    IDebugOutputHelper _debugOutputHelper, 
+    IEnvironmentHelper _environmentHelper, 
+    IPathHelper _pathHelper, 
+    TasksConfig _tasksConfig, 
+    GeneralConfig _generalConfig, 
+    WorkspacesConfig _workspacesConfig,
+    ExecCommand _execCommand
+    ) : Command<RunTasksCommand.Settings>
 {
-    public class Settings : CommandSettings
+    public class Settings : LogCommandSettings
     {
-        [CommandOption("-d|--debug")]
-        [Description("Outputs debug information")]
-        [DefaultValue(false)]
-        public bool Debug { get; set; }
-        
         [CommandOption("-n|--not-main")]
         [Description("Execute commands only with the flag IsMain set to false")]
         [DefaultValue(false)]
@@ -28,6 +31,8 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
     
     public override int Execute(CommandContext context, Settings settings)
     {
+        _debugOutputHelper.WriteInfoOutput("Executing RunTasksCommand", this);
+        
         string sectionName = context.Data?.ToString();
         
         var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
@@ -39,7 +44,7 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
             return 0;
         }
         
-        foreach (KeyValuePair<string, TaskEntryConfiguration> entry in TasksConfig.Tasks)
+        foreach (KeyValuePair<string, TaskEntryConfiguration> entry in _tasksConfig.Tasks)
         {
             if (settings.IsNotMain && entry.Value.OnlyMain)
             {
@@ -57,12 +62,8 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
                 
                 foreach (string cmd in entry.Value.Init)
                 {
-                    if (settings.Debug)
-                    {
-                        AnsiConsole.MarkupLine("[green]Running command:[/] " + cmd);
-                    }
-                    
-                    ExecCommand.ExecWithDirectOutput(cmd, false, true);
+                    _debugOutputHelper.WriteInfoOutput("Running init command: " + cmd, this);
+                    _execCommand.ExecWithDirectOutput(cmd, false, true);
                 }
             }
             
@@ -74,18 +75,15 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
                     shownRunningCommands = true;
                 }
                 
-                if (!File.Exists(PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer()) + "/.devcontainer/.createDoneLock"))
+                if (!File.Exists(_pathHelper.GetWorkspacePath(_environmentHelper.IsRunningInDevContainer()) + "/.devcontainer/.createDoneLock"))
                 {
                     AnsiConsole.MarkupLine("[green]Running create commands[/]");
                 
                     foreach (string cmd in entry.Value.Create)
                     {
-                        if (settings.Debug)
-                        {
-                            AnsiConsole.MarkupLine("[green]Running command:[/] " + cmd);
-                        }
+                        _debugOutputHelper.WriteInfoOutput("Running create command: " + cmd, this);
                         
-                        ExecCommand.ExecWithDirectOutput(cmd, false, true);
+                        _execCommand.ExecWithDirectOutput(cmd, false, true);
                     }
                 }
                 else
@@ -106,39 +104,36 @@ internal class RunTasksCommand: Command<RunTasksCommand.Settings>
 
                 foreach (string cmd in entry.Value.Start)
                 {
-                    if (settings.Debug)
-                    {
-                        AnsiConsole.MarkupLine("[green]Running command:[/] " + cmd);
-                    }
+                    _debugOutputHelper.WriteInfoOutput("Running start command: " + cmd, this);
                     
-                    ExecCommand.ExecWithDirectOutput(cmd, false, true);
+                    _execCommand.ExecWithDirectOutput(cmd, false, true);
                 }
             }
         }
 
         if (sectionName == "create")
         {
-            File.Create(PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer()) + "/.devcontainer/.createDoneLock");
+            File.Create(_pathHelper.GetWorkspacePath(_environmentHelper.IsRunningInDevContainer()) + "/.devcontainer/.createDoneLock");
         }
 
-        if (WorkspacesConfig.Workspaces.Count <= 1) return 1;
+        if (_workspacesConfig.Workspaces.Count <= 1) return 1;
 
         if (settings.IsNotMain) return 1;
         
         var commands = new List<string>();
             
-        foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in WorkspacesConfig.Workspaces)
+        foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in _workspacesConfig.Workspaces)
         {
             if (workspace.Key == "main") continue;
             
             if (sectionName == "init")
             {
                 // Make sure we process the secrets for each workspace
-                commands.Add("(cd " + Path.Combine("./", GeneralConfig.WorkspaceFolder, workspace.Value.Folder) + " && " + Program.ApplicationName + " secrets load --no-header)");
+                commands.Add("(cd " + Path.Combine("./", _generalConfig.WorkspaceFolder, workspace.Value.Folder) + " && " + Program.ApplicationName + " secrets load --no-header)");
             }
             
             // Run the tasks for the workspace
-            commands.Add("(cd " + Path.Combine("./", GeneralConfig.WorkspaceFolder, workspace.Value.Folder) + " && " + Program.ApplicationName + " tasks " + sectionName + " --not-main --no-header)");
+            commands.Add("(cd " + Path.Combine("./", _generalConfig.WorkspaceFolder, workspace.Value.Folder) + " && " + Program.ApplicationName + " tasks " + sectionName + " --not-main --no-header)");
         }
             
         var applicationDir = AppDomain.CurrentDomain.BaseDirectory;

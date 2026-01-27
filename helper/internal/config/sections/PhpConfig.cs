@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace WebDev.Tool.Helper.Internal.Config.Sections
 {
-    internal class PhpConfig: ConfigHelper
+    public class PhpConfig(IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper): ConfigHelper(_pathHelper, _environmentHelper)
     {
-        public static string PhpVersion
+        public string PhpVersion
         {
             get => appConfig.Php.Version;
 
@@ -17,12 +17,12 @@ namespace WebDev.Tool.Helper.Internal.Config.Sections
             }
         }
 
-        public static Dictionary<string, string> Config => appConfig.Php.Config;
+        public Dictionary<string, string> Config => appConfig.Php.Config;
 
-        public static Dictionary<string, string> ConfigWeb => appConfig.Php.ConfigWeb;
+        public Dictionary<string, string> ConfigWeb => appConfig.Php.ConfigWeb;
 
-        public static Dictionary<string, string> ConfigCli => appConfig.Php.ConfigCLI;
+        public Dictionary<string, string> ConfigCli => appConfig.Php.ConfigCLI;
 
-        public static List<string> Packages => appConfig.Php.Packages;
+        public List<string> Packages => appConfig.Php.Packages;
     }
 }

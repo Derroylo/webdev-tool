@@ -1,14 +1,21 @@
 using System;
 using Spectre.Console.Cli;
 using WebDev.Tool.Helper.Secrets;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Secrets;
 
-internal class ExportSecretsCommand: Command
+internal class ExportSecretsCommand(IDebugOutputHelper _debugOutputHelper, ISecretsLoader _secretsLoader) : Command<ExportSecretsCommand.Settings>
 {
-    public override int Execute(CommandContext context)
+    public class Settings : LogCommandSettings
     {
-        SecretsLoader.LoadEnvVarSecrets(false);
+    }
+
+    public override int Execute(CommandContext context, Settings settings)
+    {
+        _debugOutputHelper.WriteInfoOutput("Executing ExportSecretsCommand", this);
+        
+        _secretsLoader.LoadEnvVarSecrets(false);
         
         foreach (var secret in SecretsLoader.EnvVarSecrets)
         {

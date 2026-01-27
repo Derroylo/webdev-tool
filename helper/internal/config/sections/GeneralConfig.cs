@@ -2,13 +2,13 @@ using WebDev.Tool.Classes.Configuration;
 
 namespace WebDev.Tool.Helper.Internal.Config.Sections
 {
-    internal class GeneralConfig: ConfigHelper
+    public class GeneralConfig(IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper): ConfigHelper(_pathHelper, _environmentHelper)
     {
-        public static bool AllowPreReleases => appConfig.Config.AllowPreReleases;
+        public bool AllowPreReleases => appConfig.Config.AllowPreReleases;
         
-        public static ProxyConfiguration Proxy => appConfig.Config.Proxy;
+        public ProxyConfiguration Proxy => appConfig.Config.Proxy;
 
-        public static string WorkspaceFolder
+        public string WorkspaceFolder
         {
             get => appConfig.Config.WorkspaceFolder;
             set
@@ -18,7 +18,7 @@ namespace WebDev.Tool.Helper.Internal.Config.Sections
             }
         }
 
-        public static string ComposeFileName
+        public string ComposeFileName
         {
             get => appConfig.Config.ComposeFileName;
             set

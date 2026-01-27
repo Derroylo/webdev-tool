@@ -8,25 +8,8 @@ using Spectre.Console.Rendering;
 
 namespace WebDev.Tool.Helper.Internal
 {
-    internal class CustomHelpProvider : IHelpProvider
+    internal class CustomHelpProvider(IEnvironmentHelper _environmentHelper, ICommandAppSettings _settings) : IHelpProvider
     {
-        private static readonly HashSet<string> CommonCommands = new()
-        {
-            "services", "config", "project", "info", "update", "terminal"
-        };
-
-        private static readonly HashSet<string> CommonBranches = new()
-        {
-            "services", "config", "project"
-        };
-
-        private readonly ICommandAppSettings _settings;
-
-        public CustomHelpProvider(ICommandAppSettings settings)
-        {
-            _settings = settings;
-        }
-
         public IEnumerable<IRenderable> Write(ICommandModel model, ICommandInfo commandInfo = null)
         {
             var args = Program.ProgramArgs;
@@ -40,9 +23,10 @@ namespace WebDev.Tool.Helper.Internal
             yield return new Markup("OPTIONS:\n");
             yield return new Markup("  [bold]-h, --help[/]           Show all commands\n");
             yield return new Markup("  [bold]--version[/]            Show version information\n");
+            yield return new Markup("  [bold]--debug[/]              Output debug information\n");
+            yield return new Markup("  [bold]--no-header[/]          Disable the program header\n");
             yield return new Markup("\n");
             
-            // Gruppierte Ausgabe ähnlich Symfony
             foreach (var renderable in WriteGroupedCommands(model, showAll))
             {
                 yield return renderable;
@@ -121,7 +105,7 @@ namespace WebDev.Tool.Helper.Internal
             if (notAvailableCommands.Count > 0)
             {
                 // Show entries that are currently not available in the current environment
-                yield return new Markup($"[orange3]These commands are currently not available because they can only run {(!EnvironmentHelper.IsRunningInDevContainer() ? "in the devcontainer" : "on the host")}[/]:\n");
+                yield return new Markup($"[orange3]These commands are currently not available because they can only run {(!_environmentHelper.IsRunningInDevContainer() ? "in the devcontainer" : "on the host")}[/]:\n");
 
                 // Output all commands and branches together, sorted alphabetically
                 foreach (var cmd in notAvailableCommands)
@@ -177,7 +161,7 @@ namespace WebDev.Tool.Helper.Internal
                 return true;
             }
 
-            return EnvironmentHelper.IsRunningInDevContainer() ? isAvailableInDevContainer : isAvailableOnHost;
+            return _environmentHelper.IsRunningInDevContainer() ? isAvailableInDevContainer : isAvailableOnHost;
         }
     }
 }

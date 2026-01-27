@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace WebDev.Tool.Classes.Configuration;
 
-internal class ServiceEntryConfiguration
+public class ServiceEntryConfiguration
 {
     public string Name { get; set; } = "";
     

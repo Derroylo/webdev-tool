@@ -1,6 +1,6 @@
 namespace WebDev.Tool.Classes.Settings;
 
-internal class AppSettings
+public class AppSettings
 {
     public ProxySetting Proxy { get; set; } = new();
     

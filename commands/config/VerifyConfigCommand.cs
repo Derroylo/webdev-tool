@@ -6,12 +6,13 @@ using WebDev.Tool.Helper.Internal.Config.Sections;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Helper.Docker;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Config
 {
-    class VerifyConfigCommand : Command<VerifyConfigCommand.Settings>
+    class VerifyConfigCommand(IDebugOutputHelper _debugOutputHelper, IConfigHelper _configHelper, IDockerComposeHelper _dockerComposeHelper, PhpConfig _phpConfig, NodeJsConfig _nodeJsConfig, ServicesConfig _servicesConfig, ShellScriptConfig _shellScriptConfig) : Command<VerifyConfigCommand.Settings>
     {
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
             [CommandOption("-p|--php")]
             [Description("Verify php settings")]
@@ -36,13 +37,15 @@ namespace WebDev.Tool.Commands.Config
 
         public override int Execute(CommandContext context, Settings settings)
         {
-            if (!ConfigHelper.ConfigFileExists) {
+            _debugOutputHelper.WriteInfoOutput("Executing VerifyConfigCommand", this);
+            
+            if (!_configHelper.ConfigFileExists) {
                 AnsiConsole.MarkupLine("[red]Config file not found. Make sure the file .devcontainer/devcontainer.json exists.[/]");
 
                 return 0;
             }
 
-            if (!ConfigHelper.IsConfigFileValid) {
+            if (!_configHelper.IsConfigFileValid) {
                 AnsiConsole.MarkupLine("[red]The config file is invalid. Correct the syntax errors and try again.[/]");
 
                 return 0;
@@ -101,12 +104,12 @@ namespace WebDev.Tool.Commands.Config
         {
             AnsiConsole.MarkupLine($"[bold yellow]PHP Settings[/]");
 
-            if (PhpConfig.PhpVersion != string.Empty) {
+            if (_phpConfig.PhpVersion != string.Empty) {
                 AnsiConsole.Markup($"[bold]Version[/]".PadRight(30));
-                AnsiConsole.Markup($"[green]{PhpConfig.PhpVersion}[/]\n");
+                AnsiConsole.Markup($"[green]{_phpConfig.PhpVersion}[/]\n");
             }
             
-            if (PhpConfig.Config.Count > 0) {
+            if (_phpConfig.Config.Count > 0) {
                 AnsiConsole.MarkupLine($"\n[bold yellow]Overrides CLI and Web[/]");
 
                 // Create a table
@@ -116,7 +119,7 @@ namespace WebDev.Tool.Commands.Config
                 settingsTable.AddColumn("Name");
                 settingsTable.AddColumn("Value");
 
-                foreach(KeyValuePair<string, string> item in PhpConfig.Config) {
+                foreach(KeyValuePair<string, string> item in _phpConfig.Config) {
                     settingsTable.AddRow(item.Key, item.Value);
                 }
                 
@@ -124,7 +127,7 @@ namespace WebDev.Tool.Commands.Config
                 AnsiConsole.Write(settingsTable);
             }
 
-            if (PhpConfig.ConfigCli.Count > 0) {
+            if (_phpConfig.ConfigCli.Count > 0) {
                 AnsiConsole.MarkupLine($"\n[bold yellow]Overrides CLI[/]");
 
                 // Create a table
@@ -134,7 +137,7 @@ namespace WebDev.Tool.Commands.Config
                 settingsTable.AddColumn("Name");
                 settingsTable.AddColumn("Value");
 
-                foreach(KeyValuePair<string, string> item in PhpConfig.ConfigCli) {
+                foreach(KeyValuePair<string, string> item in _phpConfig.ConfigCli) {
                     settingsTable.AddRow(item.Key, item.Value);
                 }
                 
@@ -142,7 +145,7 @@ namespace WebDev.Tool.Commands.Config
                 AnsiConsole.Write(settingsTable);
             }
 
-            if (PhpConfig.ConfigWeb.Count > 0) {
+            if (_phpConfig.ConfigWeb.Count > 0) {
                 AnsiConsole.MarkupLine($"\n[bold yellow]Overrides Web[/]");
 
                 // Create a table
@@ -152,7 +155,7 @@ namespace WebDev.Tool.Commands.Config
                 settingsTable.AddColumn("Name");
                 settingsTable.AddColumn("Value");
 
-                foreach(KeyValuePair<string, string> item in PhpConfig.ConfigWeb) {
+                foreach(KeyValuePair<string, string> item in _phpConfig.ConfigWeb) {
                     settingsTable.AddRow(item.Key, item.Value);
                 }
                 
@@ -160,7 +163,7 @@ namespace WebDev.Tool.Commands.Config
                 AnsiConsole.Write(settingsTable);
             }
 
-            if (PhpConfig.Packages.Count > 0) {
+            if (_phpConfig.Packages.Count > 0) {
                 AnsiConsole.MarkupLine($"\n[bold yellow]Packages[/]");
 
                 // Create a table
@@ -169,7 +172,7 @@ namespace WebDev.Tool.Commands.Config
                 // Add columns
                 settingsTable.AddColumn("Name");
 
-                foreach(string item in PhpConfig.Packages) {
+                foreach(string item in _phpConfig.Packages) {
                     settingsTable.AddRow(item);
                 }
                 
@@ -182,9 +185,9 @@ namespace WebDev.Tool.Commands.Config
         {
             AnsiConsole.MarkupLine($"[bold yellow]NodeJS Settings[/]");
 
-            if (NodeJsConfig.NodeJsVersion != string.Empty) {
+            if (_nodeJsConfig.NodeJsVersion != string.Empty) {
                 AnsiConsole.Markup($"[bold]Version[/]".PadRight(30));
-                AnsiConsole.Markup($"[green]{NodeJsConfig.NodeJsVersion}[/]\n");
+                AnsiConsole.Markup($"[green]{_nodeJsConfig.NodeJsVersion}[/]\n");
             }
         }
 
@@ -192,7 +195,7 @@ namespace WebDev.Tool.Commands.Config
         {
             AnsiConsole.MarkupLine($"[bold yellow]Service Settings[/]");
 
-            var services = DockerComposeHelper.GetServices(DockerComposeHelper.GetFile());
+            var services = _dockerComposeHelper.GetServices(_dockerComposeHelper.GetFile());
 
             var servicesTable = new Table();
 
@@ -209,7 +212,7 @@ namespace WebDev.Tool.Commands.Config
                 var serviceName = item.Value.ContainsKey("name") ? item.Value["name"] : item.Key;
                 var serviceDescription = item.Value.ContainsKey("description") ? item.Value["description"] : "-";
 
-                var isActive = ServicesConfig.Services.ContainsKey(item.Key) && ServicesConfig.Services[item.Key].Active;
+                var isActive = _servicesConfig.Services.ContainsKey(item.Key) && _servicesConfig.Services[item.Key].Active;
 
                 servicesTable.AddRow(serviceName, serviceDescription, isActive ? "[green1]Active[/]" : "[red]Inactive[/]");
             }
@@ -221,7 +224,7 @@ namespace WebDev.Tool.Commands.Config
         {
             AnsiConsole.MarkupLine($"[bold yellow]Shell scripts[/]");
 
-            if (ShellScriptConfig.AdditionalDirectories.Count > 0) {
+            if (_shellScriptConfig.AdditionalDirectories.Count > 0) {
                 AnsiConsole.WriteLine("Additional directories:");
 
                 // Create a table
@@ -234,7 +237,7 @@ namespace WebDev.Tool.Commands.Config
 
                 var currentDir = Directory.GetCurrentDirectory() + "/";
 
-                foreach(string item in ShellScriptConfig.AdditionalDirectories) {
+                foreach(string item in _shellScriptConfig.AdditionalDirectories) {
                     bool dirExists = Directory.Exists(currentDir + item);
                     int scriptsFound = 0;
 

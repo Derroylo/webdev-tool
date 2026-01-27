@@ -4,14 +4,14 @@ using System.Text.RegularExpressions;
 
 namespace WebDev.Tool.Helper.Php
 {
-    internal partial class PhpVersionHelper
+    public partial class PhpVersionHelper(ExecCommand _execCommand)
     {
-        public static List<string> GetAvailablePhpVersions()
+        public List<string> GetAvailablePhpVersions()
         {
             var availablePhpVersions = new List<string>();
 
             string pattern = @"Alternative: \/usr\/bin\/php([0-9.]+)";
-            string input = ExecCommand.Exec("update-alternatives --query php");
+            string input = _execCommand.Exec("update-alternatives --query php");
 
             RegexOptions options = RegexOptions.Multiline;
         
@@ -27,7 +27,7 @@ namespace WebDev.Tool.Helper.Php
             return availablePhpVersions;
         }
 
-        public static string GetCurrentPhpVersion()
+        public string GetCurrentPhpVersion()
         {
             string output = GetCurrentPhpVersionOutput();
 
@@ -41,11 +41,11 @@ namespace WebDev.Tool.Helper.Php
         }
 
         [GeneratedRegex(@"(?:PHP) ([(0-9)].[(0-9)])")]
-        private static partial Regex PhpVersionMatchRegex();
+        private partial Regex PhpVersionMatchRegex();
 
-        public static string GetCurrentPhpVersionOutput()
+        public string GetCurrentPhpVersionOutput()
         {
-            return ExecCommand.Exec("php -version");
+            return _execCommand.Exec("php -version");
         }
     }
 }

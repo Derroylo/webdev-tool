@@ -7,9 +7,9 @@ using WebDev.Tool.Helper.Secrets;
 
 namespace WebDev.Tool.Helper
 {
-    internal class ExecCommand
+    public class ExecCommand(ISecretsLoader _secretsLoader, IPtyHelper _ptyHelper)
     {
-        public static string Exec(string command, bool isInteractive = false, bool disableJobControl = false, int timeoutInSeconds = 300)
+        public string Exec(string command, bool isInteractive = false, bool disableJobControl = false, int timeoutInSeconds = 300)
         {
             string result = "";
 
@@ -46,10 +46,10 @@ namespace WebDev.Tool.Helper
             return result.TrimEnd('\n');
         }
 
-        public static void ExecWithDirectOutput(string command, bool isInteractive = false, bool disableJobControl = false, string workingDirectory = "", bool useStreaming = false)
+        public void ExecWithDirectOutput(string command, bool isInteractive = false, bool disableJobControl = false, string workingDirectory = "", bool useStreaming = false)
         {
             // Load secrets for environment variables
-            SecretsLoader.LoadEnvVarSecrets(false);
+            _secretsLoader.LoadEnvVarSecrets(false);
 
             // Prepare environment variables dictionary
             Dictionary<string, string> envVars = new Dictionary<string, string>();
@@ -67,7 +67,7 @@ namespace WebDev.Tool.Helper
             else
             {
                 // Execute command using PTY to preserve all terminal formatting (default)
-                PtyHelper.ExecWithPty(command, isInteractive, disableJobControl, workingDirectory, envVars);
+                _ptyHelper.ExecWithPty(command, isInteractive, disableJobControl, workingDirectory, envVars);
             }
         }
 

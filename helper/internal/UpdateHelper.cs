@@ -13,9 +13,9 @@ using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Helper.Internal
 {
-    internal class UpdateHelper
+    public class UpdateHelper(GeneralConfig _generalConfig) : IUpdateHelper
     {  
-        public static string CurrentVersion {
+        public string CurrentVersion {
             get {
                 var currentVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
@@ -32,10 +32,10 @@ namespace WebDev.Tool.Helper.Internal
             }
         }
         
-        private static async Task UpdateCacheFile()
+        private async Task UpdateCacheFile()
         {
             var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
-            bool allowPreReleases = GeneralConfig.AllowPreReleases;
+            bool allowPreReleases = _generalConfig.AllowPreReleases;
 
             GitHubClient client = new GitHubClient(new ProductHeaderValue("SomeName"));
             IReadOnlyList<Release> releases = await client.Repository.Release.GetAll("Derroylo", "webdev-tool");
@@ -67,7 +67,7 @@ namespace WebDev.Tool.Helper.Internal
             File.WriteAllText(applicationDir + "releases.json", tmp.ToString());
         }
 
-        public static async Task<string> GetLatestVersion(bool forceUpdate = false)
+        public async Task<string> GetLatestVersion(bool forceUpdate = false)
         {
             var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -91,7 +91,7 @@ namespace WebDev.Tool.Helper.Internal
             return (string) cacheFile["last_release"];
         }
 
-        public static bool IsUpdateAvailable()
+        public bool IsUpdateAvailable()
         {
             var currentVersion = CurrentVersion;
 
@@ -109,7 +109,7 @@ namespace WebDev.Tool.Helper.Internal
             return false;
         }
 
-        public static async Task<bool> UpdateToLatestRelease()
+        public async Task<bool> UpdateToLatestRelease()
         {
             var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
 

@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 using Spectre.Console;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Helper.Php
 {
-    internal class PhpHelper
+    public class PhpHelper(IPhpVersionHelper _phpVersionHelper, IDebugOutputHelper _debugOutputHelper, PhpConfig _phpConfig, ExecCommand _execCommand) : IPhpHelper
     {  
-        public static void SetNewPhpVersion(string newVersion, bool isDebug)
+        public void SetNewPhpVersion(string newVersion)
         {
             AnsiConsole.Status()
                 .AutoRefresh(true)
                 .Start("Setting PHP Version to " + newVersion, ctx => 
                 {
-                    var availablePhpVersions = PhpVersionHelper.GetAvailablePhpVersions();
+                    var availablePhpVersions = _phpVersionHelper.GetAvailablePhpVersions();
 
                     if (!availablePhpVersions.Contains(newVersion)) {
                         AnsiConsole.MarkupLine("Checking if the input is a valid php version....[red]Invalid[/]");
@@ -24,44 +25,42 @@ namespace WebDev.Tool.Helper.Php
 
                     AnsiConsole.MarkupLine("Checking if the input is a valid php version....[green1]Valid[/]");
 
-                    string currentPhpVersion = PhpVersionHelper.GetCurrentPhpVersion();
+                    string currentPhpVersion = _phpVersionHelper.GetCurrentPhpVersion();
 
                     // Check if we have selected another version as the currently active one
                     if (newVersion != currentPhpVersion) {
                         // Update the CLI Version
-                        ExecCommand.Exec("sudo update-alternatives --set php /usr/bin/php" + newVersion);
+                        _execCommand.Exec("sudo update-alternatives --set php /usr/bin/php" + newVersion);
                         AnsiConsole.MarkupLine("update-alternatives --set php /usr/bin/php" + newVersion + "...[green1]Success[/]");
 
-                        ExecCommand.Exec("sudo update-alternatives --set php-config /usr/bin/php-config" + newVersion);
+                        _execCommand.Exec("sudo update-alternatives --set php-config /usr/bin/php-config" + newVersion);
                         AnsiConsole.MarkupLine("update-alternatives --set php-config /usr/bin/php-config" + newVersion + "...[green1]Success[/]");
 
-                        ExecCommand.Exec("sudo update-alternatives --set phpize /usr/bin/phpize" + newVersion);
+                        _execCommand.Exec("sudo update-alternatives --set phpize /usr/bin/phpize" + newVersion);
                         AnsiConsole.MarkupLine("update-alternatives --set phpize /usr/bin/phpize" + newVersion + "...[green1]Success[/]");
                         
                         // Update the version apache uses
-                        ExecCommand.Exec("sudo apt-get update");
+                        _execCommand.Exec("sudo apt-get update");
                         AnsiConsole.MarkupLine("apt-get update...[green1]Success[/]");
 
-                        ExecCommand.Exec("sudo apt-get install -y libapache2-mod-php" + newVersion);
+                        _execCommand.Exec("sudo apt-get install -y libapache2-mod-php" + newVersion);
                         AnsiConsole.MarkupLine("apt-get install -y libapache2-mod-php" + newVersion + "...[green1]Success[/]");
 
-                        ExecCommand.Exec("sudo a2dismod php" + currentPhpVersion);
+                        _execCommand.Exec("sudo a2dismod php" + currentPhpVersion);
                         AnsiConsole.MarkupLine("a2dismod php" + currentPhpVersion + "...[green1]Success[/]");
 
-                        ExecCommand.Exec("sudo a2enmod php" + newVersion);
+                        _execCommand.Exec("sudo a2enmod php" + newVersion);
                         AnsiConsole.MarkupLine("a2enmod php" + newVersion + "...[green1]Success[/]");
                         
                         // Restarting Apache
-                        ExecCommand.Exec("apachectl stop");
-                        ExecCommand.Exec("apachectl start");
+                        _execCommand.Exec("apachectl stop");
+                        _execCommand.Exec("apachectl start");
                         
                         AnsiConsole.MarkupLine("Restarting apache...[green1]Success[/]");
                         
-                        string testResult = PhpVersionHelper.GetCurrentPhpVersionOutput();
+                        string testResult = _phpVersionHelper.GetCurrentPhpVersionOutput();
 
-                        if (isDebug) {
-                            AnsiConsole.WriteLine(testResult);
-                        }
+                        _debugOutputHelper.WriteInfoOutput("Test result: " + testResult, this);
 
                         if (!testResult.Contains(newVersion)) {
                             AnsiConsole.MarkupLine("Validating that the new version has been set....[red]Failed[/]");
@@ -81,7 +80,7 @@ namespace WebDev.Tool.Helper.Php
                     // Check if the newVersion is not the latest one and verify all packages are installed in the newVersion too
                     if (newVersion != availablePhpVersions[0]) {
                         // Read currently installed packages
-                        var installedPackages = ExecCommand.Exec("apt list --installed");
+                        var installedPackages = _execCommand.Exec("apt list --installed");
 
                         var packagesList = installedPackages.Split("\n");
                         var packagesCleaned = new List<string>();
@@ -99,34 +98,30 @@ namespace WebDev.Tool.Helper.Php
                         var missingPackages = latestPackages.Where(p => !newVersionPackages.Contains(p.Replace("php" + availablePhpVersions[0] + "-", "php" + newVersion + "-"))).ToArray();
 
                         if (missingPackages.Length > 0) {
-                            var updateRes = ExecCommand.Exec("sudo apt-get update");
+                            var updateRes = _execCommand.Exec("sudo apt-get update");
                             AnsiConsole.MarkupLine("Updating package manager list...[green1]Done[/]");
 
-                            if (isDebug) {
-                                AnsiConsole.WriteLine(updateRes);
-                            }
+                            _debugOutputHelper.WriteInfoOutput("Update result: " + updateRes, this);
 
                             string packages = string.Join(" ", missingPackages).Replace("php" + availablePhpVersions[0] + "-", "php" + newVersion + "-");
 
-                            var installRes = ExecCommand.Exec("sudo apt-get install -y " + packages);
+                            var installRes = _execCommand.Exec("sudo apt-get install -y " + packages);
                             AnsiConsole.MarkupLine("Installing packages...[green1]Done[/]");
                             
-                            if (isDebug) {
-                                AnsiConsole.WriteLine(installRes);
-                            }
+                            _debugOutputHelper.WriteInfoOutput("Install result: " + installRes, this);
 
                             // Restart webserver so newly installed packages are available
-                            ExecCommand.Exec("apachectl stop");
-                            ExecCommand.Exec("apachectl start");
+                            _execCommand.Exec("apachectl stop");
+                            _execCommand.Exec("apachectl start");
                             AnsiConsole.MarkupLine("Restarting apache...[green1]Success[/]");
                         }
                     }
 
                     ctx.Status("Checking if additional packages are defined in the config file...");
 
-                    if (PhpConfig.Packages.Count > 0) {
+                    if (_phpConfig.Packages.Count > 0) {
                         // Read currently installed packages
-                        var installedPackages = ExecCommand.Exec("apt list --installed");
+                        var installedPackages = _execCommand.Exec("apt list --installed");
 
                         var packagesList = installedPackages.Split("\n");
                         var packagesCleaned = new List<string>();
@@ -137,31 +132,27 @@ namespace WebDev.Tool.Helper.Php
                             packagesCleaned.Add(tmp[0].Trim());
                         }
 
-                        var packagesToCheck = PhpConfig.Packages;
+                        var packagesToCheck = _phpConfig.Packages;
 
                         // Check if packages from the config file are not already installed
                         var packagesToInstall = packagesToCheck.Where(p => !packagesCleaned.Contains(p.Replace("VERSION", newVersion).Replace("php-", "php" + newVersion + "-"))).ToArray();
 
                         if (packagesToInstall.Length > 0) {
-                            var updateRes = ExecCommand.Exec("sudo apt-get update");
+                            var updateRes = _execCommand.Exec("sudo apt-get update");
                             AnsiConsole.MarkupLine("Updating package manager list...[green1]Done[/]");
 
-                            if (isDebug) {
-                                AnsiConsole.WriteLine(updateRes);
-                            }
+                            _debugOutputHelper.WriteInfoOutput("Update result: " + updateRes, this);
 
                             string packages = string.Join(" ", packagesToInstall).Replace("VERSION", newVersion).Replace("php-", "php" + newVersion + "-");
 
-                            var installRes = ExecCommand.Exec("sudo apt-get install -y " + packages);
+                            var installRes = _execCommand.Exec("sudo apt-get install -y " + packages);
                             AnsiConsole.MarkupLine("Installing packages...[green1]Done[/]");
                             
-                            if (isDebug) {
-                                AnsiConsole.WriteLine(installRes);
-                            }
+                            _debugOutputHelper.WriteInfoOutput("Install result: " + installRes, this);
 
                             // Restart webserver so newly installed packages are available
-                            ExecCommand.Exec("apachectl stop");
-                            ExecCommand.Exec("apachectl start");
+                            _execCommand.Exec("apachectl stop");
+                            _execCommand.Exec("apachectl start");
                             AnsiConsole.MarkupLine("Restarting apache...[green1]Success[/]");
                         }
                     } else {
@@ -176,7 +167,7 @@ namespace WebDev.Tool.Helper.Php
                     }
                     
                     try {
-                        PhpConfig.PhpVersion = newVersion;
+                        _phpConfig.PhpVersion = newVersion;
 
                         AnsiConsole.MarkupLine("Saving the new active version so it can be restored...[green1]Done[/]");
                     } catch {

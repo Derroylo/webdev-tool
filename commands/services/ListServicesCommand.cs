@@ -4,25 +4,28 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Helper.Docker;
 using WebDev.Tool.Helper.Internal.Config.Sections;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Services
 {
-    internal class ListServicesCommand : Command<ListServicesCommand.Settings>
+    internal class ListServicesCommand(IDebugOutputHelper _debugOutputHelper, IDockerComposeHelper _dockerComposeHelper, ServicesConfig _servicesConfig) : Command<ListServicesCommand.Settings>
     {
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
             
         }
 
         public override int Execute(CommandContext context, Settings settings)
         {
-            if (!File.Exists(DockerComposeHelper.GetFile())) {
-                AnsiConsole.MarkupLine($"[red]{DockerComposeHelper.GetFile()} not found[/]");
+            _debugOutputHelper.WriteInfoOutput("Executing ListServicesCommand", this);
+            
+            if (!File.Exists(_dockerComposeHelper.GetFile())) {
+                AnsiConsole.MarkupLine($"[red]{_dockerComposeHelper.GetFile()} not found[/]");
 
                 return 0;
             }
 
-            var services = DockerComposeHelper.GetServices(DockerComposeHelper.GetFile());
+            var services = _dockerComposeHelper.GetServices(_dockerComposeHelper.GetFile());
 
             var servicesTable = new Table();
 
@@ -41,8 +44,8 @@ namespace WebDev.Tool.Commands.Services
                 var serviceName = item.Value.ContainsKey("name") ? item.Value["name"] : item.Key;
                 var serviceDescription = item.Value.ContainsKey("description") ? item.Value["description"] : "-";
 
-                bool isActive = ServicesConfig.Services.ContainsKey(item.Key) && ServicesConfig.Services[item.Key].Active;
-                bool isRunning = DockerComposeHelper.IsServiceStarted(serviceAlias);
+                bool isActive = _servicesConfig.Services.ContainsKey(item.Key) && _servicesConfig.Services[item.Key].Active;
+                bool isRunning = _dockerComposeHelper.IsServiceStarted(serviceAlias);
 
                 servicesTable.AddRow(serviceName, serviceDescription, isRunning ? "[green1]Running[/]" : "[red]Not started[/]", isActive ? "[green1]Active[/]" : "[red]Inactive[/]");
             }

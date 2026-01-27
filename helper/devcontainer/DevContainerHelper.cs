@@ -7,11 +7,11 @@ using System.Text.RegularExpressions;
 using Spectre.Console;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 
-namespace WebDev.Tool.Helper.devcontainer;
+namespace WebDev.Tool.Helper.DevContainer;
 
-public class DevContainerHelper
+public class DevContainerHelper(ExecCommand _execCommand) : IDevContainerHelper
 {
-    public static JsonDocument ReadDevContainerConfig(string workspacePath = null)
+    public JsonDocument ReadDevContainerConfig(string workspacePath = null)
     {
         // determine path
         var baseDir = workspacePath ?? Directory.GetCurrentDirectory();
@@ -24,14 +24,14 @@ public class DevContainerHelper
         return JsonDocument.Parse(cleaned);
     }
     
-    public static string GetDevContainerId()
+    public string GetDevContainerId()
     {
-        var output = ExecCommand.Exec("docker ps --filter \"name=devcontainer-app\" --format \"{{.ID}}\"");
+        var output = _execCommand.Exec("docker ps --filter \"name=devcontainer-app\" --format \"{{.ID}}\"");
         
         return string.IsNullOrEmpty(output) ? null : output.Trim();
     }
     
-    public static bool IsDevContainerCliInstalled()
+    public bool IsDevContainerCliInstalled()
     {
         // Check if the devcontainer CLI is installed
         var process = new Process
@@ -54,7 +54,7 @@ public class DevContainerHelper
         return !string.IsNullOrWhiteSpace(output);
     }
     
-    public static bool IsNpmInstalled()
+    public bool IsNpmInstalled()
     {
         // Check if npm is installed
         var process = new Process
@@ -77,7 +77,7 @@ public class DevContainerHelper
         return !string.IsNullOrWhiteSpace(output);
     }
     
-    public static bool InstallDevContainerCli(bool useSudo = false)
+    public bool InstallDevContainerCli(bool useSudo = false)
     {
         // Install the devcontainer cli via npm
         var process = new Process
@@ -99,7 +99,7 @@ public class DevContainerHelper
         return process.ExitCode == 0;
     }
     
-    public static void ApplyTemplate(string workspacePath, string templateId, string templateArgs = null, string features = null)
+    public void ApplyTemplate(string workspacePath, string templateId, string templateArgs = null, string features = null)
     {
         var cmd = "devcontainer templates apply";
         
@@ -116,10 +116,10 @@ public class DevContainerHelper
             args += " -f '" + features + "'";
         }
 
-        ExecCommand.ExecWithDirectOutput(cmd + args);
+        _execCommand.ExecWithDirectOutput(cmd + args);
     }
     
-    public static void UpdateNameAndDescription(string workspacePath, string name)
+    public void UpdateNameAndDescription(string workspacePath, string name)
     {
         var filePath = Path.Combine(workspacePath, ".devcontainer", "devcontainer.json");
 

@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace WebDev.Tool.Classes.Configuration
 {
-    internal class ConfigConfiguration
+    public class ConfigConfiguration
     {
         [DefaultValue(false)]
         public bool AllowPreReleases { get; set; } = false;

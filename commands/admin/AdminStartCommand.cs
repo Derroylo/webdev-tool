@@ -3,12 +3,13 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Helper.Admin;
 using System.ComponentModel;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Admin
 {
-    internal class AdminStartCommand : Command<AdminStartCommand.Settings>
+    internal class AdminStartCommand(IDebugOutputHelper _debugOutputHelper, IAdminHelper _adminHelper) : Command<AdminStartCommand.Settings>
     {
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
             [CommandOption("--port")]
             [Description("The port to use for the admin interface")]
@@ -18,7 +19,9 @@ namespace WebDev.Tool.Commands.Admin
 
         public override int Execute(CommandContext context, Settings settings)
         {
-            AdminHelper.StartAdmin(settings.Port);
+            _debugOutputHelper.WriteInfoOutput("Executing AdminStartCommand", this);
+            
+            _adminHelper.StartAdmin(settings.Port);
 
             return 0;
         }

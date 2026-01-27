@@ -3,9 +3,9 @@ using WebDev.Tool.Classes.Configuration;
 
 namespace WebDev.Tool.Helper.Internal.Config.Sections
 {
-    internal class ServicesConfig: ConfigHelper
+    public class ServicesConfig(IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper): ConfigHelper(_pathHelper, _environmentHelper)
     {
-        public static Dictionary<string, ServiceEntryConfiguration> Services
+        public Dictionary<string, ServiceEntryConfiguration> Services
         {
             get => appConfig.Services;
 

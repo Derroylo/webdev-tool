@@ -2,22 +2,21 @@ using System.ComponentModel;
 using WebDev.Tool.Helper;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.NodeJS
 {
-    internal class NodeJSRestoreCommand : Command<NodeJSRestoreCommand.Settings>
+    internal class NodeJSRestoreCommand(IDebugOutputHelper _debugOutputHelper, IRestoreHelper _restoreHelper) : Command<NodeJSRestoreCommand.Settings>
     {
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
-            [CommandOption("-d|--debug")]
-            [Description("Outputs debug information")]
-            [DefaultValue(false)]
-            public bool Debug { get; set; }
         }
 
         public override int Execute(CommandContext context, Settings settings)
         {
-            RestoreHelper.RestoreNodeJsVersion(settings.Debug);
+            _debugOutputHelper.WriteInfoOutput("Executing NodeJSRestoreCommand", this);
+            
+            _restoreHelper.RestoreNodeJsVersion();
             
             return 0;
         }

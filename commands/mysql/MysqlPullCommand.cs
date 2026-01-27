@@ -6,23 +6,22 @@ using System;
 using System.Linq;
 using WebDev.Tool.Helper.Docker;
 using System.IO;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Mysql
 {
-    internal class MysqlPullCommand : Command<MysqlPullCommand.Settings>
+    internal class MysqlPullCommand(IDebugOutputHelper _debugOutputHelper, IDockerComposeHelper _dockerComposeHelper, IDockerHelper _dockerHelper, ExecCommand _execCommand) : Command<MysqlPullCommand.Settings>
     {
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
-            [CommandOption("-d|--debug")]
-            [Description("Outputs debug information")]
-            [DefaultValue(false)]
-            public bool Debug { get; set; }
         }
 
         public override int Execute(CommandContext context, Settings settings)
         {
+            _debugOutputHelper.WriteInfoOutput("Executing MysqlPullCommand", this);
+            
             // Check if mysql service exists in docker-compose
-            var services = DockerComposeHelper.GetServices(DockerComposeHelper.GetFile());
+            var services = _dockerComposeHelper.GetServices(_dockerComposeHelper.GetFile());
             if (!services.ContainsKey("mysql")) {
                 AnsiConsole.MarkupLine("[red]No MySQL service found in docker-compose.yml[/]");
                 return 1;
@@ -45,19 +44,19 @@ namespace WebDev.Tool.Commands.Mysql
                 return 0;
             }
 
-            var composeFile = DockerComposeHelper.GetFile();
+            var composeFile = _dockerComposeHelper.GetFile();
             
             AnsiConsole.MarkupLine("Stopping MySQL container...");
-            ExecCommand.ExecWithDirectOutput("docker-compose -f " + composeFile + " stop mysql", settings.Debug);
+            _execCommand.ExecWithDirectOutput("docker-compose -f " + composeFile + " stop mysql");
 
             AnsiConsole.MarkupLine("Removing MySQL container...");
-            ExecCommand.ExecWithDirectOutput("docker-compose -f " + composeFile + " rm -f mysql", settings.Debug);
+            _execCommand.ExecWithDirectOutput("docker-compose -f " + composeFile + " rm -f mysql");
 
             AnsiConsole.MarkupLine("Pulling latest MySQL image...");
-            ExecCommand.ExecWithDirectOutput("docker-compose -f " + composeFile + " pull mysql", settings.Debug);
+            _execCommand.ExecWithDirectOutput("docker-compose -f " + composeFile + " pull mysql");
 
             AnsiConsole.MarkupLine("Starting MySQL container...");
-            ExecCommand.ExecWithDirectOutput("docker-compose -f " + composeFile + " -p " + DockerHelper.GetProjectName() + " up -d mysql", settings.Debug);
+            _execCommand.ExecWithDirectOutput("docker-compose -f " + composeFile + " -p " + _dockerHelper.GetProjectName() + " up -d mysql");
 
             AnsiConsole.MarkupLine("[green]MySQL container has been updated successfully![/]");
 

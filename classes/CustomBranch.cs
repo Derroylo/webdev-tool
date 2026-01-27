@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace WebDev.Tool.Classes
 {
-    internal class CustomBranch
+    public class CustomBranch
     {
         public string Name { get; } = string.Empty;
 

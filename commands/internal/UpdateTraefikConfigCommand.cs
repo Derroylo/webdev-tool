@@ -1,23 +1,24 @@
-using System.ComponentModel;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using WebDev.Tool.Helper.Proxy;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Info;
 
-internal class UpdateTraefikConfigCommand: Command<UpdateTraefikConfigCommand.Settings>
+internal class UpdateTraefikConfigCommand(
+    ITraefikHelper _traefikHelper,
+    IDebugOutputHelper _debugOutputHelper
+): Command<UpdateTraefikConfigCommand.Settings>
 {
-    public class Settings : CommandSettings
+    public class Settings : LogCommandSettings
     {
-        [CommandOption("--debug")]
-        [Description("Outputs debug information")]
-        [DefaultValue(false)]
-        public bool Debug { get; set; }
     }
 
     public override int Execute(CommandContext context, Settings settings)
     {
-        if (!TraefikHelper.CreateTraefikConfig(settings.Debug))
+        _debugOutputHelper.WriteInfoOutput("Executing UpdateTraefikConfigCommand", this);
+        
+        if (!_traefikHelper.CreateTraefikConfig())
         {
             AnsiConsole.MarkupLine("[red]Failed to update the traefik config file[/]");
             return 1;

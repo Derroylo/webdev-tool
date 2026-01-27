@@ -6,9 +6,9 @@ using Spectre.Console;
 
 namespace WebDev.Tool.Helper.Php
 {
-    internal class PhpDebugHelper
+    public class PhpDebugHelper(ExecCommand _execCommand) : IPhpDebugHelper
     {
-        public static Dictionary<string, string> GetCurrentSettings()
+        public Dictionary<string, string> GetCurrentSettings()
         {
             Dictionary<string, string> currentSettings = new() {{"web", ""}, {"cli", ""}};
 
@@ -17,7 +17,7 @@ namespace WebDev.Tool.Helper.Php
                 {
                     ctx.Status("Checking install status for CLI");
 
-                    var result = ExecCommand.Exec("php -r 'xdebug_info();'");
+                    var result = _execCommand.Exec("php -r 'xdebug_info();'");
                     
                     if (result.Contains("Call to undefined function xdebug_info()")) {
                         currentSettings["cli"] = "Not installed/inactive";

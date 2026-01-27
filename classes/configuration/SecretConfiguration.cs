@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace WebDev.Tool.Classes.Configuration;
 
-internal class SecretConfiguration
+public class SecretConfiguration
 {
     public SecretSourceConfiguration Source { get; set; } = new();
     

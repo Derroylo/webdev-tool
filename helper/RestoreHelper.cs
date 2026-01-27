@@ -5,13 +5,13 @@ using Spectre.Console;
 
 namespace WebDev.Tool.Helper
 {
-    internal class RestoreHelper
+    public class RestoreHelper(IPhpHelper _phpHelper, IPhpIniHelper _phpIniHelper, INodeJsVersionHelper _nodeJsVersionHelper, PhpConfig _phpConfig, NodeJsConfig _nodeJsConfig) : IRestoreHelper
     {
-        public static void RestorePhpVersion(bool debug = false)
+        public void RestorePhpVersion()
         {
             AnsiConsole.Write("Checking if php version has been set via config....");
 
-            if (PhpConfig.PhpVersion == string.Empty) {
+            if (_phpConfig.PhpVersion == string.Empty) {
                 AnsiConsole.MarkupLine("[cyan3]Not found[/]");
 
                 return;
@@ -19,14 +19,14 @@ namespace WebDev.Tool.Helper
 
             AnsiConsole.MarkupLine("[green1]Found[/]");
 
-            PhpHelper.SetNewPhpVersion(PhpConfig.PhpVersion, debug);
+            _phpHelper.SetNewPhpVersion(_phpConfig.PhpVersion);
         }
 
-        public static void RestorePhpIni(bool debug = false)
+        public void RestorePhpIni()
         {
             AnsiConsole.Write("Checking if php settings has been set via config....");
 
-            if (PhpConfig.Config.Count == 0 && PhpConfig.ConfigCli.Count == 0 && PhpConfig.ConfigWeb.Count == 0) {
+            if (_phpConfig.Config.Count == 0 && _phpConfig.ConfigCli.Count == 0 && _phpConfig.ConfigWeb.Count == 0) {
                 AnsiConsole.MarkupLine("[cyan3]Not found[/]");
 
                 return;
@@ -34,14 +34,14 @@ namespace WebDev.Tool.Helper
 
             AnsiConsole.MarkupLine("[green1]Found[/]");
 
-            PhpIniHelper.UpdatePhpIniFiles(debug);
+            _phpIniHelper.UpdatePhpIniFiles();
         }
 
-        public static void RestoreNodeJsVersion(bool debug = false)
+        public void RestoreNodeJsVersion()
         {
             AnsiConsole.Write("Checking if NodeJS version has been set via config....");
 
-            if (NodeJsConfig.NodeJsVersion == string.Empty) {
+            if (_nodeJsConfig.NodeJsVersion == string.Empty) {
                 AnsiConsole.MarkupLine("[cyan3]Not found[/]");
 
                 return;
@@ -49,10 +49,10 @@ namespace WebDev.Tool.Helper
 
             AnsiConsole.MarkupLine("[green1]Found[/]");
 
-            NodeJsVersionHelper.SetNewNodeJSVersion(NodeJsConfig.NodeJsVersion, debug);
+            _nodeJsVersionHelper.SetNewNodeJSVersion(_nodeJsConfig.NodeJsVersion);
         }
 
-        public static void RestoreEnvVariables(bool debug = false)
+        public void RestoreEnvVariables()
         {
             // Check if there has been something set via config file
             AnsiConsole.Write("Checking if Env variables has been set via config....");

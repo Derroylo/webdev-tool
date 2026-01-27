@@ -2,28 +2,33 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using WebDev.Tool.Helper;
 using YamlDotNet.Serialization;
 
 namespace WebDev.Tool.Helper.Internal
 {
-    internal static class TranslationHelper
+    public class TranslationHelper : ITranslationHelper
     {
-        private static Dictionary<string, string> _translations = new();
-        private static string _currentLanguage = "en";
-        private static bool _loaded = false;
+        private readonly IAppSettingsHelper _appSettingsHelper;
+        private readonly IPathHelper _pathHelper;
+        private Dictionary<string, string> _translations = new();
+        private string _currentLanguage = "en";
+        private bool _loaded = false;
 
-        static TranslationHelper()
+        public TranslationHelper(IAppSettingsHelper appSettingsHelper, IPathHelper pathHelper)
         {
+            _appSettingsHelper = appSettingsHelper;
+            _pathHelper = pathHelper;
             LoadTranslations();
         }
 
-        public static void LoadTranslations()
+        public void LoadTranslations()
         {
             _translations.Clear();
             _loaded = false;
 
             // Try to get language from config or environment
-            _currentLanguage = AppSettingsHelper.AppSettings.Language ?? "en";
+            _currentLanguage = _appSettingsHelper.AppSettings.Language ?? "en";
 
             // Look in multiple locations:
             // 1. App directory (for bundled translations)
@@ -35,7 +40,7 @@ namespace WebDev.Tool.Helper.Internal
             var userTranslationsDir = Path.Combine(userHome, ".webdev", "translations");
             
             // 3. Workspace directory (for project-specific translations)
-            var workspaceTranslationsDir = Path.Combine(PathHelper.GetWorkspacePath(false), ".webdev", "translations");
+            var workspaceTranslationsDir = Path.Combine(_pathHelper.GetWorkspacePath(false), ".webdev", "translations");
 
             // Load translations in order: workspace > user > app (workspace overrides user, user overrides app)
             LoadFromDirectory(appTranslationsDir);
@@ -45,7 +50,7 @@ namespace WebDev.Tool.Helper.Internal
             _loaded = true;
         }
 
-        private static void LoadFromDirectory(string directory)
+        private void LoadFromDirectory(string directory)
         {
             if (!Directory.Exists(directory))
                 return;
@@ -68,7 +73,7 @@ namespace WebDev.Tool.Helper.Internal
             }
         }
 
-        private static void LoadTranslationFile(string filePath)
+        private void LoadTranslationFile(string filePath)
         {
             try
             {
@@ -87,7 +92,7 @@ namespace WebDev.Tool.Helper.Internal
             }
         }
 
-        private static void FlattenYamlObject(Dictionary<object, object> yamlObject, Dictionary<string, string> target, string prefix = "")
+        private void FlattenYamlObject(Dictionary<object, object> yamlObject, Dictionary<string, string> target, string prefix = "")
         {
             foreach (var kvp in yamlObject)
             {
@@ -112,7 +117,7 @@ namespace WebDev.Tool.Helper.Internal
             }
         }
 
-        public static string GetString(string key, params object[] args)
+        public string GetString(string key, params object[] args)
         {
             if (!_loaded)
                 LoadTranslations();
@@ -128,12 +133,12 @@ namespace WebDev.Tool.Helper.Internal
             return key;
         }
 
-        public static void SetLanguage(string languageCode)
+        public void SetLanguage(string languageCode)
         {
             _currentLanguage = languageCode.ToLower();
             LoadTranslations();
         }
 
-        public static string CurrentLanguage => _currentLanguage;
+        public string CurrentLanguage => _currentLanguage;
     }
 }

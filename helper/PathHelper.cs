@@ -3,16 +3,16 @@ using System.IO;
 
 namespace WebDev.Tool.Helper;
 
-internal class PathHelper
+public class PathHelper : IPathHelper
 {
-    public static bool IsMainWorkspace = true;
+    public bool IsMainWorkspace { get; set; } = true;
     
-    public static string GetWorkspacePath(bool insideContainer = true)
+    public string GetWorkspacePath(bool insideContainer = true)
     {
         return insideContainer ? GetWorkspacePathInsideContainer() : GetWorkspacePathHost();
     }
     
-    private static string GetWorkspacePathInsideContainer()
+    private string GetWorkspacePathInsideContainer()
     {
         var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
         
@@ -29,7 +29,7 @@ internal class PathHelper
         return workspacePath;
     }
     
-    private static string GetWorkspacePathHost()
+    private string GetWorkspacePathHost()
     {
         return Directory.GetCurrentDirectory();
     }

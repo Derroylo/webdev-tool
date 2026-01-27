@@ -6,11 +6,11 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace WebDev.Tool.Helper.Docker
 {
-    internal class DockerComposeHelper
+    public class DockerComposeHelper(GeneralConfig _generalConfig, ExecCommand _execCommand) : IDockerComposeHelper
     {
-        public static string GetFile()
+        public string GetFile()
         {
-            var filename = GeneralConfig.ComposeFileName;
+            var filename = _generalConfig.ComposeFileName;
 
             var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
 
@@ -21,9 +21,9 @@ namespace WebDev.Tool.Helper.Docker
             return workspacePath + "/.devcontainer/" + filename;
         }
         
-        public static string GetProxyFile()
+        public string GetProxyFile()
         {
-            var filename = GeneralConfig.ComposeFileName.Replace(".yml", ".proxy.yml");
+            var filename = _generalConfig.ComposeFileName.Replace(".yml", ".proxy.yml");
 
             var workspacePath = Environment.GetEnvironmentVariable("WEBDEV_WORKSPACE_FOLDER");
 
@@ -34,7 +34,7 @@ namespace WebDev.Tool.Helper.Docker
             return workspacePath + "/.devcontainer/" + filename;
         }
 
-        public static Dictionary<string, Dictionary<string, string>> GetServices(string filename)
+        public Dictionary<string, Dictionary<string, string>> GetServices(string filename)
         {
             var services = new Dictionary<string, Dictionary<string, string>>();
 
@@ -97,9 +97,9 @@ namespace WebDev.Tool.Helper.Docker
             return services;
         }
 
-        public static bool IsServiceStarted(string name)
+        public bool IsServiceStarted(string name)
         {
-            var result = ExecCommand.Exec("docker ps -q -f status=running -f name=^/" + name);
+            var result = _execCommand.Exec("docker ps -q -f status=running -f name=^/" + name);
 
             if (result.Trim().Length == 0) {
                 return false;

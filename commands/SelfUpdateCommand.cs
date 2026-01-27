@@ -4,19 +4,21 @@ using Spectre.Console.Cli;
 
 namespace WebDev.Tool.Commands
 {
-    class SelfUpdateCommand : Command<SelfUpdateCommand.Settings>
+    class SelfUpdateCommand(IDebugOutputHelper _debugOutputHelper, IUpdateHelper _updateHelper) : Command<SelfUpdateCommand.Settings>
     {
-        public class Settings : CommandSettings
+        public class Settings : LogCommandSettings
         {
             
         }
 
         public override int Execute(CommandContext context, Settings settings)
         {
+            _debugOutputHelper.WriteInfoOutput("Executing SelfUpdateCommand", this);
+            
             // Force an update check
-            var tmp = UpdateHelper.GetLatestVersion(true);
+            var tmp = _updateHelper.GetLatestVersion(true);
 
-            if (!UpdateHelper.IsUpdateAvailable()) {
+            if (!_updateHelper.IsUpdateAvailable()) {
                 AnsiConsole.MarkupLine("[red]You already have the latest version[/].");
 
                 return 0;
@@ -24,7 +26,7 @@ namespace WebDev.Tool.Commands
 
             AnsiConsole.WriteLine("Downloading the new release...");
 
-            var res = UpdateHelper.UpdateToLatestRelease();
+            var res = _updateHelper.UpdateToLatestRelease();
 
             if (!res.Result) {
                 AnsiConsole.MarkupLine("[red]Failed to update the application.[/]");

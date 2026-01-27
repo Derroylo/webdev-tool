@@ -6,23 +6,23 @@ using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Helper.Internal.Config
 {
-    internal class ConfigHelper
+    public class ConfigHelper(IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper): IConfigHelper
     {
         protected static Configuration appConfig;
 
-        private static bool configFileExists = false;
+        private bool configFileExists = false;
 
-        public static bool ConfigFileExists => configFileExists;
+        public bool ConfigFileExists => configFileExists;
 
-        public static bool ConfigUpdated { get; set; }
+        public bool ConfigUpdated { get; set; }
 
-        private static bool configFileValid = false;
+        private bool configFileValid = false;
 
-        public static bool IsConfigFileValid => configFileValid;
+        public bool IsConfigFileValid => configFileValid;
 
-        public static bool IsConfigFileLoaded => appConfig != null && configFileValid && configFileExists;
+        public bool IsConfigFileLoaded => appConfig != null && configFileValid && configFileExists;
 
-        public static void ReadConfigFile(bool rethrowParseException = false)
+        public void ReadConfigFile(bool rethrowParseException = false)
         {
             // Reset everything
             configFileExists = false;
@@ -94,7 +94,7 @@ namespace WebDev.Tool.Helper.Internal.Config
             }
         }
 
-        public static void SaveConfigFile()
+        public void SaveConfigFile()
         {
             var configFileWithPath = GetConfigFileWithPath();
 
@@ -105,9 +105,9 @@ namespace WebDev.Tool.Helper.Internal.Config
             }
         }
         
-        private static string GetConfigFileWithPath()
+        private string GetConfigFileWithPath()
         {
-            return PathHelper.GetWorkspacePath(EnvironmentHelper.IsRunningInDevContainer()) + "/.devcontainer/webdev.yml";
+            return _pathHelper.GetWorkspacePath(_environmentHelper.IsRunningInDevContainer()) + "/.devcontainer/webdev.yml";
         }
     }
 }

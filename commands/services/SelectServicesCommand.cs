@@ -7,24 +7,31 @@ using Spectre.Console.Cli;
 using System.Linq;
 using WebDev.Tool.Classes.Configuration;
 using WebDev.Tool.Helper.Internal.Config;
+using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Commands.Services
 {
-    internal class SelectServicesCommand : Command
+    internal class SelectServicesCommand(IDebugOutputHelper _debugOutputHelper, IDockerComposeHelper _dockerComposeHelper, ServicesConfig _servicesConfig) : Command<SelectServicesCommand.Settings>
     {
-        public override int Execute(CommandContext context)
+        public class Settings : LogCommandSettings
         {
-            if (!File.Exists(DockerComposeHelper.GetFile())) {
-                AnsiConsole.MarkupLine($"[red]{DockerComposeHelper.GetFile()} not found[/]");
+        }
+
+        public override int Execute(CommandContext context, Settings settings)
+        {
+            _debugOutputHelper.WriteInfoOutput("Executing SelectServicesCommand", this);
+            
+            if (!File.Exists(_dockerComposeHelper.GetFile())) {
+                AnsiConsole.MarkupLine($"[red]{_dockerComposeHelper.GetFile()} not found[/]");
 
                 return 0;
             }
 
-            var services = DockerComposeHelper.GetServices(DockerComposeHelper.GetFile());
+            var services = _dockerComposeHelper.GetServices(_dockerComposeHelper.GetFile());
             Dictionary<string, List<string>> serviceCategories = new() {{"unknown", new List<string>()}};
         
             foreach (KeyValuePair<string, Dictionary<string, string>> item in services) {      
-                var serviceEntry = ServicesConfig.Services.FirstOrDefault(s => s.Key == item.Key);
+                var serviceEntry = _servicesConfig.Services.FirstOrDefault(s => s.Key == item.Key);
 
                 if (serviceEntry.Value == null) {
                     continue;
@@ -64,8 +71,8 @@ namespace WebDev.Tool.Commands.Services
                 multiSelectPrompt.AddChoices(serviceCategories["unknown"].ToArray());
             }
 
-            if (ServicesConfig.Services != null && ServicesConfig.Services.Count > 0 && ServicesConfig.Services.Any(s => s.Value.Active)) {
-                foreach (string item in ServicesConfig.Services.Where(s => s.Value.Active).Select(s => s.Key)) {
+            if (_servicesConfig.Services != null && _servicesConfig.Services.Count > 0 && _servicesConfig.Services.Any(s => s.Value.Active)) {
+                foreach (string item in _servicesConfig.Services.Where(s => s.Value.Active).Select(s => s.Key)) {
                     multiSelectPrompt.Select(item);
                 }
             }
@@ -73,7 +80,7 @@ namespace WebDev.Tool.Commands.Services
             var selectedServices = AnsiConsole.Prompt(multiSelectPrompt);
 
             foreach (KeyValuePair<string, Dictionary<string, string>> item in services) {
-                var serviceEntry = ServicesConfig.Services.FirstOrDefault(s => s.Key == item.Key);
+                var serviceEntry = _servicesConfig.Services.FirstOrDefault(s => s.Key == item.Key);
 
                 if (serviceEntry.Value == null) {
                     continue;
@@ -82,7 +89,7 @@ namespace WebDev.Tool.Commands.Services
                 serviceEntry.Value.Active = selectedServices.Contains(item.Key);
             }
 
-            ConfigHelper.ConfigUpdated = true;
+            _servicesConfig.ConfigUpdated = true;
 
             AnsiConsole.WriteLine("The following services have been marked as active and will start with the workspace");
 

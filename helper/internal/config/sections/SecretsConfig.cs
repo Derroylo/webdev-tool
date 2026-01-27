@@ -3,9 +3,9 @@ using WebDev.Tool.Classes.Configuration;
 
 namespace WebDev.Tool.Helper.Internal.Config.Sections;
 
-internal class SecretsConfig: ConfigHelper
+public class SecretsConfig(IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper): ConfigHelper(_pathHelper, _environmentHelper)
 {
-    public static Dictionary<string, SecretConfiguration> Secrets
+    public Dictionary<string, SecretConfiguration> Secrets
     {
         get => appConfig.Secrets;
 

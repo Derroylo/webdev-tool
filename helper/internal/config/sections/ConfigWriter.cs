@@ -5,7 +5,7 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace WebDev.Tool.Helper.Internal.Config.Sections;
 
-internal class ConfigWriter
+public class ConfigWriter
 {
     public static void WriteConfigFile(string configFile, Configuration configuration)
     {

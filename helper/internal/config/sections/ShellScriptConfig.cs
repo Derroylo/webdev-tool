@@ -2,8 +2,8 @@ using System.Collections.Generic;
 
 namespace WebDev.Tool.Helper.Internal.Config.Sections
 {
-    internal class ShellScriptConfig: ConfigHelper
+    public class ShellScriptConfig(IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper): ConfigHelper(_pathHelper, _environmentHelper)
     {
-        public static List<string> AdditionalDirectories => appConfig.ShellScripts.AdditionalDirectories;
+        public List<string> AdditionalDirectories => appConfig.ShellScripts.AdditionalDirectories;
     }
 }

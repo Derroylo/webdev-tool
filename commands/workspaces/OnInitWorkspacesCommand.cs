@@ -4,58 +4,58 @@ using Spectre.Console.Cli;
 using WebDev.Tool.Helper.Docker;
 using WebDev.Tool.Helper.Proxy;
 using WebDev.Tool.Helper.Secrets;
-using WebDev.Tool.Helper.workspaces;
+using WebDev.Tool.Helper.Workspaces;
+using WebDev.Tool.Helper.Internal;
 
-namespace WebDev.Tool.Commands.workspaces;
+namespace WebDev.Tool.Commands.Workspaces;
 
-internal class OnInitWorkspacesCommand: Command<OnInitWorkspacesCommand.Settings>
+internal class OnInitWorkspacesCommand(
+    IDebugOutputHelper _debugOutputHelper,
+    ITraefikHelper _traefikHelper,
+    IDockerHelper _dockerHelper,
+    IWorkspaceHelper _workspaceHelper,
+    ISecretsLoader _secretsLoader
+): Command<OnInitWorkspacesCommand.Settings>
 {
-    public class Settings : CommandSettings
+    public class Settings : LogCommandSettings
     {
-        [CommandOption("--debug")]
-        [Description("Outputs debug information")]
-        [DefaultValue(false)]
-        public bool Debug { get; set; }
     }
     
     public override int Execute(CommandContext context, Settings settings)
     {
-        if (settings.Debug)
-        {
-            AnsiConsole.WriteLine("Executing OnInitWorkspacesCommand with debug mode enabled.");
-        }
+        _debugOutputHelper.WriteInfoOutput("Executing OnInitWorkspacesCommand", this);
         
-        if (!WorkspaceHelper.ValidateWorkspaces(settings.Debug))
+        if (!_workspaceHelper.ValidateWorkspaces())
         {
             return 1;
         }
        
-        if (!TraefikHelper.CreateTraefikConfig(settings.Debug))
+        if (!_traefikHelper.CreateTraefikConfig(settings.Debug))
         {
             return 1;
         }
         
         // Load secrets
-        if (!SecretsLoader.LoadEnvVarSecrets())
+        if (!_secretsLoader.LoadEnvVarSecrets())
         {
             return 1;
         }
 
-        if (!SecretsLoader.LoadFileSecrets())
+        if (!_secretsLoader.LoadFileSecrets())
         {
             return 1;
         }
 
         // Stop other devcontainers
-        var runningContainers = DockerHelper.GetRunningContainers("_devcontainer");
+        var runningContainers = _dockerHelper.GetRunningContainers("_devcontainer");
         if (runningContainers.Count > 0)
         {
             foreach (var container in runningContainers)
             {
-                DockerHelper.StopContainer(container);
+                _dockerHelper.StopContainer(container);
             }
         }
         
-        return !WorkspaceHelper.PrepareWorkspaces(settings.Debug) ? 1 : 0;
+        return !_workspaceHelper.PrepareWorkspaces() ? 1 : 0;
     }
 }
