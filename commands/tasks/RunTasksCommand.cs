@@ -121,23 +121,29 @@ internal class RunTasksCommand(
         if (settings.IsNotMain) return 1;
         
         var commands = new List<string>();
-            
+
         foreach (KeyValuePair<string, WorkspaceEntryConfiguration> workspace in _workspacesConfig.Workspaces)
         {
             if (workspace.Key == "main") continue;
-            
+
+            var workspaceCommands = new List<string>
+            {
+                "cd " + Path.Combine("./", _generalConfig.WorkspaceFolder, workspace.Value.Folder)
+            };
+
             if (sectionName == "init")
             {
-                // Make sure we process the secrets for each workspace
-                commands.Add("(cd " + Path.Combine("./", _generalConfig.WorkspaceFolder, workspace.Value.Folder) + " && " + Program.ApplicationName + " secrets load --no-header)");
+                // Make sure we process the secrets for each workspace (the argument --not-main is needed to avoid recursion in the webdev.sh script)
+                workspaceCommands.Add(Program.ApplicationName + " secrets load --no-header --debug --not-main");
             }
             
             // Run the tasks for the workspace
-            commands.Add("(cd " + Path.Combine("./", _generalConfig.WorkspaceFolder, workspace.Value.Folder) + " && " + Program.ApplicationName + " tasks " + sectionName + " --not-main --no-header)");
+            workspaceCommands.Add(Program.ApplicationName + " tasks " + sectionName + " --not-main --no-header --debug");
+
+            commands.Add(string.Join(" && ", workspaceCommands));
         }
             
         var applicationDir = AppDomain.CurrentDomain.BaseDirectory;
-            
         File.WriteAllLines(applicationDir + ".workspaces_tasks", commands);
 
         return 1;
