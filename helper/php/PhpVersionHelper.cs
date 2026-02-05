@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace WebDev.Tool.Helper.Php
 {
-    public partial class PhpVersionHelper(ExecCommand _execCommand)
+    public partial class PhpVersionHelper(ExecCommand _execCommand) : IPhpVersionHelper
     {
         public List<string> GetAvailablePhpVersions()
         {

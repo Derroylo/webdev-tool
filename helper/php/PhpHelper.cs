@@ -7,7 +7,12 @@ using WebDev.Tool.Helper.Internal;
 
 namespace WebDev.Tool.Helper.Php
 {
-    public class PhpHelper(IPhpVersionHelper _phpVersionHelper, IDebugOutputHelper _debugOutputHelper, PhpConfig _phpConfig, ExecCommand _execCommand) : IPhpHelper
+    public class PhpHelper(
+        IPhpVersionHelper _phpVersionHelper,
+        IDebugOutputHelper _debugOutputHelper,
+        PhpConfig _phpConfig,
+        ExecCommand _execCommand
+    ) : IPhpHelper
     {  
         public void SetNewPhpVersion(string newVersion)
         {

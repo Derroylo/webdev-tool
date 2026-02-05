@@ -5,7 +5,7 @@ namespace WebDev.Tool.Helper;
 
 public class PathHelper : IPathHelper
 {
-    public bool IsMainWorkspace { get; set; } = true;
+    public static bool IsMainWorkspace { get; set; } = true;
     
     public string GetWorkspacePath(bool insideContainer = true)
     {

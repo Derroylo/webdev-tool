@@ -5,7 +5,13 @@ using Spectre.Console;
 
 namespace WebDev.Tool.Helper
 {
-    public class RestoreHelper(IPhpHelper _phpHelper, IPhpIniHelper _phpIniHelper, INodeJsVersionHelper _nodeJsVersionHelper, PhpConfig _phpConfig, NodeJsConfig _nodeJsConfig) : IRestoreHelper
+    public class RestoreHelper(
+        IPhpHelper _phpHelper,
+        IPhpIniHelper _phpIniHelper,
+        INodeJsVersionHelper _nodeJsVersionHelper,
+        PhpConfig _phpConfig,
+        NodeJsConfig _nodeJsConfig
+    ) : IRestoreHelper
     {
         public void RestorePhpVersion()
         {

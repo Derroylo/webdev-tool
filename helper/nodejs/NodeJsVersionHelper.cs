@@ -8,7 +8,11 @@ using Spectre.Console;
 
 namespace WebDev.Tool.Helper.NodeJs
 {
-    public partial class NodeJsVersionHelper(INodeJsPackageHelper _nodeJsPackageHelper, NodeJsConfig _nodeJsConfig, ExecCommand _execCommand)
+    public partial class NodeJsVersionHelper(
+        INodeJsPackageHelper _nodeJsPackageHelper,
+        NodeJsConfig _nodeJsConfig,
+        ExecCommand _execCommand
+    ) : INodeJsVersionHelper
     {  
         public string GetCurrentNodeJSVersionOutput()
         {

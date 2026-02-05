@@ -11,7 +11,15 @@ using WebDev.Tool.Helper.Internal.Config.Sections;
 
 namespace WebDev.Tool.Helper.Workspaces;
 
-public class WorkspaceHelper(WorkspacesConfig _workspacesConfig, GeneralConfig _generalConfig, IDebugOutputHelper _debugOutputHelper, IGitHelper _gitHelper, IApacheHelper _apacheHelper, IPathHelper _pathHelper, IEnvironmentHelper _environmentHelper) : IWorkspaceHelper
+public class WorkspaceHelper(
+    WorkspacesConfig _workspacesConfig,
+    GeneralConfig _generalConfig,
+    IDebugOutputHelper _debugOutputHelper,
+    IGitHelper _gitHelper,
+    IApacheHelper _apacheHelper,
+    IPathHelper _pathHelper,
+    IEnvironmentHelper _environmentHelper
+) : IWorkspaceHelper
 {
     public bool ValidateWorkspaces()
     {
@@ -171,7 +179,7 @@ public class WorkspaceHelper(WorkspacesConfig _workspacesConfig, GeneralConfig _
         {
             _debugOutputHelper.WriteInfoOutput("Writing workspaces to start to file: " + applicationDir + ".workspaces_start: " + string.Join(", ", workspaces), this);
             
-            File.WriteAllLines(applicationDir + ".workspaces_start", workspaces);            
+            File.WriteAllLines(applicationDir + ".workspaces_start", workspaces);
         }
         
         return true;

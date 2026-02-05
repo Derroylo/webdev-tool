@@ -5,7 +5,7 @@ using Spectre.Console;
 
 namespace WebDev.Tool.Helper.NodeJs
 {
-    public partial class NodeJsPackageHelper(ExecCommand _execCommand)
+    public partial class NodeJsPackageHelper(ExecCommand _execCommand) : INodeJsPackageHelper
     {  
         [GeneratedRegex(@"([a-z0-9\-]+)@([0-9.]+)")]
         private static partial Regex NodeJsPackageMatchRegex();
