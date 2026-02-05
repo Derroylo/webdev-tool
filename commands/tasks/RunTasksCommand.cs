@@ -134,11 +134,11 @@ internal class RunTasksCommand(
             if (sectionName == "init")
             {
                 // Make sure we process the secrets for each workspace (the argument --not-main is needed to avoid recursion in the webdev.sh script)
-                workspaceCommands.Add(Program.ApplicationName + " secrets load --no-header --debug --not-main");
+                workspaceCommands.Add(Program.ApplicationName + " secrets load --no-header --not-main");
             }
             
             // Run the tasks for the workspace
-            workspaceCommands.Add(Program.ApplicationName + " tasks " + sectionName + " --not-main --no-header --debug");
+            workspaceCommands.Add(Program.ApplicationName + " tasks " + sectionName + " --not-main --no-header");
 
             commands.Add(string.Join(" && ", workspaceCommands));
         }
