@@ -77,6 +77,7 @@ namespace WebDev.Tool
             var tasksConfig = serviceProvider.GetRequiredService<TasksConfig>();
             var testsConfig = serviceProvider.GetRequiredService<TestsConfig>();
             var configHelper = serviceProvider.GetRequiredService<IConfigHelper>();
+            
             var version = updateHelper.CurrentVersion;
 
             // Save the program args for later use
@@ -84,13 +85,16 @@ namespace WebDev.Tool
 
             if (args.Contains("--not-main") || args.Contains("-n"))
             {
-                pathHelper.IsMainWorkspace = false;
+                PathHelper.IsMainWorkspace = false;
             }
 
             if (args.Contains("--no-header"))
             {
                 environmentHelper.DisableProgramHeader();
             }
+
+            var debugOutputFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".debug_enabled");
+            bool debugModeEnabled = File.Exists(debugOutputFile) || args.Contains("--debug");
 
             // Set the application name
             // This is usually webdev, but when it is put into a prerelease folder, it is webdev-prerelease
@@ -100,7 +104,7 @@ namespace WebDev.Tool
             }
 
             // Output the program name, version and info if the config file could not be read
-            OutputProgramHeader(version, environmentHelper, appSettingsHelper, updateHelper, configHelper, args.Contains("--debug"));
+            OutputProgramHeader(version, environmentHelper, appSettingsHelper, updateHelper, configHelper, debugModeEnabled);
           
             // Load additional commands that are defined within shell scripts
             var additionalCommands = new Dictionary<string, CustomBranch>();
@@ -111,7 +115,7 @@ namespace WebDev.Tool
                 AnsiConsole.MarkupLine("[red]Unable to load the custom commands[/] - [orange3]Append '--debug' to show more details[/]");
 
                 // With he debug arg, output the exception and exit
-                if (args.Contains("--debug")) {
+                if (debugModeEnabled) {
                     AnsiConsole.WriteException(e);
 
                     return;
@@ -192,6 +196,10 @@ namespace WebDev.Tool
                 config.AddCommand<OnInitWorkspacesCommand>("workspaces-on-init").IsHidden();
                 config.AddCommand<PostStartWorkspacesCommand>("workspaces-post-start").IsHidden();
 
+                config.AddCommand<DebugCommand>("debug")
+                    .WithDescription("Debug command")
+                    .IsHidden();
+
                 // Add Tools branch
                 config.AddBranch("tools", branch => AddToolsCommandBranch(branch, additionalCommands));
 
@@ -247,7 +255,7 @@ namespace WebDev.Tool
                 } catch (Exception e) {
                     AnsiConsole.WriteLine("[red]Saving the config file failed[/] - [orange3]Append '--debug' to show more details[/]");
 
-                    if (args.Contains("--debug")) {
+                    if (debugModeEnabled) {
                         AnsiConsole.WriteException(e);
                     }
                 }

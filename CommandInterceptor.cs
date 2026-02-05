@@ -3,6 +3,7 @@ namespace WebDev.Tool;
 using Spectre.Console.Cli;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using WebDev.Tool.Helper.Internal;
 
@@ -10,11 +11,16 @@ public class CommandInterceptor(IDebugOutputHelper _debugOutputHelper, IEnvironm
 {
     public void Intercept(CommandContext context, CommandSettings settings)
     {
+        var debugOutputFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".debug_enabled");
+        bool debugModeEnabled = File.Exists(debugOutputFile);
+        
         // If the command has a log level setting, set the log level
-        if (settings is LogCommandSettings logSettings && logSettings.Debug)
+        if (debugModeEnabled || (settings is LogCommandSettings logSettings && logSettings.Debug))
         {
             _debugOutputHelper.EnableDebugOutput();
-        } else {
+        }
+        else 
+        {
             _debugOutputHelper.DisableDebugOutput();
         }
 
@@ -25,8 +31,8 @@ public class CommandInterceptor(IDebugOutputHelper _debugOutputHelper, IEnvironm
         _debugOutputHelper.WriteInfoOutput("Command tokens: " + string.Join(" ", commandTokens), this);
 
         if (commandTokens.Count == 2) {
+            // If the command can run in the current env, return (it is either allowed to run via property or not explicitly set)
             EnsureCommandCanRunInCurrentEnv(commandTokens[0] + ":" + context.Name);
-            EnsureBranchCanRunInCurrentEnv(commandTokens[0]);
         } else {
             EnsureCommandCanRunInCurrentEnv(context.Name);
         }
@@ -45,7 +51,7 @@ public class CommandInterceptor(IDebugOutputHelper _debugOutputHelper, IEnvironm
         return tokens;
     }
     
-    private void EnsureBranchCanRunInCurrentEnv(string name)
+    private bool BranchCanRunInCurrentEnv(string name)
     {
         var runOnlyInDevcontainer = CommandExtensions.IsRunOnlyInDevcontainer(name, false);
         var runOnlyOnHost = CommandExtensions.IsRunOnlyOnHost(name, false);
@@ -55,7 +61,7 @@ public class CommandInterceptor(IDebugOutputHelper _debugOutputHelper, IEnvironm
         if (IsAvailableInCurrentEnv(runOnlyInDevcontainer, runOnlyOnHost))
         {
             _debugOutputHelper.WriteInfoOutput("Branch can run in current env: " + name, this);
-            return;
+            return true;
         }
 
         var expectedEnv = _environmentHelper.IsRunningInDevContainer() ? "on the host" : "in the devcontainer";
