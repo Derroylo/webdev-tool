@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using WebDev.Tool.Helper.Internal.Config.Sections;
+using WebDev.Tool.Helper.Internal;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace WebDev.Tool.Helper.Docker
 {
-    public class DockerComposeHelper(GeneralConfig _generalConfig, ExecCommand _execCommand) : IDockerComposeHelper
+    public class DockerComposeHelper(GeneralConfig _generalConfig, ExecCommand _execCommand, IDebugOutputHelper _debugOutputHelper) : IDockerComposeHelper
     {
         public string GetFile()
         {
@@ -57,27 +58,7 @@ namespace WebDev.Tool.Helper.Docker
 
                 try
                 {
-                    if (((Dictionary<object, object>) dockerCompose["services"][serviceName]).ContainsKey("labels")) {
-                        if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.category")) {
-                            serviceInfos.Add("category", dockerCompose["services"][serviceName]["labels"]["com.webdev.category"].ToString());
-                        }
-                    
-                        if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.name")) {
-                            serviceInfos.Add("name", dockerCompose["services"][serviceName]["labels"]["com.webdev.name"].ToString());
-                        }
-                        
-                        if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.description")) {
-                            serviceInfos.Add("description", dockerCompose["services"][serviceName]["labels"]["com.webdev.description"].ToString());
-                        }
-                        
-                        if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.proxy.subdomain")) {
-                            serviceInfos.Add("proxy.subdomain", dockerCompose["services"][serviceName]["labels"]["com.webdev.proxy.subdomain"].ToString());
-                        }
-                        
-                        if (dockerCompose["services"][serviceName]["labels"].ContainsKey("com.webdev.proxy.port")) {
-                            serviceInfos.Add("proxy.port", dockerCompose["services"][serviceName]["labels"]["com.webdev.proxy.port"].ToString());
-                        }
-
+                    if (dockerCompose["services"][serviceName].ContainsKey("image")) {
                         serviceInfos.Add("image", dockerCompose["services"][serviceName]["image"].ToString());
                     }
 
@@ -86,9 +67,10 @@ namespace WebDev.Tool.Helper.Docker
                             serviceInfos.Add("url", dockerCompose["services"][serviceName]["environment"]["VIRTUAL_HOST"].ToString());
                         }
                     }
-                } catch (Exception)
+                } catch (Exception ex)
                 {
                     // Ignore if keys are not found
+                    _debugOutputHelper.WriteErrorOutput("Error getting service information", ex);
                 }
                 
                 services.Add(item.Key.ToString(), serviceInfos);
