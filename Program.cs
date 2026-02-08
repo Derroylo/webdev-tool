@@ -203,7 +203,7 @@ namespace WebDev.Tool
                 // Add Tools branch
                 config.AddBranch("tools", branch => AddToolsCommandBranch(branch, additionalCommands));
 
-                List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task", "tests", "admin" };
+                List<string> reservedBranches = new() { "default", "config", "php", "nodejs", "apache", "mysql", "services", "restore", "secrets", "tasks", "task", "tests", "admin", "project" };
 
                 // Add Tests branch
                 if (testsConfig.Tests.Count > 0)
