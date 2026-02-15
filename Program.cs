@@ -26,11 +26,11 @@ using WebDev.Tool.Commands.Workspaces;
 using WebDev.Tool.Helper;
 using WebDev.Tool.Helper.Internal.Config.Sections;
 using WebDev.Tool.Commands.Mysql;
-using WebDev.Tool.Commands.Admin;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using NetCore.AutoRegisterDi;
 using WebDev.Tool.Helper.Secrets;
+using WebDev.Tool.Commands.Admin;
 
 namespace WebDev.Tool
 {

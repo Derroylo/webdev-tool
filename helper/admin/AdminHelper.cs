@@ -1,115 +1,67 @@
 using System;
 using System.IO;
 using Spectre.Console;
+using WebDev.Tool.Helper.FrankenPHP;
 
 namespace WebDev.Tool.Helper.Admin;
 
-public class AdminHelper(ExecCommand _execCommand) : IAdminHelper
+public class AdminHelper(IFrankenPHPHelper _frankenPHPHelper, IAdminUpdateHelper _adminUpdateHelper) : IAdminHelper
 {
-    public bool StartAdmin(int port = 8000, bool runAsDaemon = true)
+    public bool StartAdmin(int port = 8000)
     {
-        if (!TestRequirements())
-        {
-            return false;
-        }
-
         if (port <= 0 || port > 65535)
         {
             AnsiConsole.MarkupLine("[red]Invalid port.[/]");
             return false;
         }
 
-        var webDevAdminDir = AppDomain.CurrentDomain.BaseDirectory + "admin";
-      
-        var result = _execCommand.Exec($"symfony server:start --port={port} --directory={webDevAdminDir} {(runAsDaemon ? "--daemon" : "")}");
-
-        if (result.Contains("Web server listening"))
-        {
-            AnsiConsole.MarkupLine("[green]Server started successfully.[/]");
-            AnsiConsole.MarkupLine($"[green]Access the admin interface at http://localhost:{port}[/]");
-        }
-        else if (result.Contains("The local web server is already running"))
-        {
-            AnsiConsole.MarkupLine("[yellow]Server is already running.[/]");
-            AnsiConsole.MarkupLine($"[yellow]Access the admin interface at http://localhost:{port}[/]");
-        }
-        else
-        {
-            AnsiConsole.MarkupLine("[red]Failed to start server.[/]");
-            AnsiConsole.MarkupLine($"[red]Message:[/]");
-            AnsiConsole.MarkupLine(result);
-
+        var frankenPHPPath = _frankenPHPHelper.GetOrDownloadFrankenPHPAsync().GetAwaiter().GetResult();
+        if (string.IsNullOrEmpty(frankenPHPPath)) {
             return false;
         }
 
+        if (!_adminUpdateHelper.InstallOrUpdateIfNeededAsync().GetAwaiter().GetResult()) {
+            return false;
+        }
+
+        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        var adminDir = Path.Combine(baseDir, "admin");
+        var publicDir = Path.Combine(adminDir, "public");
+        if (!Directory.Exists(publicDir))
+        {
+            AnsiConsole.MarkupLine("[red]Admin backend public directory not found.[/]");
+            return false;
+        }
+
+        var pidFile = Path.Combine(baseDir, ".admin_pid");
+        if (File.Exists(pidFile))
+        {
+            AnsiConsole.MarkupLine("[yellow]Server is already running.[/]");
+            AnsiConsole.MarkupLine($"[yellow]Access the admin interface at http://localhost:{port}[/]");
+            return true;
+        }
+
+        _frankenPHPHelper.StartFrankenPHP(publicDir, port, pidFile);
+
+        if (!File.Exists(pidFile)) {
+            return false;
+        }
+
+        AnsiConsole.MarkupLine("[green]Server started successfully.[/]");
+        AnsiConsole.MarkupLine($"[green]Access the admin interface at http://localhost:{port}[/]");
         return true;
     }
 
     public bool StopAdmin(bool debug = false)
     {
-        if (!TestRequirements())
-        {
-            return false;
-        }
+        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        var pidFile = Path.Combine(baseDir, ".admin_pid");
 
-        var webDevAdminDir = AppDomain.CurrentDomain.BaseDirectory + "admin";
-
-        var result = _execCommand.Exec($"symfony server:stop --directory={webDevAdminDir}");
-
-        if (result.Contains("[OK]"))
-        {
+        var stopped = _frankenPHPHelper.StopFrankenPHP(pidFile);
+        if (stopped) {
             AnsiConsole.MarkupLine("[green]Server stopped successfully.[/]");
         }
-        else
-        {
-            AnsiConsole.MarkupLine("[red]Failed to stop server.[/]");
-            AnsiConsole.MarkupLine($"[red]{result}[/]");
 
-            return false;
-        }
-
-        return true;
-    }
-
-    public bool IsSymfonyCliInstalled(bool debug = false)
-    {
-        var result = _execCommand.Exec("symfony version");
-
-        return result.Contains("Symfony CLI");
-    }
-
-    private bool TestRequirements(bool debug = false)
-    {
-        if (!IsSymfonyCliInstalled())
-        {
-            AnsiConsole.MarkupLine("[red]Symfony CLI is not installed.[/]");
-            AnsiConsole.MarkupLine("[red]Please install it using the following command:[/]");
-            AnsiConsole.MarkupLine("[green]wget https://get.symfony.com/cli/installer -O - | bash[/]");
-            AnsiConsole.MarkupLine("or");
-            AnsiConsole.MarkupLine("[green]curl -sS https://get.symfony.com/cli/installer | bash[/]");
-
-            return false;
-        }
-
-        var webDevAdminDir = AppDomain.CurrentDomain.BaseDirectory + "admin";
-
-        if (!Directory.Exists(webDevAdminDir))
-        {
-            AnsiConsole.MarkupLine("[red]WebDev Admin directory does not exist.[/]");
-            AnsiConsole.MarkupLine("[red]Please run the following command to create it:[/]");
-            AnsiConsole.MarkupLine($"[green]mkdir -p {webDevAdminDir}[/] and download the admin interface into it.");
-            
-            return false;
-        }
-
-        if (!File.Exists(webDevAdminDir + "/composer.json"))
-        {
-            AnsiConsole.MarkupLine("[red]WebDev Admin composer.json file does not exist.[/]");
-            AnsiConsole.MarkupLine("[red]Please run the following command to create it:[/]");
-            
-            return false;
-        }
-
-        return true;
+        return stopped;
     }
 }
