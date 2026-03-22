@@ -21,6 +21,11 @@ namespace WebDev.Tool.Commands.Services
             [Description("Start the services in detached mode")]
             [DefaultValue(false)]
             public bool Detached { get; set; }
+
+            [CommandOption("-r|--recreate")]
+            [Description("Recreate the services containers")]
+            [DefaultValue(false)]
+            public bool Recreate { get; set; }
         }
 
         public override int Execute(CommandContext context, Settings settings)
@@ -63,11 +68,11 @@ namespace WebDev.Tool.Commands.Services
 
             if (File.Exists(_dockerComposeHelper.GetProxyFile()))
             {
-                File.WriteAllText(applicationDir + ".services_start", "-f " + _dockerComposeHelper.GetFile() + " -f" + _dockerComposeHelper.GetProxyFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") +  string.Join(' ', activeServices));
+                File.WriteAllText(applicationDir + ".services_start", "-f " + _dockerComposeHelper.GetFile() + " -f" + _dockerComposeHelper.GetProxyFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") + (settings.Recreate ? "--force-recreate " : "") +  string.Join(' ', activeServices));
             }
             else
             {
-                File.WriteAllText(applicationDir + ".services_start", "-f " + _dockerComposeHelper.GetFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") +  string.Join(' ', activeServices));
+                File.WriteAllText(applicationDir + ".services_start", "-f " + _dockerComposeHelper.GetFile() + " -p " + projectName + " up " + (settings.Detached ? "-d " : "") + (settings.Recreate ? "--force-recreate " : "") +  string.Join(' ', activeServices));
             }
 
             return 0;
