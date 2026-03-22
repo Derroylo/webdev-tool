@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Spectre.Console;
 using WebDev.Tool.Classes.Configuration;
 using WebDev.Tool.Helper.Internal;
@@ -41,7 +42,10 @@ internal class FileHandler(IPathHelper _pathHelper, ITranslationHelper _translat
             return null;
         }
 
-        var files = Directory.GetFiles(sourcePath, $"{secret.Source.Key}.*");
+        var files = Directory.GetFiles(sourcePath, $"{secret.Source.Key}.*")
+            .Where(f => !f.EndsWith(":Zone.Identifier", StringComparison.OrdinalIgnoreCase)
+                     && !f.EndsWith(".Zone.Identifier", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
 
         if (files.Length == 0)
         {
@@ -53,7 +57,7 @@ internal class FileHandler(IPathHelper _pathHelper, ITranslationHelper _translat
             return null;
         }
 
-        return File.ReadAllText(files[0]);
+        return File.ReadAllText(files.First());
     }
 
     public bool HandleWriteSecret(string secretName, string secretContent, SecretConfiguration secret, bool showMessages)
