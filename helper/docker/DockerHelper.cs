@@ -33,7 +33,7 @@ namespace WebDev.Tool.Helper.Docker
             var projectName = Path.GetFileName(Directory.GetCurrentDirectory()) + "_devcontainer";
 
             // Replace invalid characters with an underscore
-            projectName = System.Text.RegularExpressions.Regex.Replace(projectName, @"[^A-Za-z0-9\-_]", "");
+            projectName = System.Text.RegularExpressions.Regex.Replace(projectName, @"[^A-Za-z0-9\-_]", "").ToLower();
             
             return projectName;
         }
