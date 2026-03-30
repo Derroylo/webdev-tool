@@ -47,6 +47,16 @@ internal class ShowProjectInfoCommand(IDebugOutputHelper _debugOutputHelper, IDo
                 }
                 
                 panelContent += "\n";
+
+                if (service.Value.Links != null && service.Value.Links.Any())
+                {
+                    foreach (var link in service.Value.Links)
+                    {
+                        panelContent += $"- {link.Label}".PadRight(56);
+                        panelContent += $"[green]https://"  + service.Value.SubDomain + "." + _generalConfig.Proxy.SubDomain + "." + _generalConfig.Proxy.Domain + link.Path + "[/]";
+                        panelContent += "\n";
+                    }
+                }
             }
         }
         else

@@ -17,4 +17,6 @@ public class ServiceEntryConfiguration
     public int Port { get; set; } = 8080;
     
     public string SubDomain { get; set; } = "";
+
+    public List<ServiceLinkEntryConfiguration> Links { get; set; } = new();
 }
