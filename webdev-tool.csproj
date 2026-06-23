@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
-    <Version>0.4.0</Version>
+    <Version>0.4.1</Version>
     <InformationalVersion></InformationalVersion>
     <Authors>Derroylo</Authors>
     <Product>WebDev-Tool</Product>
