@@ -58,7 +58,7 @@ namespace WebDev.Tool.Commands.Mysql
             try
             {
                 var result = _execCommand.Exec("which docker-compose");
-                if (result.Contains("docker-compose"))
+                if (result.ToLower().Contains("docker-compose"))
                 {
                     dockerComposeCmd = "docker-compose";
                 }
@@ -66,7 +66,7 @@ namespace WebDev.Tool.Commands.Mysql
                 {
                     // Fallback: check `docker compose` by checking if `docker` is present and `docker compose version` works
                     var dockerResult = _execCommand.Exec("docker compose version");
-                    if (dockerResult.Contains("docker compose"))
+                    if (dockerResult.ToLower().Contains("docker compose"))
                     {
                         dockerComposeCmd = "docker compose";
                     }
