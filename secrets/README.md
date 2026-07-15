@@ -1,1 +1,1 @@
-Go to https://derroylo.github.io/secrets to find out on how to add secrets to your project
+Go to https://derroylo.github.io/getting_started/details/secrets/ to find out on how to add secrets to your project
