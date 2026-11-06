@@ -2,6 +2,7 @@ using FluentAssertions;
 using Spectre.Console;
 using WebDev.Tool.Tests.Base;
 using WebDev.Tool.Tests.Helpers;
+using YamlDotNet.RepresentationModel;
 
 namespace WebDev.Tool.Tests.Tests.Commands;
 
@@ -95,6 +96,24 @@ public class WorkspacesOnInitCommandTests : DevContainerTestBase
 
         File.Exists(keyFile).Should().BeTrue("Certificate key file should exist");
         File.Exists(certFile).Should().BeTrue("Certificate file should exist");
+
+        var dynamicConfigPath = Path.Combine("/workspaces", "webdev-tool", "devcontainer-testenv", ".devcontainer", "traefik", "config", "dynamic.yml");
+        using var reader = File.OpenText(dynamicConfigPath);
+        var yaml = new YamlStream();
+        yaml.Load(reader);
+
+        var config = Assert.IsType<YamlMappingNode>(yaml.Documents[0].RootNode);
+        var tls = Assert.IsType<YamlMappingNode>(config.Children["tls"]);
+        var certificates = Assert.IsType<YamlSequenceNode>(tls.Children["certificates"]);
+        var certificate = Assert.IsType<YamlMappingNode>(Assert.Single(certificates.Children));
+        certificate.Children["certFile"].ToString().Should().Be("/etc/certs/_wildcard.testenv.dev.localhost.pem");
+        certificate.Children["keyFile"].ToString().Should().Be("/etc/certs/_wildcard.testenv.dev.localhost-key.pem");
+
+        var stores = Assert.IsType<YamlMappingNode>(tls.Children["stores"]);
+        var defaultStore = Assert.IsType<YamlMappingNode>(stores.Children["default"]);
+        var defaultCertificate = Assert.IsType<YamlMappingNode>(defaultStore.Children["defaultCertificate"]);
+        defaultCertificate.Children["certFile"].Should().Be(certificate.Children["certFile"]);
+        defaultCertificate.Children["keyFile"].Should().Be(certificate.Children["keyFile"]);
     }
 
     [Fact]

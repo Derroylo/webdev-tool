@@ -197,10 +197,13 @@ public class TraefikHelper(IPathHelper _pathHelper, IEnvironmentHelper _environm
             { "default", new Dictionary<string, object> { { "defaultCertificate", new Dictionary<string, string> { { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}.pem") }, { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}-key.pem") } } } } }
         };
         
-        traefikConfig["certificates"] = new Dictionary<string, string>
+        traefikConfig["certificates"] = new List<Dictionary<string, string>>
         {
-            { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}.pem") }, 
-            { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}-key.pem") }
+            new Dictionary<string, string>
+            {
+                { "certFile", Path.Combine("/etc/certs/", $"_wildcard.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}.pem") },
+                { "keyFile", Path.Combine("/etc/certs/", $"_wildcard.{_generalConfig.Proxy.SubDomain}.{_generalConfig.Proxy.Domain}-key.pem") }
+            }
         };      
 
         if (debug)
