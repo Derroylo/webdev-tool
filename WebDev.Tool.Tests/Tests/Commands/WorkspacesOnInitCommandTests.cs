@@ -89,7 +89,8 @@ public class WorkspacesOnInitCommandTests : DevContainerTestBase
         File.Exists(rootCertFile).Should().BeTrue("Root cCertificate file should exist");
 
         // Verify devcontainer certificate files exist
-        var devContainerCertsPath = Path.Combine("/workspaces", "webdev-tool", "devcontainer-testenv", ".devcontainer", "traefik", "certs");
+        var traefikPath = Path.Combine("/workspaces", "webdev-tool", "devcontainer-testenv", ".devcontainer", "traefik");
+        var devContainerCertsPath = Path.Combine(traefikPath, "certs");
         Directory.Exists(devContainerCertsPath).Should().BeTrue("Devcontainer certificates directory should exist");
         var keyFile = Path.Combine(devContainerCertsPath, "_wildcard.testenv.dev.localhost-key.pem");
         var certFile = Path.Combine(devContainerCertsPath, "_wildcard.testenv.dev.localhost.pem");
@@ -97,7 +98,7 @@ public class WorkspacesOnInitCommandTests : DevContainerTestBase
         File.Exists(keyFile).Should().BeTrue("Certificate key file should exist");
         File.Exists(certFile).Should().BeTrue("Certificate file should exist");
 
-        var dynamicConfigPath = Path.Combine("/workspaces", "webdev-tool", "devcontainer-testenv", ".devcontainer", "traefik", "config", "dynamic.yml");
+        var dynamicConfigPath = Path.Combine(traefikPath, "config", "dynamic.yml");
         using var reader = File.OpenText(dynamicConfigPath);
         var yaml = new YamlStream();
         yaml.Load(reader);
@@ -106,8 +107,8 @@ public class WorkspacesOnInitCommandTests : DevContainerTestBase
         var tls = Assert.IsType<YamlMappingNode>(config.Children["tls"]);
         var certificates = Assert.IsType<YamlSequenceNode>(tls.Children["certificates"]);
         var certificate = Assert.IsType<YamlMappingNode>(Assert.Single(certificates.Children));
-        certificate.Children["certFile"].ToString().Should().Be("/etc/certs/_wildcard.testenv.dev.localhost.pem");
-        certificate.Children["keyFile"].ToString().Should().Be("/etc/certs/_wildcard.testenv.dev.localhost-key.pem");
+        certificate.Children["certFile"].ToString().Should().Be(Path.Combine("/etc/certs", Path.GetFileName(certFile)));
+        certificate.Children["keyFile"].ToString().Should().Be(Path.Combine("/etc/certs", Path.GetFileName(keyFile)));
 
         var stores = Assert.IsType<YamlMappingNode>(tls.Children["stores"]);
         var defaultStore = Assert.IsType<YamlMappingNode>(stores.Children["default"]);
